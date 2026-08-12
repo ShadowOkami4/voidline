@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+page=${1:-home}
+case "$page" in
+    home|connections|audio|devices|notifications|display|appearance|lock|security|accessibility|assistant|updates|system|developer) ;;
+    *) printf 'Unknown Settings page: %s\n' "$page" >&2; exit 64 ;;
+esac
+
+systemctl --user start voidline-shell.service >/dev/null 2>&1 || {
+    printf '%s\n' 'Voidline Settings could not start the shell service.' >&2
+    exit 69
+}
+
+attempt=0
+while [ "$attempt" -lt 30 ]; do
+    if voidlinectl settings open "$page" >/dev/null 2>&1; then
+        exit 0
+    fi
+    attempt=$((attempt + 1))
+    sleep 0.1
+done
+
+printf '%s\n' 'Voidline Settings did not become available.' >&2
+exit 70

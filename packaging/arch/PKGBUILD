@@ -1,0 +1,136 @@
+# Maintainer: Voidline contributors
+pkgbase=voidline
+pkgname=(voidline-backend voidline-shell voidline-ai voidline-sddm)
+pkgver=0.3.0dev
+pkgrel=1
+pkgdesc='Voidline desktop environment for Hyprland'
+arch=(x86_64)
+url='https://github.com/ShadowOkami4/voidline'
+license=(MIT)
+options=(!debug)
+makedepends=(git rust pkgconf gcc gtk4 vte4 networkmanager)
+source=("voidline::git+$url.git#tag=v$pkgver")
+sha256sums=('SKIP')
+
+prepare() {
+    cd voidline/backend
+    cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
+}
+
+build() {
+    cd voidline/backend
+    CARGO_TARGET_DIR=target cargo build --frozen --release --workspace
+    ./build-network-helper.sh
+}
+
+package_voidline-backend() {
+    pkgdesc='Validated per-user Voidline backend, CLI, and Rust terminal'
+    depends=(glibc gtk4 vte4 systemd polkit playerctl networkmanager)
+
+    cd voidline
+    install -Dm755 backend/target/release/voidlined "$pkgdir/usr/lib/voidline/voidlined"
+    install -Dm755 backend/target/release/voidline-terminal "$pkgdir/usr/lib/voidline/voidline-terminal"
+    install -Dm755 backend/target/release/voidlinectl "$pkgdir/usr/bin/voidlinectl"
+    install -Dm755 backend/target/release/voidline-network "$pkgdir/usr/lib/voidline/voidline-network"
+    install -Dm755 .local/bin/voidline-terminal "$pkgdir/usr/bin/voidline-terminal"
+    install -Dm755 .config/quickshell/void/helpers/network-secret-helper \
+        "$pkgdir/usr/lib/voidline/network-secret-helper"
+    install -Dm644 .config/quickshell/void/helpers/org.voidline.network.policy \
+        "$pkgdir/usr/share/polkit-1/actions/org.voidline.network.policy"
+
+    sed 's|@VOIDLINE_BACKEND@|/usr/lib/voidline/voidlined|g' \
+        backend/packaging/voidline-backend.service.in >voidline-backend.service
+    install -Dm644 voidline-backend.service \
+        "$pkgdir/usr/lib/systemd/user/voidline-backend.service"
+
+    backend/target/release/voidlinectl completions bash >voidlinectl.bash
+    backend/target/release/voidlinectl completions zsh >_voidlinectl
+    backend/target/release/voidlinectl completions fish >voidlinectl.fish
+    install -Dm644 voidlinectl.bash "$pkgdir/usr/share/bash-completion/completions/voidlinectl"
+    install -Dm644 _voidlinectl "$pkgdir/usr/share/zsh/site-functions/_voidlinectl"
+    install -Dm644 voidlinectl.fish "$pkgdir/usr/share/fish/vendor_completions.d/voidlinectl.fish"
+    install -Dm644 .local/share/applications/voidline-terminal.desktop \
+        "$pkgdir/usr/share/applications/voidline-terminal.desktop"
+    install -Dm644 .local/share/icons/hicolor/scalable/apps/voidline-terminal.svg \
+        "$pkgdir/usr/share/icons/hicolor/scalable/apps/voidline-terminal.svg"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/voidline-backend/LICENSE"
+}
+
+package_voidline-shell() {
+    pkgdesc='Voidline Quickshell desktop shell and Settings for Hyprland'
+    depends=(voidline-backend hyprland quickshell networkmanager bluez bluez-utils
+        pipewire wireplumber brightnessctl playerctl jq curl wl-clipboard
+        cliphist grim slurp libnotify upower)
+    optdepends=(
+        'ttf-roboto-flex: complete Voidline typography'
+        'ttf-material-symbols-variable: Material Symbols glyphs'
+        'papirus-icon-theme: application icon fallback'
+        'ddcutil: brightness control for compatible external displays'
+        'wf-recorder: screen recording'
+        'hyprpicker: color picker'
+        'cups: printer discovery and management'
+        'sane-airscan: network scanner discovery'
+        'voidline-ai: Lyra — Extreme Beta'
+        'voidline-sddm: matching login theme'
+    )
+
+    cd voidline
+    install -d "$pkgdir/usr/share/voidline/quickshell"
+    cp -a .config/quickshell/void/. "$pkgdir/usr/share/voidline/quickshell/"
+    find "$pkgdir/usr/share/voidline/quickshell" -type d -exec chmod 755 {} +
+    find "$pkgdir/usr/share/voidline/quickshell" -type f -exec chmod 644 {} +
+    find "$pkgdir/usr/share/voidline/quickshell/scripts" -type f \
+        \( -name '*.sh' -o -name 'voidline-share-picker' \) -exec chmod 755 {} +
+
+    install -Dm755 .local/bin/voidline-shell "$pkgdir/usr/bin/voidline-shell"
+    install -Dm755 .local/bin/voidline-settings "$pkgdir/usr/bin/voidline-settings"
+    install -Dm755 .local/bin/voidline-display-safe-mode "$pkgdir/usr/bin/voidline-display-safe-mode"
+    install -Dm755 .config/quickshell/void/scripts/voidline-share-picker \
+        "$pkgdir/usr/bin/voidline-share-picker"
+    install -Dm644 .config/systemd/user/voidline-shell.service \
+        "$pkgdir/usr/lib/systemd/user/voidline-shell.service"
+
+    install -Dm644 .local/share/applications/voidline-settings.desktop \
+        "$pkgdir/usr/share/applications/voidline-settings.desktop"
+    install -Dm644 .local/share/icons/hicolor/scalable/apps/voidline-settings.svg \
+        "$pkgdir/usr/share/icons/hicolor/scalable/apps/voidline-settings.svg"
+    install -Dm644 packaging/hypr/voidline.conf "$pkgdir/usr/share/voidline/hypr/voidline.conf"
+    install -Dm644 packaging/hypr/voidline.lua "$pkgdir/usr/share/voidline/hypr/voidline.lua"
+    install -Dm644 .config/xdg-desktop-portal/portals.conf \
+        "$pkgdir/usr/share/voidline/xdg-desktop-portal/portals.conf"
+    install -Dm644 VERSION "$pkgdir/usr/share/voidline/VERSION"
+
+    install -d "$pkgdir/usr/share/voidline/material-symbols"
+    cp -a .local/share/icons/Voidline/source/material-symbols/. \
+        "$pkgdir/usr/share/voidline/material-symbols/"
+    install -d "$pkgdir/usr/share/backgrounds/voidline"
+    cp -a assets/wallpapers/. "$pkgdir/usr/share/backgrounds/voidline/"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/voidline-shell/LICENSE"
+}
+
+package_voidline-ai() {
+    pkgdesc='Optional Lyra local assistant integration (Extreme Beta)'
+    depends=(voidline-shell jq ollama)
+
+    cd voidline
+    install -Dm755 .local/bin/voidline-lyra "$pkgdir/usr/bin/voidline-lyra"
+    install -Dm644 .local/share/applications/voidline-lyra.desktop \
+        "$pkgdir/usr/share/applications/voidline-lyra.desktop"
+    install -Dm644 .local/share/icons/hicolor/scalable/apps/voidline-lyra.svg \
+        "$pkgdir/usr/share/icons/hicolor/scalable/apps/voidline-lyra.svg"
+    install -Dm644 .local/share/voidline/features/ai.json \
+        "$pkgdir/usr/share/voidline/features/ai.json"
+    install -Dm644 .config/systemd/user/voidline-ai.service \
+        "$pkgdir/usr/lib/systemd/user/voidline-ai.service"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/voidline-ai/LICENSE"
+}
+
+package_voidline-sddm() {
+    pkgdesc='Lightweight SDDM theme matching the Voidline lock screen'
+    depends=(sddm qt6-declarative)
+
+    cd voidline
+    install -d "$pkgdir/usr/share/sddm/themes/voidline"
+    cp -a sddm/voidline/. "$pkgdir/usr/share/sddm/themes/voidline/"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/voidline-sddm/LICENSE"
+}

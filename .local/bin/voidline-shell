@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+if [ -z "${VOIDLINE_SHELL_ROOT:-}" ]; then
+    if [ -r /usr/share/voidline/quickshell/shell.qml ]; then
+        VOIDLINE_SHELL_ROOT=/usr/share/voidline/quickshell
+    elif [ -r "${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell/shell.qml" ]; then
+        VOIDLINE_SHELL_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell"
+    elif [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void/shell.qml" ]; then
+        VOIDLINE_SHELL_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void"
+    else
+        VOIDLINE_SHELL_ROOT=/usr/share/voidline/quickshell
+    fi
+fi
+export VOIDLINE_SHELL_ROOT
+
+[ -r "$VOIDLINE_SHELL_ROOT/shell.qml" ] || {
+    printf '%s\n' 'Voidline shell files are not installed.' >&2
+    exit 66
+}
+[ -x /usr/bin/quickshell ] || {
+    printf '%s\n' 'Quickshell is not installed.' >&2
+    exit 69
+}
+
+exec /usr/bin/quickshell -p "$VOIDLINE_SHELL_ROOT/shell.qml" "$@"

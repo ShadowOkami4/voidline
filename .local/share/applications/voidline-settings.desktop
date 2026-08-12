@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Voidline Settings
+Comment=Configure the Voidline desktop environment
+Exec=voidline-settings
+TryExec=voidline-settings
+Icon=voidline-settings
+Terminal=false
+Categories=Settings;System;
+Keywords=settings;display;network;audio;appearance;Voidline;
+StartupNotify=true

@@ -1,0 +1,13 @@
+[SddmGreeterTheme]
+Name=Voidline
+Description=Lightweight Voidline login experience matching the Quickshell lock screen
+Author=Voidline contributors
+Copyright=(c) Voidline contributors
+License=MIT
+Type=sddm-theme
+Version=0.3.0dev
+Website=https://github.com/ShadowOkami4/voidline
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=voidline
+Theme-API=2.0

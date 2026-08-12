@@ -1,0 +1,108 @@
+#!/bin/sh
+set -eu
+
+if [ -z "${VOIDLINE_SHELL_ROOT:-}" ]; then
+    if [ -r /usr/share/voidline/quickshell/lyra.qml ]; then
+        VOIDLINE_SHELL_ROOT=/usr/share/voidline/quickshell
+    elif [ -r "${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell/lyra.qml" ]; then
+        VOIDLINE_SHELL_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell"
+    elif [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void/lyra.qml" ]; then
+        VOIDLINE_SHELL_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void"
+    else
+        VOIDLINE_SHELL_ROOT=/usr/share/voidline/quickshell
+    fi
+fi
+export VOIDLINE_SHELL_ROOT
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-wayland}"
+export XDG_SESSION_TYPE="${XDG_SESSION_TYPE:-wayland}"
+
+if [ ! -r "$VOIDLINE_SHELL_ROOT/lyra.qml" ]; then
+    command -v notify-send >/dev/null 2>&1 \
+        && notify-send 'Ask Lyra' 'The Lyra application files are missing.'
+    printf '%s\n' 'Ask Lyra: lyra.qml was not found.' >&2
+    exit 66
+fi
+
+if [ ! -x /usr/bin/quickshell ]; then
+    command -v notify-send >/dev/null 2>&1 \
+        && notify-send 'Ask Lyra' 'Quickshell is not installed.'
+    printf '%s\n' 'Ask Lyra: quickshell is not installed.' >&2
+    exit 69
+fi
+
+# The provider is optional and must remain stopped while Lyra is disabled.
+# Opening the standalone UI is still allowed so the user can review settings,
+# but a disabled assistant never gains background resource usage as a side
+# effect of launching the window.
+assistant_state=${XDG_CONFIG_HOME:-$HOME/.config}/voidline/assistant-state.json
+assistant_enabled=false
+if command -v jq >/dev/null 2>&1 && [ -r "$assistant_state" ]; then
+    assistant_enabled=$(jq -r 'if .enabled == true then "true" else "false" end' \
+        "$assistant_state" 2>/dev/null || printf false)
+fi
+ai_manifest=${XDG_DATA_HOME:-$HOME/.local/share}/voidline/features/ai.json
+if [ ! -r "$ai_manifest" ]; then
+    ai_manifest=/usr/share/voidline/features/ai.json
+fi
+if [ "$assistant_enabled" = true ] \
+        && [ -r "$ai_manifest" ] \
+        && systemctl --user cat voidline-ai.service >/dev/null 2>&1; then
+    systemctl --user start voidline-ai.service >/dev/null 2>&1 || true
+fi
+
+runtime_root=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+[ -d "$runtime_root" ] || {
+    printf '%s\n' 'Ask Lyra: the user runtime directory is unavailable.' >&2
+    exit 70
+}
+install -d -m 700 "$runtime_root/voidline"
+lock_file=$runtime_root/voidline/lyra-window.lock
+
+activate_existing() {
+    /usr/bin/quickshell -p "$VOIDLINE_SHELL_ROOT/lyra.qml" \
+        ipc --any-display call lyraWindow activate >/dev/null 2>&1 \
+        || return 1
+    owner_pid=$(sed -n '1p' "$lock_file" 2>/dev/null || true)
+    case "$owner_pid" in
+        ''|*[!0-9]*) return 0 ;;
+    esac
+    if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] \
+            && [ -x /usr/bin/hyprctl ] && [ -x /usr/bin/jq ]; then
+        address=$(/usr/bin/hyprctl -j clients 2>/dev/null \
+            | /usr/bin/jq -r --argjson pid "$owner_pid" \
+                'first(.[] | select(.pid == $pid) | .address) // empty')
+        case "$address" in
+            0x[0-9A-Fa-f]*)
+                /usr/bin/hyprctl dispatch focuswindow \
+                    "address:$address" >/dev/null 2>&1 || true
+                ;;
+        esac
+    fi
+}
+
+# Re-activate an existing standalone window instead of letting a duplicate
+# launch disappear. Hyprland performs focus activation; no generic application
+# command or model-controlled selector is accepted.
+if activate_existing; then
+    exit 0
+fi
+
+exec 9>>"$lock_file"
+if ! flock -n 9; then
+    attempts=0
+    while [ "$attempts" -lt 20 ]; do
+        if activate_existing; then
+            exit 0
+        fi
+        attempts=$((attempts + 1))
+        sleep 0.1
+    done
+    printf '%s\n' 'Ask Lyra: the existing window did not respond.' >&2
+    exit 75
+fi
+printf '%s\n' "$$" >"$lock_file"
+
+# The lock descriptor remains open for the lifetime of this process. The QML
+# window is hidden on close and reactivated over IPC, so repeated launches use
+# one provider-independent conversation process without duplicate windows.
+exec /usr/bin/quickshell -p "$VOIDLINE_SHELL_ROOT/lyra.qml" "$@"

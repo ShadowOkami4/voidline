@@ -1,0 +1,17 @@
+[Unit]
+Description=Voidline Quickshell desktop shell
+Documentation=https://github.com/ShadowOkami4/voidline
+After=graphical-session.target
+PartOf=graphical-session.target
+StartLimitIntervalSec=30
+StartLimitBurst=4
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/voidline-shell
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=5
+
+[Install]
+WantedBy=graphical-session.target

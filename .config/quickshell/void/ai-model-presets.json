@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "family": "qwen3.5",
+  "presets": [
+    {
+      "id": "compact",
+      "label": "Compact",
+      "model": "qwen3.5:2b",
+      "minimumRamGiB": 8,
+      "downloadGiB": 2.7,
+      "description": "Fast basic assistance for entry-level systems"
+    },
+    {
+      "id": "balanced",
+      "label": "Balanced",
+      "model": "qwen3.5:4b",
+      "minimumRamGiB": 12,
+      "downloadGiB": 3.4,
+      "description": "Responsive general assistance for mainstream laptops"
+    },
+    {
+      "id": "advanced",
+      "label": "Advanced",
+      "model": "qwen3.5:9b",
+      "minimumRamGiB": 32,
+      "downloadGiB": 6.6,
+      "description": "Higher-quality reasoning for accelerated high-memory systems"
+    },
+    {
+      "id": "workstation",
+      "label": "Workstation",
+      "model": "qwen3.5:27b",
+      "minimumRamGiB": 64,
+      "downloadGiB": 17,
+      "description": "Maximum local quality for accelerated workstations"
+    }
+  ]
+}

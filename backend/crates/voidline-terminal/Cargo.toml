@@ -1,0 +1,10 @@
+[package]
+name = "voidline-terminal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+vte = { package = "vte4", version = "0.10", features = ["gtk_v4_18", "v0_84"] }

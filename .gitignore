@@ -1,0 +1,33 @@
+# Build output
+/backend/target/
+/backend/network-helper-build/
+/pkg/
+/src/
+/*.pkg.tar.*
+/*.tar.zst
+/*.sha256
+
+# Local agent and editor state
+/.agents/
+/.tmp/
+/.vscode/
+/.config/hypr/.vscode/
+*.swp
+*~
+
+# The obsolete pre-rewrite shell is retained locally for reference only.
+/.config/quickshell/recon/
+
+# Runtime/generated state never belongs in a release.
+*.log
+*.lock
+!/backend/Cargo.lock
+__pycache__/
+.pytest_cache/
+.cache/
+
+# Keep the curated README captures; omit superseded visual-debug captures.
+/artifacts/voidline-about.png
+/artifacts/voidline-lyra.png
+/artifacts/voidline-lyra-weather.png
+/artifacts/voidline-lyra-weather-fixed.png

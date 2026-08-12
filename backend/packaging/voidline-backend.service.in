@@ -1,0 +1,26 @@
+[Unit]
+Description=Voidline per-user desktop backend
+Documentation=https://github.com/ShadowOkami4/voidline
+After=graphical-session-pre.target
+ConditionPathIsExecutable=@VOIDLINE_BACKEND@
+
+[Service]
+Type=simple
+ExecStart=@VOIDLINE_BACKEND@
+Restart=on-failure
+RestartSec=1s
+TimeoutStopSec=5s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectControlGroups=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+UMask=0077
+
+# Clients activate this static unit on demand. It deliberately has no Install
+# section and never receives elevated privileges.

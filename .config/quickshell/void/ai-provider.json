@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "provider": "ollama",
+  "model": "qwen3.5:4b",
+  "contextTokens": 4096,
+  "maxResponseTokens": 384,
+  "historyMessages": 4,
+  "keepAlive": "15m",
+  "serviceIdleTimeout": "20m",
+  "performancePreset": "automatic",
+  "cpuThreads": 0,
+  "gpuOffload": "automatic",
+  "maxRamPercent": 55,
+  "maxGpuMemoryPercent": 70,
+  "startOnDemand": true,
+  "temperature": 0.25,
+  "online": false
+}

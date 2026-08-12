@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=Voidline Terminal
+Comment=Fast terminal integrated with the Voidline desktop
+Exec=voidline-terminal
+TryExec=voidline-terminal
+Icon=voidline-terminal
+Terminal=false
+Categories=System;TerminalEmulator;
+Keywords=terminal;shell;command;prompt;Voidline;
+StartupNotify=true
+Actions=New;
+
+[Desktop Action New]
+Name=New Terminal
+Exec=voidline-terminal

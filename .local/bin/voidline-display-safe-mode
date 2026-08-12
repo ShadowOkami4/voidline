@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+if [ -n "${VOIDLINE_SHELL_ROOT:-}" ]; then
+    shell_root=$VOIDLINE_SHELL_ROOT
+elif [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void/scripts/system-settings.sh" ]; then
+    shell_root=${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void
+elif [ -r "${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell/scripts/system-settings.sh" ]; then
+    shell_root=${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell
+else
+    shell_root=/usr/share/voidline/quickshell
+fi
+
+exec sh "$shell_root/scripts/system-settings.sh" safe-monitors

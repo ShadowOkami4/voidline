@@ -1,0 +1,17 @@
+{
+  "colorMode": "dark",
+  "magicColors": true,
+  "wallpaperPath": "",
+  "barPosition": "top",
+  "workspacePlacement": "center",
+  "musicPlacement": "bar",
+  "clockStyle": "split",
+  "clockFont": "Roboto Flex",
+  "developerMode": false,
+  "doNotDisturb": false,
+  "notificationPopups": true,
+  "reduceMotion": false,
+  "highContrast": false,
+  "lockClockStyle": "large",
+  "lockShowDate": true
+}

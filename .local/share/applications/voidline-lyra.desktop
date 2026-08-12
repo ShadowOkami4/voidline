@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Ask Lyra
+Comment=Voidline local assistant
+Exec=voidline-lyra
+TryExec=voidline-lyra
+Icon=voidline-lyra
+Terminal=false
+Categories=Utility;
+Keywords=AI;Assistant;Lyra;Voidline;
+StartupNotify=false
+PrefersNonDefaultGPU=false

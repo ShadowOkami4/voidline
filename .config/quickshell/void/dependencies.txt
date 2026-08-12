@@ -1,0 +1,114 @@
+# Voidline Arch Linux dependency manifest
+#
+# Installer rule: ignore blank lines and lines beginning with '#'. Packages
+# under [official] are installed with pacman. Packages under [aur] require an
+# AUR helper or a makepkg build step.
+
+# [official]
+hyprland
+hypridle
+quickshell
+systemd
+python
+python-dbus
+python-gobject
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+qt6-imageformats
+qt6-5compat
+qt5-graphicaleffects
+sddm
+networkmanager
+iwd
+iw
+hostapd
+dnsmasq
+iptables
+qrencode
+gtk3
+gtk4
+libadwaita
+gsettings-desktop-schemas
+nautilus
+bluez
+bluez-utils
+pipewire
+pipewire-audio
+pipewire-pulse
+pipewire-alsa
+wireplumber
+brightnessctl
+ddcutil
+imagemagick
+wf-recorder
+slurp
+grim
+jq
+libnotify
+wl-clipboard
+cliphist
+hyprpicker
+ripgrep
+curl
+upower
+tuned
+polkit
+pacman-contrib
+# Voidline provides the active Polkit agent directly through Quickshell.
+# hyprpolkitagent may be installed as a fallback, but its user service must
+# stay disabled while the native Voidline agent is enabled.
+lm_sensors
+util-linux
+usbutils
+pciutils
+udisks2
+v4l-utils
+cups
+avahi
+sane-airscan
+noto-fonts
+ttf-material-symbols-variable
+papirus-icon-theme
+playerctl
+
+# [voidline-rust-components]
+# Required to build the shared backend, voidlinectl, and Voidline Terminal.
+rust
+pkgconf
+vte4
+
+# [aur]
+ttf-roboto-flex
+linux-wifi-hotspot
+
+# [optional-vendor-backends]
+# Epson ET-281x network scanning fallback when AirScan is not advertised:
+# epsonscan2
+
+# [optional-settings-backends]
+# These controls stay visible but disabled when their backend is absent.
+sane
+colord
+hyprsunset
+wireguard-tools
+ufw
+
+# [optional-accessibility-backends]
+orca
+wvkbd
+
+# [optional-update-backends]
+# yay is needed only for listing AUR updates; Voidline never performs an
+# unattended AUR transaction.
+yay
+
+# [optional-local-ai-backends]
+# The separate voidline-ai package owns this group and its feature manifest.
+# The base shell must not install it or start an AI service. `ollama-vulkan`
+# is the accelerated runner for AMD/Vulkan hardware; installers select the
+# matching runner and model preset only when the user chooses the AI package.
+ollama
+ollama-vulkan
+
+# [development-only]
+# openssh

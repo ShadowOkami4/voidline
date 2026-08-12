@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+export GDK_BACKEND="${GDK_BACKEND:-wayland}"
+binary="${VOIDLINE_TERMINAL_BINARY:-$HOME/.local/lib/voidline/voidline-terminal}"
+if [ ! -x "$binary" ] && [ -x /usr/lib/voidline/voidline-terminal ]; then
+    binary=/usr/lib/voidline/voidline-terminal
+fi
+if [ ! -x "$binary" ]; then
+    command -v notify-send >/dev/null 2>&1 \
+        && notify-send 'Voidline Terminal' 'The terminal binary is not installed. Build the Rust workspace first.'
+    printf '%s\n' 'Voidline Terminal is not installed.' >&2
+    exit 69
+fi
+exec "$binary" "$@"

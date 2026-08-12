@@ -1,0 +1,53 @@
+#!/bin/sh
+set -eu
+
+if [ -n "${VOIDLINE_SHELL_ROOT:-}" ]; then
+    shell_directory=$VOIDLINE_SHELL_ROOT
+elif [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void/share-picker.qml" ]; then
+    shell_directory=${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/void
+elif [ -r "${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell/share-picker.qml" ]; then
+    shell_directory=${XDG_DATA_HOME:-$HOME/.local/share}/voidline/quickshell
+else
+    shell_directory=/usr/share/voidline/quickshell
+fi
+[ -r "$shell_directory/share-picker.qml" ] || {
+    printf '%s\n' 'Voidline screen-share picker is not installed.' >&2
+    exit 66
+}
+runtime_directory=${XDG_RUNTIME_DIR:-/tmp}
+cache_directory=${XDG_CACHE_HOME:-"$HOME/.cache"}/voidline
+result_file=$runtime_directory/voidline-share-picker-result.$$.txt
+log_file=$cache_directory/share-picker.log
+allow_token=0
+
+for argument in "$@"; do
+    [ "$argument" = "--allow-token" ] && allow_token=1
+done
+
+install -d -m 700 "$cache_directory"
+umask 077
+rm -f "$result_file"
+
+export VOIDLINE_PICKER_RESULT="$result_file"
+export VOIDLINE_PICKER_ALLOW_TOKEN="$allow_token"
+
+picker_status=0
+quickshell -p "$shell_directory/share-picker.qml" \
+    >"$log_file" 2>&1 || picker_status=$?
+
+if [ -s "$result_file" ]; then
+    cat "$result_file"
+    rm -f "$result_file"
+    exit 0
+fi
+
+rm -f "$result_file"
+
+# If the Voidline frontend itself failed to load, preserve working portal
+# behavior by handing the request to the picker shipped with XDPH. A normal
+# user cancellation exits cleanly and must not reopen a second picker.
+if [ "$picker_status" -ne 0 ]; then
+    exec /usr/bin/hyprland-share-picker "$@"
+fi
+
+exit 1
