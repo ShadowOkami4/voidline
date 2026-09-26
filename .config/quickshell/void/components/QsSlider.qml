@@ -29,7 +29,7 @@ Item {
         }
     }
 
-    implicitHeight: Math.round(52 * Metrics.scale)
+    implicitHeight: Math.round(44 * Metrics.scale)
     opacity: available ? 1 : 0.4
 
     function update(x) {
@@ -51,11 +51,11 @@ Item {
         MaterialIcon {
             anchors {
                 left: parent.left
-                leftMargin: Math.round(16 * Metrics.scale)
+                leftMargin: Math.round(13 * Metrics.scale)
                 verticalCenter: parent.verticalCenter
             }
             text: root.icon
-            size: Math.round(24 * Metrics.scale)
+            size: Math.round(21 * Metrics.scale)
             fill: 1
             color: root.muted ? Theme.textMuted : Theme.accentInk
         }

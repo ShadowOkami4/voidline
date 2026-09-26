@@ -23,7 +23,7 @@ PanelWindow {
     // Wide screens get the Android split shade (notifications | Quick
     // Settings) on the home page; narrow screens stack them.
     readonly property bool splitShade: parentBar && parentBar.screen
-        && parentBar.screen.width >= Math.round(1400 * Metrics.scale)
+        && parentBar.screen.width >= Math.round(1360 * Metrics.scale)
     function normalizedPage(requested) {
         return requested === "wifi" || requested === "bluetooth" || requested === "sound"
             || requested === "power" || requested === "project" || requested === "hotspot"
@@ -36,7 +36,7 @@ PanelWindow {
             return Metrics.panelMedium
         if (page === "bluetooth" || page === "project")
             return 480
-        return splitShade ? Math.round(980 * Metrics.scale) : Math.round(500 * Metrics.scale)
+        return splitShade ? Math.round(820 * Metrics.scale) : Math.round(440 * Metrics.scale)
     }
     readonly property int targetPanelWidth: Math.min(requestedPanelWidth(currentPage),
         parentBar && parentBar.screen ? Math.max(360, parentBar.screen.width - 48) : maxPanelWidth)
@@ -53,7 +53,7 @@ PanelWindow {
             return 720
         if (currentPage === "project")
             return 590
-        return 780
+        return splitShade ? 680 : 780
     }
     readonly property int targetPanelHeight: targetBodyHeight + cornerSize
 

@@ -17,11 +17,11 @@ Rectangle {
     readonly property var actions: notification && notification.actions
         ? notification.actions : []
 
-    implicitHeight: content.implicitHeight + Metrics.spaceL * 2
+    implicitHeight: content.implicitHeight + Metrics.spaceM * 2
     color: hover.hovered ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
-    topLeftRadius: first ? Metrics.radiusXL : Math.round(6 * Metrics.scale)
+    topLeftRadius: first ? Metrics.radiusL : Math.round(6 * Metrics.scale)
     topRightRadius: topLeftRadius
-    bottomLeftRadius: last ? Metrics.radiusXL : Math.round(6 * Metrics.scale)
+    bottomLeftRadius: last ? Metrics.radiusL : Math.round(6 * Metrics.scale)
     bottomRightRadius: bottomLeftRadius
 
     Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
@@ -42,7 +42,7 @@ Rectangle {
             left: parent.left
             right: parent.right
             top: parent.top
-            margins: Metrics.spaceL
+            margins: Metrics.spaceM
         }
         spacing: Metrics.spaceM
 
@@ -117,7 +117,7 @@ Rectangle {
                     ? (root.notification.summary || I18n.tr("notifications.notification")) : ""
                 color: Theme.text
                 font.family: Theme.fontFamily
-                font.pixelSize: Math.round(15 * Metrics.scale)
+                font.pixelSize: Math.round(14 * Metrics.scale)
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
             }
@@ -128,7 +128,7 @@ Rectangle {
                 textFormat: Text.PlainText
                 color: Theme.textMuted
                 font.family: Theme.fontFamily
-                font.pixelSize: Math.round(13 * Metrics.scale)
+                font.pixelSize: Math.round(12 * Metrics.scale)
                 wrapMode: Text.WordWrap
                 maximumLineCount: 2
                 elide: Text.ElideRight

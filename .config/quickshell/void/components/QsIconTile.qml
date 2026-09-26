@@ -11,10 +11,10 @@ Rectangle {
     property bool available: true
     signal clicked
 
-    implicitWidth: Math.round(76 * Metrics.scale)
-    implicitHeight: Math.round(64 * Metrics.scale)
+    implicitWidth: Math.round(64 * Metrics.scale)
+    implicitHeight: Math.round(52 * Metrics.scale)
     opacity: available ? 1 : 0.4
-    radius: tap.pressed ? Metrics.radiusS : (active ? height / 2 : Math.round(22 * Metrics.scale))
+    radius: tap.pressed ? Metrics.radiusS : (active ? height / 2 : Metrics.radiusM)
     color: active ? (hover.hovered ? Theme.accentStrong : Theme.accent)
         : (hover.hovered ? Theme.surfaceHover : Theme.surfaceContainerHighest)
 
@@ -34,7 +34,7 @@ Rectangle {
     MaterialIcon {
         anchors.centerIn: parent
         text: root.icon
-        size: Math.round(24 * Metrics.scale)
+        size: Math.round(22 * Metrics.scale)
         fill: root.active ? 1 : 0
         color: root.active ? Theme.accentInk : Theme.text
     }

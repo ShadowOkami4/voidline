@@ -7,7 +7,7 @@ import "../services"
 Rectangle {
     id: root
 
-    implicitHeight: Math.round(112 * Metrics.scale)
+    implicitHeight: Math.round(92 * Metrics.scale)
     radius: Metrics.radiusXL
     color: Theme.accentContainer
     clip: true
@@ -20,7 +20,7 @@ Rectangle {
         spacing: Metrics.spaceM
 
         RoundedImage {
-            Layout.preferredWidth: Math.round(80 * Metrics.scale)
+            Layout.preferredWidth: Math.round(64 * Metrics.scale)
             Layout.preferredHeight: Layout.preferredWidth
             radius: Metrics.radiusL
             source: MediaService.artwork
@@ -82,7 +82,7 @@ Rectangle {
                 onClicked: MediaService.previous()
             }
             Rectangle {
-                width: Math.round(56 * Metrics.scale)
+                width: Math.round(48 * Metrics.scale)
                 height: width
                 radius: playTap.pressed ? width / 2 : (MediaService.playing ? Metrics.radiusL : width / 2)
                 color: Theme.accent

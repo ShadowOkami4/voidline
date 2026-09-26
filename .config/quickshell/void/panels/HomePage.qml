@@ -16,7 +16,7 @@ Item {
     property bool split: false
     signal openPage(string page)
 
-    readonly property int qsWidth: Math.round(460 * Metrics.scale)
+    readonly property int qsWidth: Math.round(400 * Metrics.scale)
 
     function outputIcon() {
         if (AudioService.outputMuted || AudioService.outputVolume <= 0.001)
@@ -84,7 +84,7 @@ Item {
     RowLayout {
         anchors.fill: parent
         visible: root.split
-        spacing: Metrics.spaceXL
+        spacing: Metrics.spaceL
 
         Loader {
             Layout.fillWidth: true
@@ -132,7 +132,7 @@ Item {
         id: quickSettingsComponent
 
         ColumnLayout {
-            spacing: Metrics.spaceM
+            spacing: Metrics.spaceS
 
             // Header: large clock and date, then Settings / Lock / Power.
             RowLayout {
@@ -148,7 +148,7 @@ Item {
                         text: Qt.formatDateTime(clock.date, "hh:mm")
                         color: Theme.text
                         font.family: Appearance.clockFont
-                        font.pixelSize: Math.round(46 * Metrics.scale)
+                        font.pixelSize: Math.round(36 * Metrics.scale)
                         font.weight: Font.Medium
                         font.features: { "tnum": 1 }
                     }
@@ -164,7 +164,7 @@ Item {
                 }
 
                 QsIconTile {
-                    implicitWidth: Math.round(48 * Metrics.scale)
+                    implicitWidth: Math.round(42 * Metrics.scale)
                     implicitHeight: implicitWidth
                     icon: "settings"
                     accessibleName: I18n.tr("common.settings")
@@ -174,7 +174,7 @@ Item {
                     }
                 }
                 QsIconTile {
-                    implicitWidth: Math.round(48 * Metrics.scale)
+                    implicitWidth: Math.round(42 * Metrics.scale)
                     implicitHeight: implicitWidth
                     icon: "lock"
                     accessibleName: I18n.tr("actionCenter.lock")
@@ -184,7 +184,7 @@ Item {
                     }
                 }
                 QsIconTile {
-                    implicitWidth: Math.round(48 * Metrics.scale)
+                    implicitWidth: Math.round(42 * Metrics.scale)
                     implicitHeight: implicitWidth
                     icon: "power_settings_new"
                     accessibleName: I18n.tr("actionCenter.power")
@@ -309,7 +309,7 @@ Item {
                     Layout.fillWidth: true
                     icon: PowerService.profileMode === "performance" ? "bolt"
                         : (PowerService.profileMode === "saver" ? "eco" : "balance")
-                    title: I18n.tr("actionCenter.powerMode")
+                    title: I18n.tr("actionCenter.power")
                     subtitle: PowerService.available
                         ? PowerService.percentage + "% · " + root.powerModeLabel(PowerService.profileMode)
                         : root.powerModeLabel(PowerService.profileMode)
@@ -415,7 +415,7 @@ Item {
                     text: I18n.tr("actionCenter.notifications")
                     color: Theme.text
                     font.family: Theme.fontFamily
-                    font.pixelSize: Math.round(22 * Metrics.scale)
+                    font.pixelSize: Math.round(18 * Metrics.scale)
                     font.weight: Font.Bold
                     elide: Text.ElideRight
                 }

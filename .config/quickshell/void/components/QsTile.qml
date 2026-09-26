@@ -19,9 +19,9 @@ Rectangle {
 
     readonly property bool pressed: iconTap.pressed || bodyTap.pressed
 
-    implicitHeight: Math.round(76 * Metrics.scale)
+    implicitHeight: Math.round(64 * Metrics.scale)
     opacity: available ? 1 : 0.4
-    radius: pressed ? Metrics.radiusM : (active ? height / 2 : Metrics.radiusXL)
+    radius: pressed ? Metrics.radiusM : (active ? height / 2 : Metrics.radiusL)
     color: active
         ? (bodyHover.hovered ? Theme.accentStrong : Theme.accent)
         : (bodyHover.hovered ? Theme.surfaceHover : Theme.surfaceContainerHighest)
@@ -53,13 +53,13 @@ Rectangle {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: Math.round(10 * Metrics.scale)
+            leftMargin: Math.round(9 * Metrics.scale)
             rightMargin: Metrics.spaceL
         }
         spacing: Metrics.spaceM
 
         Rectangle {
-            Layout.preferredWidth: Math.round(56 * Metrics.scale)
+            Layout.preferredWidth: Math.round(46 * Metrics.scale)
             Layout.preferredHeight: Layout.preferredWidth
             radius: iconTap.pressed ? Metrics.radiusM : width / 2
             color: root.active ? Qt.darker(Theme.accent, Theme.darkMode ? 1.12 : 1.08)
@@ -76,7 +76,7 @@ Rectangle {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: root.icon
-                size: Math.round(24 * Metrics.scale)
+                size: Math.round(21 * Metrics.scale)
                 fill: root.active ? 1 : 0
                 color: root.active ? Theme.accentInk : Theme.text
             }
@@ -97,7 +97,7 @@ Rectangle {
                 text: root.title
                 color: root.active ? Theme.accentInk : Theme.text
                 font.family: Theme.fontFamily
-                font.pixelSize: Math.round(15 * Metrics.scale)
+                font.pixelSize: Math.round(14 * Metrics.scale)
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
             }
@@ -108,7 +108,7 @@ Rectangle {
                 color: root.active ? Theme.accentInk : Theme.textMuted
                 opacity: root.active ? 0.8 : 1
                 font.family: Theme.fontFamily
-                font.pixelSize: Math.round(12 * Metrics.scale)
+                font.pixelSize: Math.round(11 * Metrics.scale)
                 elide: Text.ElideRight
             }
         }
