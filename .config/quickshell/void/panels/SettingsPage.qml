@@ -240,12 +240,12 @@ FocusScope {
                                     font.weight: Font.DemiBold
                                 }
 
-                                Rectangle {
+                                // Material 3 Expressive segmented navigation:
+                                // each destination is its own segment and the
+                                // selected one morphs into a filled pill.
+                                Item {
                                     width: parent.width
-                                    height: navigationRows.implicitHeight + 8
-                                    radius: Theme.radiusLarge
-                                    color: Theme.groupSurface
-                                    clip: true
+                                    height: navigationRows.implicitHeight
 
                                     Column {
                                         id: navigationRows
@@ -253,9 +253,8 @@ FocusScope {
                                             left: parent.left
                                             right: parent.right
                                             top: parent.top
-                                            margins: 4
                                         }
-                                        spacing: 0
+                                        spacing: Metrics.segmentGap
 
                                         Repeater {
                                             model: navigationGroup.items
@@ -269,13 +268,38 @@ FocusScope {
 
                                                 Rectangle {
                                                     id: categoryButton
+                                                    readonly property bool selected:
+                                                        root.section === categoryItem.modelData.id
+                                                    readonly property bool first: categoryItem.index === 0
+                                                    readonly property bool last: categoryItem.index
+                                                        === navigationGroup.items.length - 1
+                                                    readonly property real outer: Metrics.cardRadius
+                                                    readonly property real inner: Metrics.segmentInnerRadius
                                                     anchors.fill: parent
-                                                    radius: Theme.radiusMedium
-                                                    color: root.section === categoryItem.modelData.id
+                                                    topLeftRadius: selected ? height / 2 : (first ? outer : inner)
+                                                    topRightRadius: topLeftRadius
+                                                    bottomLeftRadius: selected ? height / 2 : (last ? outer : inner)
+                                                    bottomRightRadius: bottomLeftRadius
+                                                    color: selected
                                                         ? Theme.accentContainer
                                                         : (categoryHover.hovered
-                                                            ? Theme.groupSurfaceRaised : "transparent")
+                                                            ? Theme.groupSurfaceRaised : Theme.groupSurface)
                                                     scale: categoryTap.pressed ? 0.985 : 1
+
+                                                    Behavior on topLeftRadius {
+                                                        NumberAnimation {
+                                                            duration: Motion.springFast
+                                                            easing.type: Easing.BezierSpline
+                                                            easing.bezierCurve: Motion.spatialFast
+                                                        }
+                                                    }
+                                                    Behavior on bottomLeftRadius {
+                                                        NumberAnimation {
+                                                            duration: Motion.springFast
+                                                            easing.type: Easing.BezierSpline
+                                                            easing.bezierCurve: Motion.spatialFast
+                                                        }
+                                                    }
 
                                                     RowLayout {
                                                         anchors {
@@ -288,13 +312,14 @@ FocusScope {
                                                         Rectangle {
                                                             Layout.preferredWidth: 36
                                                             Layout.preferredHeight: 36
-                                                            radius: 13
+                                                            radius: width / 2
                                                             color: root.toneContainer(categoryItem.modelData.tone)
 
                                                             MaterialIcon {
                                                                 anchors.centerIn: parent
                                                                 text: categoryItem.modelData.icon
                                                                 size: 19
+                                                                fill: categoryButton.selected ? 1 : 0
                                                                 color: root.toneColor(categoryItem.modelData.tone)
                                                             }
                                                         }
@@ -306,7 +331,8 @@ FocusScope {
                                                             Text {
                                                                 Layout.fillWidth: true
                                                                 text: categoryItem.modelData.title
-                                                                color: Theme.text
+                                                                color: categoryButton.selected
+                                                                    ? Theme.accentContainerInk : Theme.text
                                                                 font.family: Theme.fontFamily
                                                                 font.pixelSize: Metrics.appTextBody
                                                                 font.weight: root.section === categoryItem.modelData.id
@@ -344,19 +370,6 @@ FocusScope {
                                                     }
                                                 }
 
-                                                Rectangle {
-                                                    anchors {
-                                                        left: parent.left
-                                                        right: parent.right
-                                                        top: parent.top
-                                                        leftMargin: 55
-                                                        rightMargin: 12
-                                                    }
-                                                    height: 1
-                                                    visible: categoryItem.index > 0
-                                                        && root.section !== categoryItem.modelData.id
-                                                    color: Theme.divider
-                                                }
                                             }
                                         }
                                     }
@@ -428,7 +441,7 @@ FocusScope {
                         Rectangle {
                             Layout.preferredWidth: 48
                             Layout.preferredHeight: 48
-                            radius: 18
+                            radius: Metrics.radiusM
                             color: root.toneContainer(root.category().tone)
 
                             MaterialIcon {

@@ -690,6 +690,9 @@ PanelWindow {
                         Item { Layout.fillHeight: true }
                         RowLayout {
                             Layout.fillWidth: true
+                            // Nested layouts fill height by default; keep the
+                            // buttons at their intended size.
+                            Layout.fillHeight: false
                             Layout.preferredHeight: 54
                             spacing: 9
                             Rectangle {
