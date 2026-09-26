@@ -34,7 +34,7 @@ Rectangle {
     }
 
     ColumnLayout {
-        anchors { fill: parent; margins: Metrics.cardPadding }
+        anchors { fill: parent; margins: Metrics.spaceXL }
         spacing: Metrics.labelControlGap
 
         RowLayout {

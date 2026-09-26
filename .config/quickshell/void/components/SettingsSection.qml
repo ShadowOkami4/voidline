@@ -13,7 +13,9 @@ Column {
     property bool fullWidth: false
     // Plain sections skip the segmented row backgrounds, for content that
     // brings its own cards (for example the About tile grid).
-    property bool plain: false
+    // Pixel lists are flat: rows sit directly on the pane. Set plain: false
+    // to draw the segmented card backgrounds behind the rows instead.
+    property bool plain: true
     default property alias contentData: bodyColumn.data
 
     width: parent && parent.isSettingsMasonry
@@ -25,9 +27,10 @@ Column {
     Column {
         width: parent.width
         visible: root.title.length > 0
-        leftPadding: Metrics.spaceL
-        rightPadding: Metrics.spaceL
-        topPadding: Metrics.spaceS
+        // Aligns with row text: 24 px inset + 40 px icon column + 16 px gap.
+        leftPadding: Math.round(80 * Metrics.scale)
+        rightPadding: Metrics.spaceXL
+        topPadding: Metrics.spaceM
         bottomPadding: 2
         spacing: 2
 

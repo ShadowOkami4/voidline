@@ -10,8 +10,8 @@ Rectangle {
     property string subtitle: ""
     property bool checked: false
     property bool enabled: true
-    property color iconContainerColor: checked ? Theme.accentContainer : Theme.surfaceContainerHighest
-    property color iconContentColor: checked ? Theme.accentContainerInk : Theme.text
+    property color iconContainerColor: "transparent"
+    property color iconContentColor: Theme.textMuted
     signal toggled(bool checked)
 
     implicitHeight: subtitle.length > 0
@@ -24,7 +24,9 @@ Rectangle {
     Rectangle {
         id: hoverSurface
         anchors.fill: parent
-        radius: Metrics.segmentInnerRadius
+        anchors.leftMargin: Metrics.spaceS
+        anchors.rightMargin: Metrics.spaceS
+        radius: Metrics.radiusL
         color: hover.hovered && root.enabled
             ? Theme.withAlpha(Theme.text, 0.06) : "transparent"
         border.width: Appearance.focusIndicators && hover.hovered
@@ -36,8 +38,8 @@ Rectangle {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: Metrics.cardPadding
-            rightMargin: Metrics.cardPadding
+            leftMargin: Metrics.spaceXL
+            rightMargin: Metrics.spaceXL
         }
         spacing: Metrics.spaceM
 
@@ -50,7 +52,7 @@ Rectangle {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: root.icon
-                size: Metrics.iconM
+                size: Math.round(24 * Metrics.scale)
                 color: root.iconContentColor
             }
         }
@@ -63,8 +65,8 @@ Rectangle {
                 text: root.title
                 color: Theme.text
                 font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextBody
-                font.weight: Font.DemiBold
+                font.pixelSize: Metrics.appTextTitle
+                font.weight: Font.Normal
                 elide: Text.ElideRight
             }
             Text {
@@ -73,7 +75,7 @@ Rectangle {
                 visible: text.length > 0
                 color: Theme.textMuted
                 font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextCaption
+                font.pixelSize: Metrics.appTextBody
                 wrapMode: Text.WordWrap
                 maximumLineCount: 2
                 elide: Text.ElideRight

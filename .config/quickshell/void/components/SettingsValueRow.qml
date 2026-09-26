@@ -15,8 +15,8 @@ Item {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: Metrics.cardPadding
-            rightMargin: Metrics.cardPadding
+            leftMargin: Metrics.spaceXL
+            rightMargin: Metrics.spaceXL
         }
         spacing: Metrics.spaceM
 
@@ -28,7 +28,7 @@ Item {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: root.icon
-                size: Metrics.iconM
+                size: Math.round(24 * Metrics.scale)
                 color: root.iconColor
             }
         }
@@ -38,8 +38,8 @@ Item {
             text: root.title
             color: Theme.text
             font.family: Theme.fontFamily
-            font.pixelSize: Metrics.appTextBody
-            font.weight: Font.DemiBold
+            font.pixelSize: Metrics.appTextTitle
+            font.weight: Font.Normal
             elide: Text.ElideRight
         }
 

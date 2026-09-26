@@ -30,30 +30,12 @@
     }
   },
   "settings": {
-    "hero": {
-      "notConnected": "Nicht verbunden",
-      "wired": "Kabelverbindung",
-      "wifiOff": "WLAN ist aus",
-      "volume": "Lautstärke {value} %",
-      "muted": "Stumm",
-      "bluetoothOff": "Bluetooth ist aus",
-      "devicesConnected": "{count} verbunden",
-      "noDevices": "Keine Geräte verbunden",
-      "displays": "Bildschirme: {count}",
-      "dndOn": "Nicht stören ist an",
-      "notificationsCount": "Benachrichtigungen: {count}",
-      "upToDate": "Alles ist aktuell",
-      "updatesAvailable": "Verfügbare Updates: {count}",
-      "firewallOn": "Firewall ist aktiv",
-      "firewallOff": "Firewall ist aus",
+    "mainSwitch": {
+      "wifi": "WLAN verwenden",
+      "bluetooth": "Bluetooth verwenden",
+      "dnd": "Nicht stören",
       "darkTheme": "Dunkles Design",
-      "lightTheme": "Helles Design",
-      "autoTheme": "Automatisches Design",
-      "wallpaperColors": "Farben aus dem Hintergrundbild",
-      "accentColor": "Eigene Akzentfarbe",
-      "assistantOn": "Lyra ist an",
-      "assistantOff": "Lyra ist aus",
-      "account": "Dein Konto"
+      "assistant": "Lyra verwenden"
     },
     "windowTitle": "Voidline-Einstellungen",
     "groups": { "connected": "Verbindungen", "personal": "Persönlich", "system": "System" },

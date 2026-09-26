@@ -84,76 +84,47 @@ FocusScope {
         return hue === undefined ? Theme.seed.hslHue : hue
     }
 
+    // Pixel uses pastel icon circles in dark mode and saturated ones in light.
     function categoryContainer(id) {
-        return Qt.hsla(categoryHue(id), 0.42, Theme.darkMode ? 0.3 : 0.86, 1)
+        return Qt.hsla(categoryHue(id), 0.45, Theme.darkMode ? 0.74 : 0.42, 1)
     }
 
     function categoryInk(id) {
-        return Qt.hsla(categoryHue(id), 0.6, Theme.darkMode ? 0.86 : 0.24, 1)
+        return Theme.darkMode ? Qt.hsla(categoryHue(id), 0.5, 0.12, 1) : "#FFFFFF"
     }
 
-    function heroInfo(id) {
-        const fallback = category()
+    // Categories whose page is governed by one master toggle show a Pixel
+    // "main switch" bar above their settings.
+    function mainSwitchInfo(id) {
         switch (id) {
         case "connections":
-            if (ConnectivityService.ethernetConnected)
-                return { icon: "lan", title: I18n.tr("settings.hero.wired"), subtitle: ConnectivityService.activeNetworkLabel || "", active: true }
-            if (ConnectivityService.wifiConnected)
-                return { icon: "wifi", title: ConnectivityService.wifiSsid || fallback.title,
-                    subtitle: ConnectivityService.activeNetworkLabel || "", active: true }
-            return { icon: ConnectivityService.wifiEnabled ? "wifi_find" : "wifi_off",
-                title: ConnectivityService.wifiEnabled ? I18n.tr("settings.hero.notConnected") : I18n.tr("settings.hero.wifiOff"),
-                subtitle: fallback.subtitle, active: false }
-        case "audio":
-            return { icon: AudioService.outputMuted ? "volume_off" : "volume_up",
-                title: AudioService.outputLabel || fallback.title,
-                subtitle: AudioService.outputMuted ? I18n.tr("settings.hero.muted")
-                    : I18n.tr("settings.hero.volume", { value: Math.round(Number(AudioService.outputVolume || 0) * 100) }),
-                active: !AudioService.outputMuted }
-        case "devices": {
-            const count = Number(ConnectivityService.connectedBluetoothDevices || 0)
-            return { icon: ConnectivityService.bluetoothEnabled ? "bluetooth_connected" : "bluetooth_disabled",
-                title: !ConnectivityService.bluetoothEnabled ? I18n.tr("settings.hero.bluetoothOff")
-                    : (count > 0 ? I18n.tr("settings.hero.devicesConnected", { count: count }) : I18n.tr("settings.hero.noDevices")),
-                subtitle: fallback.subtitle, active: ConnectivityService.bluetoothEnabled && count > 0 }
-        }
+            return { title: I18n.tr("settings.mainSwitch.wifi"), checked: ConnectivityService.wifiEnabled,
+                available: ConnectivityService.wifiAvailable }
+        case "devices":
+            return { title: I18n.tr("settings.mainSwitch.bluetooth"), checked: ConnectivityService.bluetoothEnabled,
+                available: ConnectivityService.bluetoothAvailable }
         case "notifications":
-            return { icon: NotificationService.doNotDisturb ? "do_not_disturb_on" : "notifications_active",
-                title: NotificationService.doNotDisturb ? I18n.tr("settings.hero.dndOn")
-                    : I18n.tr("settings.hero.notificationsCount", { count: NotificationService.count || 0 }),
-                subtitle: fallback.subtitle, active: !NotificationService.doNotDisturb }
-        case "display":
-            return { icon: "desktop_windows",
-                title: I18n.tr("settings.hero.displays", { count: Math.max(1, (SystemSettingsService.monitors || []).length) }),
-                subtitle: fallback.subtitle, active: true }
+            return { title: I18n.tr("settings.mainSwitch.dnd"), checked: NotificationService.doNotDisturb, available: true }
         case "appearance":
-            return { icon: Theme.darkMode ? "dark_mode" : "light_mode",
-                title: Appearance.colorMode === "auto" ? I18n.tr("settings.hero.autoTheme")
-                    : (Appearance.colorMode === "light" ? I18n.tr("settings.hero.lightTheme") : I18n.tr("settings.hero.darkTheme")),
-                subtitle: Appearance.magicColors ? I18n.tr("settings.hero.wallpaperColors") : I18n.tr("settings.hero.accentColor"),
-                active: true }
-        case "security":
-            return { icon: SecurityService.firewallEnabled ? "shield_lock" : "shield",
-                title: SecurityService.firewallEnabled ? I18n.tr("settings.hero.firewallOn") : I18n.tr("settings.hero.firewallOff"),
-                subtitle: fallback.subtitle, active: SecurityService.firewallEnabled }
-        case "updates":
-            return { icon: UpdateService.count > 0 ? "system_update" : "verified",
-                title: UpdateService.count > 0
-                    ? I18n.tr("settings.hero.updatesAvailable", { count: UpdateService.count }) : I18n.tr("settings.hero.upToDate"),
-                subtitle: fallback.subtitle, active: UpdateService.count > 0 }
+            return { title: I18n.tr("settings.mainSwitch.darkTheme"), checked: Theme.darkMode, available: true }
         case "assistant":
-            return { icon: "neurology",
-                title: AssistantService.assistantEnabled ? I18n.tr("settings.hero.assistantOn") : I18n.tr("settings.hero.assistantOff"),
-                subtitle: fallback.subtitle, active: AssistantService.assistantEnabled }
-        case "system":
-            return { icon: "computer",
-                title: SettingsService.hostName || fallback.title,
-                subtitle: [SettingsService.osName, SettingsService.voidlineVersion
-                    ? "Voidline " + SettingsService.voidlineVersion : ""].filter(Boolean).join(" · "),
-                active: true }
+            return { title: I18n.tr("settings.mainSwitch.assistant"), checked: AssistantService.assistantEnabled, available: true }
         default:
-            return { icon: fallback.icon, title: fallback.title, subtitle: fallback.subtitle, active: false }
+            return null
         }
+    }
+
+    function setMainSwitch(id, checked) {
+        if (id === "connections")
+            ConnectivityService.setWifiEnabled(checked)
+        else if (id === "devices" && checked !== ConnectivityService.bluetoothEnabled)
+            ConnectivityService.toggleBluetooth()
+        else if (id === "notifications")
+            NotificationService.setDoNotDisturb(checked)
+        else if (id === "appearance")
+            Appearance.setColorMode(checked ? "dark" : "light")
+        else if (id === "assistant")
+            AssistantService.setAssistantEnabled(checked)
     }
 
     function closeOrBack() {
@@ -212,12 +183,13 @@ FocusScope {
         event.accepted = true
     }
 
-    // Android 16 style Settings: a navigation pane with a large title, pill
-    // search, and coloured category icons; a rounded detail pane with a large
-    // title and a status hero card above the category's grouped settings.
+    // Pixel style Settings: a flat navigation list with pastel category
+    // icons and a pill for the open page, and a detail pane with a large
+    // regular-weight title, an optional main switch, and flat preference
+    // rows under accent-coloured section labels.
     Rectangle {
         anchors.fill: parent
-        color: Theme.surfaceContainerLow
+        color: Theme.surfaceContainer
     }
 
     RowLayout {
@@ -234,10 +206,10 @@ FocusScope {
             ColumnLayout {
                 anchors {
                     fill: parent
-                    leftMargin: root.wideNavigation ? 20 : 28
-                    rightMargin: root.wideNavigation ? 16 : 28
-                    topMargin: 24
-                    bottomMargin: 18
+                    leftMargin: Metrics.spaceL
+                    rightMargin: root.wideNavigation ? Metrics.spaceS : Metrics.spaceL
+                    topMargin: Metrics.spaceL
+                    bottomMargin: Metrics.spaceL
                 }
                 spacing: Metrics.spaceL
 
@@ -245,40 +217,29 @@ FocusScope {
                     Layout.fillWidth: true
                     spacing: Metrics.spaceS
 
-                    Text {
+                    SettingsSearchField {
                         Layout.fillWidth: true
-                        Layout.leftMargin: Metrics.spaceS
-                        text: I18n.tr("settings.title")
-                        color: Theme.text
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Math.round(40 * Metrics.scale)
-                        font.weight: Font.DemiBold
-                        font.variableAxes: ({ "wght": 600, "wdth": 105, "opsz": 40 })
-                        elide: Text.ElideRight
+                        placeholder: I18n.tr("settings.search")
+                        showAvatar: true
+                        onAvatarClicked: ShellState.openSettings("system")
+                        onTextChanged: root.searchText = text
+                        onAccepted: {
+                            for (let group = 0; group < root.navigationGroups.length; ++group) {
+                                const results = root.visibleCategories(root.navigationGroups[group].id)
+                                if (results.length > 0) {
+                                    ShellState.openSettings(results[0].id)
+                                    return
+                                }
+                            }
+                        }
                     }
 
                     IconButton {
+                        visible: !root.wideNavigation
                         icon: "close"
                         size: Math.round(44 * Metrics.scale)
                         accessibleName: I18n.tr("common.close")
                         onClicked: root.back()
-                    }
-                }
-
-                SettingsSearchField {
-                    Layout.fillWidth: true
-                    placeholder: I18n.tr("settings.search")
-                    showAvatar: true
-                    onAvatarClicked: ShellState.openSettings("system")
-                    onTextChanged: root.searchText = text
-                    onAccepted: {
-                        for (let group = 0; group < root.navigationGroups.length; ++group) {
-                            const results = root.visibleCategories(root.navigationGroups[group].id)
-                            if (results.length > 0) {
-                                ShellState.openSettings(results[0].id)
-                                return
-                            }
-                        }
                     }
                 }
 
@@ -293,7 +254,7 @@ FocusScope {
                     Column {
                         id: navigationContent
                         width: parent.width
-                        spacing: Metrics.spaceL
+                        spacing: Metrics.spaceM
 
                         Repeater {
                             model: root.navigationGroups
@@ -304,62 +265,34 @@ FocusScope {
                                 readonly property var items: root.visibleCategories(modelData.id)
                                 width: navigationContent.width
                                 visible: items.length > 0
-                                spacing: Metrics.segmentGap
+                                spacing: 0
 
                                 Repeater {
                                     model: navigationGroup.items
 
                                     Rectangle {
                                         id: categoryButton
-                                        required property int index
                                         required property var modelData
                                         readonly property bool selected: root.section === modelData.id
-                                        readonly property bool first: index === 0
-                                        readonly property bool last: index === navigationGroup.items.length - 1
-                                        readonly property real outer: Metrics.cardRadius
-                                        readonly property real inner: Metrics.segmentInnerRadius
 
                                         width: navigationGroup.width
                                         height: Math.round(72 * Metrics.scale)
-                                        topLeftRadius: selected ? height / 2 : (first ? outer : inner)
-                                        topRightRadius: topLeftRadius
-                                        bottomLeftRadius: selected ? height / 2 : (last ? outer : inner)
-                                        bottomRightRadius: bottomLeftRadius
-                                        color: selected ? Theme.accentContainer
-                                            : (categoryHover.hovered ? Theme.surfaceContainerHighest
-                                                : Theme.surfaceContainerHigh)
-                                        scale: categoryTap.pressed ? 0.985 : 1
+                                        radius: height / 2
+                                        color: selected ? Theme.secondaryContainer
+                                            : (categoryHover.hovered ? Theme.withAlpha(Theme.text, 0.06) : "transparent")
+                                        Accessible.role: Accessible.PageTab
+                                        Accessible.name: modelData.title
+                                        Accessible.selected: selected
 
-                                        Behavior on topLeftRadius {
-                                            NumberAnimation {
-                                                duration: Motion.springFast
-                                                easing.type: Easing.BezierSpline
-                                                easing.bezierCurve: Motion.spatialFast
-                                            }
-                                        }
-                                        Behavior on bottomLeftRadius {
-                                            NumberAnimation {
-                                                duration: Motion.springFast
-                                                easing.type: Easing.BezierSpline
-                                                easing.bezierCurve: Motion.spatialFast
-                                            }
-                                        }
                                         Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
-                                        Behavior on scale {
-                                            NumberAnimation {
-                                                duration: Motion.springFast
-                                                easing.type: Easing.BezierSpline
-                                                easing.bezierCurve: Motion.spatialFast
-                                            }
-                                        }
 
                                         RowLayout {
                                             anchors {
                                                 fill: parent
-                                                leftMargin: Metrics.spaceM
+                                                leftMargin: Metrics.spaceL
                                                 rightMargin: Metrics.spaceL
                                             }
-                                            spacing: Metrics.spaceM
+                                            spacing: Metrics.spaceL
 
                                             Rectangle {
                                                 Layout.preferredWidth: Math.round(40 * Metrics.scale)
@@ -370,7 +303,7 @@ FocusScope {
                                                 MaterialIcon {
                                                     anchors.centerIn: parent
                                                     text: categoryButton.modelData.icon
-                                                    size: Math.round(21 * Metrics.scale)
+                                                    size: Math.round(22 * Metrics.scale)
                                                     fill: 1
                                                     color: root.categoryInk(categoryButton.modelData.id)
                                                 }
@@ -384,20 +317,19 @@ FocusScope {
                                                     Layout.fillWidth: true
                                                     text: categoryButton.modelData.title
                                                     color: categoryButton.selected
-                                                        ? Theme.accentContainerInk : Theme.text
+                                                        ? Theme.secondaryContainerInk : Theme.text
                                                     font.family: Theme.fontFamily
                                                     font.pixelSize: Metrics.appTextTitle
-                                                    font.weight: categoryButton.selected ? Font.DemiBold : Font.Medium
+                                                    font.weight: Font.Medium
                                                     elide: Text.ElideRight
                                                 }
                                                 Text {
                                                     Layout.fillWidth: true
                                                     text: categoryButton.modelData.subtitle
                                                     color: categoryButton.selected
-                                                        ? Theme.accentContainerInk : Theme.textMuted
-                                                    opacity: categoryButton.selected ? 0.8 : 1
+                                                        ? Theme.secondaryContainerInk : Theme.textMuted
                                                     font.family: Theme.fontFamily
-                                                    font.pixelSize: Metrics.appTextSupporting
+                                                    font.pixelSize: Metrics.appTextBody
                                                     elide: Text.ElideRight
                                                 }
                                             }
@@ -408,7 +340,6 @@ FocusScope {
                                             cursorShape: Qt.PointingHandCursor
                                         }
                                         TapHandler {
-                                            id: categoryTap
                                             onTapped: ShellState.openSettings(categoryButton.modelData.id)
                                         }
                                     }
@@ -442,7 +373,7 @@ FocusScope {
             Layout.bottomMargin: root.wideNavigation ? Metrics.spaceM : 0
             Layout.rightMargin: root.wideNavigation ? Metrics.spaceM : 0
             radius: root.wideNavigation ? Metrics.radiusXL : 0
-            color: Theme.surfaceContainer
+            color: Theme.background
 
             ColumnLayout {
                 anchors.fill: parent
@@ -450,11 +381,11 @@ FocusScope {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.leftMargin: root.wideNavigation ? 32 : 20
-                    Layout.rightMargin: 20
-                    Layout.topMargin: 24
+                    Layout.leftMargin: root.wideNavigation ? Metrics.spaceXL : Metrics.spaceS
+                    Layout.rightMargin: Metrics.spaceM
+                    Layout.topMargin: Math.round(28 * Metrics.scale)
                     Layout.bottomMargin: Metrics.spaceL
-                    spacing: Metrics.spaceM
+                    spacing: Metrics.spaceS
 
                     IconButton {
                         visible: !root.wideNavigation
@@ -470,8 +401,7 @@ FocusScope {
                         color: Theme.text
                         font.family: Theme.fontFamily
                         font.pixelSize: Math.round(34 * Metrics.scale)
-                        font.weight: Font.DemiBold
-                        font.variableAxes: ({ "wght": 600, "wdth": 105, "opsz": 34 })
+                        font.weight: Font.Normal
                         elide: Text.ElideRight
                     }
 
@@ -488,14 +418,20 @@ FocusScope {
                             ConnectivityService.refreshWifi()
                         }
                     }
+
+                    IconButton {
+                        visible: root.wideNavigation
+                        icon: "close"
+                        size: Math.round(44 * Metrics.scale)
+                        accessibleName: I18n.tr("common.close")
+                        onClicked: root.back()
+                    }
                 }
 
                 Flickable {
                     id: detailFlick
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.leftMargin: root.wideNavigation ? 28 : 18
-                    Layout.rightMargin: root.wideNavigation ? 28 : 18
                     contentWidth: width
                     contentHeight: pageFrame.height
                     clip: true
@@ -512,68 +448,53 @@ FocusScope {
                             width: Math.min(parent.width, Metrics.settingsContentMax)
                             spacing: Metrics.settingsSectionGap
 
-                            // Hero: the category's live status at a glance.
+                            // Pixel "main switch" bar for categories with one
+                            // master toggle (Use Wi-Fi, Use Bluetooth, …).
                             Rectangle {
-                                id: hero
-                                readonly property var info: root.heroInfo(root.section)
-                                width: parent.width
-                                height: Math.round(120 * Metrics.scale)
-                                radius: Metrics.radiusXL
-                                color: info.active ? Theme.accentContainer : Theme.surfaceContainerHigh
-                                visible: root.section !== "home"
+                                id: mainSwitch
+                                readonly property var info: root.mainSwitchInfo(root.section)
+                                visible: info !== null
+                                x: Metrics.spaceXL
+                                width: parent.width - Metrics.spaceXL * 2
+                                height: visible ? Math.round(72 * Metrics.scale) : 0
+                                radius: height / 2
+                                color: info && info.checked ? Theme.accentContainer : Theme.surfaceContainerHigh
+                                opacity: info && info.available === false ? 0.5 : 1
+                                Accessible.role: Accessible.CheckBox
+                                Accessible.name: info ? info.title : ""
+                                Accessible.checked: info ? info.checked : false
 
                                 Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
 
                                 RowLayout {
                                     anchors {
                                         fill: parent
-                                        leftMargin: Metrics.spaceL
+                                        leftMargin: Math.round(28 * Metrics.scale)
                                         rightMargin: Metrics.spaceXL
                                     }
-                                    spacing: Metrics.spaceL
 
-                                    Rectangle {
-                                        Layout.preferredWidth: Math.round(80 * Metrics.scale)
-                                        Layout.preferredHeight: Layout.preferredWidth
-                                        radius: width / 2
-                                        color: hero.info.active ? Theme.accent
-                                            : root.categoryContainer(root.section)
-
-                                        MaterialIcon {
-                                            anchors.centerIn: parent
-                                            text: hero.info.icon
-                                            size: Math.round(38 * Metrics.scale)
-                                            fill: 1
-                                            color: hero.info.active ? Theme.accentInk
-                                                : root.categoryInk(root.section)
-                                        }
-                                    }
-
-                                    ColumnLayout {
+                                    Text {
                                         Layout.fillWidth: true
-                                        spacing: 2
-
-                                        Text {
-                                            Layout.fillWidth: true
-                                            text: hero.info.title
-                                            color: hero.info.active ? Theme.accentContainerInk : Theme.text
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: Math.round(24 * Metrics.scale)
-                                            font.weight: Font.Bold
-                                            elide: Text.ElideRight
-                                        }
-                                        Text {
-                                            Layout.fillWidth: true
-                                            text: hero.info.subtitle
-                                            visible: text.length > 0
-                                            color: hero.info.active ? Theme.accentContainerInk : Theme.textMuted
-                                            opacity: hero.info.active ? 0.82 : 1
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: Metrics.appTextBody
-                                            elide: Text.ElideRight
-                                        }
+                                        text: mainSwitch.info ? mainSwitch.info.title : ""
+                                        color: mainSwitch.info && mainSwitch.info.checked
+                                            ? Theme.accentContainerInk : Theme.text
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Math.round(20 * Metrics.scale)
+                                        font.weight: Font.Normal
+                                        elide: Text.ElideRight
+                                    }
+                                    ToggleSwitch {
+                                        checked: mainSwitch.info ? mainSwitch.info.checked : false
+                                        enabled: mainSwitch.info ? mainSwitch.info.available !== false : false
+                                        onToggled: checked => root.setMainSwitch(root.section, checked)
                                     }
                                 }
+
+                                TapHandler {
+                                    enabled: mainSwitch.info && mainSwitch.info.available !== false
+                                    onTapped: root.setMainSwitch(root.section, !mainSwitch.info.checked)
+                                }
+                                HoverHandler { cursorShape: Qt.PointingHandCursor }
                             }
 
                             Loader {

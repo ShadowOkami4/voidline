@@ -29,8 +29,8 @@ Rectangle {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: Metrics.cardPadding
-            rightMargin: Metrics.cardPadding
+            leftMargin: Metrics.spaceXL
+            rightMargin: Metrics.spaceXL
         }
         spacing: Metrics.spaceM
 
@@ -60,8 +60,8 @@ Rectangle {
                 text: root.title
                 color: Theme.text
                 font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextBody
-                font.weight: Font.DemiBold
+                font.pixelSize: Metrics.appTextTitle
+                font.weight: Font.Normal
                 elide: Text.ElideRight
             }
             Text {
@@ -69,7 +69,7 @@ Rectangle {
                 text: root.subtitle
                 color: Theme.textMuted
                 font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextCaption
+                font.pixelSize: Metrics.appTextBody
                 wrapMode: Text.WordWrap
                 maximumLineCount: 2
                 elide: Text.ElideRight

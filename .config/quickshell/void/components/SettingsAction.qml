@@ -12,8 +12,8 @@ Rectangle {
     property bool active: false
     property bool enabled: true
     property bool interactive: true
-    property color iconContainerColor: active ? Theme.accent : Theme.surfaceContainerHighest
-    property color iconContentColor: active ? Theme.accentInk : Theme.text
+    property color iconContainerColor: "transparent"
+    property color iconContentColor: active ? Theme.accent : Theme.textMuted
     signal clicked
 
     implicitHeight: subtitle.length > 0
@@ -29,7 +29,9 @@ Rectangle {
 
     Rectangle {
         anchors.fill: parent
-        radius: Metrics.segmentInnerRadius
+        anchors.leftMargin: Metrics.spaceS
+        anchors.rightMargin: Metrics.spaceS
+        radius: Metrics.radiusL
         color: root.active ? Theme.accentContainer
             : (hover.hovered && root.enabled && root.interactive
                 ? Theme.withAlpha(Theme.text, 0.06) : "transparent")
@@ -43,8 +45,8 @@ Rectangle {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: Metrics.cardPadding
-            rightMargin: Metrics.cardPadding
+            leftMargin: Metrics.spaceXL
+            rightMargin: Metrics.spaceXL
         }
         spacing: Metrics.spaceM
 
@@ -57,7 +59,7 @@ Rectangle {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: root.icon
-                size: Metrics.iconM
+                size: Math.round(24 * Metrics.scale)
                 color: root.iconContentColor
             }
         }
@@ -71,8 +73,8 @@ Rectangle {
                 text: root.title
                 color: Theme.text
                 font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextBody
-                font.weight: Font.DemiBold
+                font.pixelSize: Metrics.appTextTitle
+                font.weight: Font.Normal
                 elide: Text.ElideRight
             }
 
@@ -82,7 +84,7 @@ Rectangle {
                 visible: text.length > 0
                 color: Theme.textMuted
                 font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextCaption
+                font.pixelSize: Metrics.appTextBody
                 wrapMode: Text.WordWrap
                 maximumLineCount: 2
                 elide: Text.ElideRight
@@ -102,7 +104,7 @@ Rectangle {
             text: "chevron_right"
             size: 19
             color: Theme.textMuted
-            visible: root.interactive
+            visible: false
         }
     }
 

@@ -72,7 +72,7 @@ Item {
         color: Theme.text
         font.family: Theme.fontFamily
         font.pixelSize: Metrics.textTitle
-        font.weight: Font.Bold
+        font.weight: Font.Medium
         elide: Text.ElideRight
     }
 

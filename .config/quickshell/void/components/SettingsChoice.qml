@@ -26,7 +26,7 @@ Rectangle {
     ColumnLayout {
         anchors {
             fill: parent
-            margins: Metrics.cardPadding
+            margins: Metrics.spaceXL
         }
         spacing: Metrics.labelControlGap
 
@@ -42,7 +42,7 @@ Rectangle {
                     color: Theme.text
                     font.family: Theme.fontFamily
                     font.pixelSize: Metrics.appTextTitle
-                    font.weight: Font.DemiBold
+                    font.weight: Font.Normal
                     elide: Text.ElideRight
                 }
                 Text {

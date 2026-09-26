@@ -30,7 +30,7 @@ Rectangle {
     ColumnLayout {
         anchors {
             fill: parent
-            margins: Metrics.cardPadding
+            margins: Metrics.spaceXL
         }
         spacing: Metrics.spaceS
 
@@ -46,7 +46,7 @@ Rectangle {
                 MaterialIcon {
                     anchors.centerIn: parent
                     text: root.icon
-                    size: Metrics.iconM
+                    size: Math.round(24 * Metrics.scale)
                     color: field.activeFocus ? Theme.accent : Theme.textMuted
                 }
                 Behavior on color { ColorAnimation { duration: Motion.fast } }
@@ -59,8 +59,8 @@ Rectangle {
                     text: root.title
                     color: Theme.text
                     font.family: Theme.fontFamily
-                    font.pixelSize: Metrics.appTextBody
-                    font.weight: Font.DemiBold
+                    font.pixelSize: Metrics.appTextTitle
+                    font.weight: Font.Normal
                     elide: Text.ElideRight
                 }
                 Text {

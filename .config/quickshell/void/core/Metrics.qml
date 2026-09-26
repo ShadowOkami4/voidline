@@ -90,7 +90,7 @@ QtObject {
     // while Settings and Lyra use these tokens to stay readable on a desktop.
     readonly property int appTextCaption: Math.round(12 * scale)
     readonly property int appTextSupporting: Math.round(13 * scale)
-    readonly property int appTextBody: Math.round(15 * scale)
+    readonly property int appTextBody: Math.round(14 * scale)
     readonly property int appTextTitle: Math.round(16 * scale)
     readonly property int appTextHeader: Math.round(30 * scale)
 
