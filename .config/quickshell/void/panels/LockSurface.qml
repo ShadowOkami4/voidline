@@ -64,8 +64,10 @@ FocusScope {
 
     LockClock {
         id: lockClock
-        width: Math.min(660, root.width - 40)
-        height: Math.min(280, root.height * 0.32)
+        width: Appearance.lockClockStyle === "pixel"
+            ? Math.min(560, root.width * 0.45) : Math.min(660, root.width - 40)
+        height: Appearance.lockClockStyle === "pixel"
+            ? Math.min(560, root.height * 0.62) : Math.min(280, root.height * 0.32)
         x: root.lockSafeLeft + Math.max(0, root.lockSafeWidth - width)
             * Appearance.lockClockX
         y: root.lockSafeTop + Math.max(0, root.lockSafeHeight - height)
@@ -78,11 +80,14 @@ FocusScope {
     // that morphs while authentication runs.
     Item {
         id: unlockCard
-        anchors {
-            horizontalCenter: parent.horizontalCenter
-            bottom: parent.bottom
-            bottomMargin: Math.max(56, parent.height * 0.1)
-        }
+        // With the clock on the left (the Pixel layout) the unlock column
+        // takes the right side of the screen; otherwise it sits at the bottom.
+        readonly property bool sideLayout: Appearance.lockClockX < 0.4
+            && root.width >= Math.round(1000 * Metrics.scale)
+        x: sideLayout ? root.width - width - Math.max(48, root.width * 0.08)
+            : (root.width - width) / 2
+        y: sideLayout ? (root.height - height) / 2
+            : root.height - height - Math.max(56, root.height * 0.1)
         width: Math.min(Math.round(420 * Metrics.scale), parent.width - 48)
         height: unlockColumn.implicitHeight
 
@@ -288,6 +293,81 @@ FocusScope {
 
                 Behavior on opacity { NumberAnimation { duration: Motion.effectsFastDuration } }
             }
+        }
+    }
+
+    // Pending notifications, shown as app glyphs under the clock area.
+    Row {
+        anchors {
+            left: parent.left
+            bottom: parent.bottom
+            leftMargin: lockClock.x + Math.round(10 * Metrics.scale)
+            bottomMargin: Math.round(120 * Metrics.scale)
+        }
+        visible: NotificationService.count > 0 && !Appearance.doNotDisturb
+        spacing: Metrics.spaceS
+
+        Repeater {
+            model: Math.min(4, NotificationService.count)
+
+            Rectangle {
+                width: Math.round(40 * Metrics.scale)
+                height: width
+                radius: width / 2
+                color: Theme.withAlpha(Theme.surfaceContainerHighest, 0.85)
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    text: "notifications"
+                    size: Math.round(20 * Metrics.scale)
+                    fill: 1
+                }
+            }
+        }
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            leftPadding: Metrics.spaceXS
+            text: I18n.tr("actionCenter.notifications") + " · " + NotificationService.count
+            color: "white"
+            font.family: Theme.fontFamily
+            font.pixelSize: Math.round(14 * Metrics.scale)
+            font.weight: Font.DemiBold
+        }
+    }
+
+    // Corner shortcut: suspend without unlocking.
+    Rectangle {
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+            margins: Math.round(40 * Metrics.scale)
+        }
+        width: Math.round(64 * Metrics.scale)
+        height: width
+        radius: sleepTap.pressed ? Metrics.radiusL : width / 2
+        color: Theme.withAlpha(Theme.surfaceContainerHighest, sleepHover.hovered ? 0.95 : 0.8)
+        Accessible.role: Accessible.Button
+        Accessible.name: I18n.tr("power.sleep")
+
+        Behavior on radius {
+            NumberAnimation {
+                duration: Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Motion.spatialFast
+            }
+        }
+        MaterialIcon {
+            anchors.centerIn: parent
+            text: "bedtime"
+            size: Math.round(26 * Metrics.scale)
+        }
+        HoverHandler {
+            id: sleepHover
+            cursorShape: Qt.PointingHandCursor
+        }
+        TapHandler {
+            id: sleepTap
+            onTapped: SystemActionService.performSessionAction("suspend")
         }
     }
 

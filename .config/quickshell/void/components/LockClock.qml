@@ -124,11 +124,78 @@ Item {
         }
     }
 
+    // Pixel (Android 16) lock clock: chunky stacked hours and minutes,
+    // left-aligned, with the hour tinted from the scheme and the date and
+    // weather underneath.
+    Column {
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        visible: root.style === "pixel"
+        spacing: Math.round(10 * root.renderScale)
+
+        Column {
+            spacing: Math.round(-62 * root.renderScale * root.clockScale)
+
+            Text {
+                text: Qt.formatDateTime(root.date, "hh")
+                color: root.colorMode === "wallpaper"
+                    ? Qt.hsla(Theme.accent.hslHue, Math.min(0.55, Theme.accent.hslSaturation + 0.1),
+                        Theme.darkMode ? 0.86 : 0.35, 1)
+                    : root.secondaryColor
+                font.family: root.clockFont
+                font.pixelSize: Math.round(200 * root.renderScale * root.clockScale)
+                font.letterSpacing: root.characterSpacing * 3
+                font.variableAxes: { "wght": root.clockWeight, "wdth": 112, "opsz": 144 }
+                lineHeight: 0.82
+            }
+            Text {
+                text: Qt.formatDateTime(root.date, "mm")
+                color: root.primaryColor
+                font.family: root.clockFont
+                font.pixelSize: Math.round(200 * root.renderScale * root.clockScale)
+                font.letterSpacing: root.characterSpacing * 3
+                font.variableAxes: { "wght": root.clockWeight, "wdth": 112, "opsz": 144 }
+                lineHeight: 0.82
+            }
+        }
+
+        Text {
+            leftPadding: Math.round(10 * root.renderScale)
+            visible: root.showDate && root.datePlacement !== "hidden"
+            text: root.dateText
+            color: root.primaryColor
+            font.family: Theme.fontFamily
+            font.pixelSize: Math.round(22 * root.renderScale)
+            font.weight: Font.DemiBold
+        }
+        Row {
+            leftPadding: Math.round(10 * root.renderScale)
+            visible: root.showWeather && root.weatherText.length > 0
+            spacing: Math.round(8 * root.renderScale)
+
+            MaterialIcon {
+                visible: root.showWeatherIcon && WeatherService.available
+                text: WeatherService.available
+                    ? WeatherService.iconForCode(WeatherService.weather.weather_code) : ""
+                size: Math.round(22 * root.renderScale)
+                fill: 1
+                color: root.primaryColor
+            }
+            Text {
+                text: root.weatherText
+                color: root.primaryColor
+                opacity: 0.9
+                font.family: Theme.fontFamily
+                font.pixelSize: Math.round(18 * root.renderScale)
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         width: Math.min(parent.width, 620)
         spacing: root.style === "minimal" ? 7 : 2
-        visible: root.style !== "analog"
+        visible: root.style !== "analog" && root.style !== "pixel"
 
         Text {
             Layout.alignment: Qt.AlignHCenter

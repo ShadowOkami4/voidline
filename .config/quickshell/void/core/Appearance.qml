@@ -53,9 +53,9 @@ QtObject {
     property bool largePointer: false
     property bool focusIndicators: false
     property bool visualAlerts: false
-    property string lockClockStyle: "digital-large"
+    property string lockClockStyle: "pixel"
     property string lockClockFont: "Roboto Flex"
-    property int lockClockWeight: 760
+    property int lockClockWeight: 780
     property real lockClockSize: 1.0
     property real lockClockSpacing: -2
     property string lockDatePlacement: "below"
@@ -69,8 +69,8 @@ QtObject {
     property string lockClockColorMode: "wallpaper"
     property string lockClockColor1: "#FFFFFF"
     property string lockClockColor2: "#B8D8D0"
-    property real lockClockX: 0.5
-    property real lockClockY: 0.12
+    property real lockClockX: 0.04
+    property real lockClockY: 0.14
     property var automaticClock: SystemClock {
         precision: SystemClock.Minutes
     }
@@ -138,12 +138,12 @@ QtObject {
                 : (data.lockClockStyle === "compact" ? "digital-compact"
                     : data.lockClockStyle)
             root.lockClockStyle = [
-                "digital-large", "digital-compact", "stacked", "horizontal",
+                "pixel", "digital-large", "digital-compact", "stacked", "horizontal",
                 "minimal", "analog", "playful"
-            ].indexOf(legacyClock) >= 0 ? legacyClock : "digital-large"
+            ].indexOf(legacyClock) >= 0 ? legacyClock : "pixel"
             root.lockClockFont = data.lockClockFont || "Roboto Flex"
             root.lockClockWeight = Math.max(100, Math.min(900,
-                Number(data.lockClockWeight) || 760))
+                Number(data.lockClockWeight) || 780))
             root.lockClockSize = Math.max(0.65, Math.min(1.6,
                 Number(data.lockClockSize) || 1))
             root.lockClockSpacing = Math.max(-6, Math.min(12,
@@ -163,9 +163,9 @@ QtObject {
                 ? data.lockClockColorMode : "wallpaper"
             root.lockClockColor1 = data.lockClockColor1 || "#FFFFFF"
             root.lockClockColor2 = data.lockClockColor2 || "#B8D8D0"
-            root.lockClockX = Math.max(0, Math.min(1, Number(data.lockClockX) || 0.5))
+            root.lockClockX = Math.max(0, Math.min(1, data.lockClockX === undefined ? 0.04 : Number(data.lockClockX)))
             root.lockClockY = Math.max(0, Math.min(1,
-                Number(data.lockClockY) || 0.12))
+                data.lockClockY === undefined ? 0.14 : Number(data.lockClockY)))
         } catch (error) {
             console.warn("Voidline: unable to parse appearance settings", error)
         }
@@ -438,7 +438,7 @@ QtObject {
     }
 
     function setLockClockStyle(value) {
-        if (["digital-large", "digital-compact", "stacked", "horizontal",
+        if (["pixel", "digital-large", "digital-compact", "stacked", "horizontal",
                 "minimal", "analog", "playful"].indexOf(value) < 0)
             return
         lockClockStyle = value

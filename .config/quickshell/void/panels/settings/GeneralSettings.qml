@@ -245,11 +245,11 @@ SettingsMasonry {
         ClockStylePicker {
             width: parent.width
             title: "Lock-screen clock design"
-            subtitle: "Digital, analog, stacked, and playful designs"
+            subtitle: "Pixel, digital, analog, stacked, and playful designs"
             maxColumns: 3
-            options: ["digital-large", "digital-compact", "stacked",
+            options: ["pixel", "digital-large", "digital-compact", "stacked",
                 "horizontal", "minimal", "analog", "playful"]
-            optionLabels: ["Large digital", "Digital with date", "Stacked",
+            optionLabels: ["Pixel", "Large digital", "Digital with date", "Stacked",
                 "Horizontal", "Minimal", "Analog", "Playful"]
             value: Appearance.lockClockStyle
             onSelected: value => Appearance.setLockClockStyle(value)

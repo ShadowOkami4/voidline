@@ -17,7 +17,10 @@ Rectangle {
 
     property string fontFamily: config.fontFamily || "Roboto Flex"
     property int clockWeight: 760
-    property string clockStyle: "digital-large"
+    property string clockStyle: "pixel"
+    // Android 16 layout: big stacked clock on the left, sign-in on the right,
+    // round power buttons in the corner. Narrow screens use the centred layout.
+    readonly property bool pixelLayout: clockStyle === "pixel" && width >= 1000
     property color clockColor: foreground
     property color accent: config.accentColor || "#AFD4C9"
     property color accentSoft: config.accentSoftColor || "#305A4D"
@@ -94,10 +97,10 @@ Rectangle {
                     values[rows[index].slice(0, separator)]
                         = rows[index].slice(separator + 1)
             }
-            const styles = ["digital-large", "digital-compact", "stacked",
+            const styles = ["pixel", "digital-large", "digital-compact", "stacked",
                 "horizontal", "minimal", "playful"]
             clockStyle = styles.indexOf(values.clockStyle) >= 0
-                ? values.clockStyle : "digital-large"
+                ? values.clockStyle : "pixel"
             if (values.clockFont && values.clockFont.length <= 80)
                 fontFamily = values.clockFont
             clockWeight = Math.max(100, Math.min(900,
@@ -416,6 +419,46 @@ Rectangle {
     }
 
     Column {
+        visible: root.pixelLayout
+        x: Math.max(56, root.width * 0.055)
+        y: Math.max(72, root.height * 0.13)
+        spacing: 8
+
+        Column {
+            spacing: -Math.round(clockDigits.font.pixelSize * 0.3)
+
+            Text {
+                id: clockDigits
+                text: Qt.formatTime(root.now, "HH")
+                color: Qt.hsla(root.accent.hslHue, Math.min(0.55, root.accent.hslSaturation + 0.1), 0.86, 1)
+                font.family: root.fontFamily
+                font.pixelSize: Math.max(120, Math.min(230, root.height * 0.22))
+                font.weight: Font.Black
+                font.letterSpacing: -6
+                lineHeight: 0.82
+            }
+            Text {
+                text: Qt.formatTime(root.now, "mm")
+                color: root.clockColor
+                font.family: root.fontFamily
+                font.pixelSize: clockDigits.font.pixelSize
+                font.weight: Font.Black
+                font.letterSpacing: -6
+                lineHeight: 0.82
+            }
+        }
+        Text {
+            leftPadding: 10
+            text: Qt.formatDate(root.now, "dddd, d MMMM")
+            color: root.foreground
+            font.family: root.fontFamily
+            font.pixelSize: 22
+            font.weight: Font.DemiBold
+        }
+    }
+
+    Column {
+        visible: !root.pixelLayout
         anchors {
             top: parent.top
             horizontalCenter: parent.horizontalCenter
@@ -459,11 +502,10 @@ Rectangle {
     // filled sign-in button, and a tonal session selector.
     Item {
         id: loginCard
-        anchors {
-            horizontalCenter: parent.horizontalCenter
-            bottom: powerRow.top
-            bottomMargin: root.compactHeight ? 24 : Math.max(40, root.height * 0.07)
-        }
+        x: root.pixelLayout ? root.width - width - Math.max(56, root.width * 0.08)
+            : (root.width - width) / 2
+        y: root.pixelLayout ? (root.height - height) / 2
+            : powerRow.y - height - (root.compactHeight ? 24 : Math.max(40, root.height * 0.07))
         width: Math.min(440, parent.width - 48)
         height: loginColumn.height
         opacity: 0
@@ -842,18 +884,20 @@ Rectangle {
     Row {
         id: powerRow
         anchors {
-            horizontalCenter: parent.horizontalCenter
+            horizontalCenter: root.pixelLayout ? undefined : parent.horizontalCenter
+            right: root.pixelLayout ? parent.right : undefined
+            rightMargin: 40
             bottom: parent.bottom
-            bottomMargin: root.compactHeight ? 20 : 32
+            bottomMargin: root.pixelLayout ? 40 : (root.compactHeight ? 20 : 32)
         }
-        height: 48
-        spacing: 6
+        height: root.pixelLayout ? 56 : 48
+        spacing: root.pixelLayout ? 12 : 6
 
         VoidButton {
             visible: sddm.canSuspend
-            width: 124
+            width: root.pixelLayout ? parent.height : 124
             height: parent.height
-            label: "Suspend"
+            label: root.pixelLayout ? "" : "Suspend"
             symbol: "bedtime"
             accent: root.accent
             foreground: root.foreground
@@ -862,9 +906,9 @@ Rectangle {
         }
         VoidButton {
             visible: sddm.canHibernate
-            width: 134
+            width: root.pixelLayout ? parent.height : 134
             height: parent.height
-            label: "Hibernate"
+            label: root.pixelLayout ? "" : "Hibernate"
             symbol: "mode_standby"
             accent: root.accent
             foreground: root.foreground
@@ -872,9 +916,9 @@ Rectangle {
             onClicked: root.requestPower("hibernate", "hibernate")
         }
         VoidButton {
-            width: 120
+            width: root.pixelLayout ? parent.height : 120
             height: parent.height
-            label: "Restart"
+            label: root.pixelLayout ? "" : "Restart"
             symbol: "restart_alt"
             accent: root.accent
             foreground: root.foreground
@@ -882,9 +926,9 @@ Rectangle {
             onClicked: root.requestPower("reboot", "restart")
         }
         VoidButton {
-            width: 134
+            width: root.pixelLayout ? parent.height : 134
             height: parent.height
-            label: "Power off"
+            label: root.pixelLayout ? "" : "Power off"
             symbol: "power_settings_new"
             destructive: true
             danger: root.danger
