@@ -114,10 +114,17 @@ files.
 
 The installer:
 
-- backs up an edited Hyprland file under
+- installs Voidline's complete Hyprland configuration (look and feel, window
+  rules, animation presets, keybinds, monitors, input, idle locking) when you
+  have no Hyprland config yet, and asks before replacing an existing one
+  (`--hyprland-config=full` or `--hyprland-config=integrate` decide up
+  front). Re-running it updates Voidline's files but keeps your `config.lua`,
+  `monitors.lua`, and `input.lua`. Settings > Display and the window options
+  edit these files;
+- backs up every Hyprland file it changes under
   `${XDG_STATE_HOME:-~/.local/state}/voidline/backups`;
-- adds one marked integration line only when Voidline bindings are not already
-  present;
+- otherwise adds one marked integration line (shortcuts and shell autostart)
+  only when Voidline bindings are not already present;
 - preserves an existing portal configuration instead of overwriting it;
 - stores packaged code in `/usr/share`, not in a working source directory;
 - leaves personal wallpapers and persistent settings untouched.

@@ -105,6 +105,8 @@ package_voidline-shell() {
     install -Dm644 .local/share/icons/hicolor/scalable/apps/voidline-settings.svg \
         "$pkgdir/usr/share/icons/hicolor/scalable/apps/voidline-settings.svg"
     install -Dm644 packaging/hypr/voidline.conf "$pkgdir/usr/share/voidline/hypr/voidline.conf"
+    install -d "$pkgdir/usr/share/voidline/hypr-config"
+    cp -a .config/hypr/. "$pkgdir/usr/share/voidline/hypr-config/"
     install -Dm644 packaging/hypr/voidline.lua "$pkgdir/usr/share/voidline/hypr/voidline.lua"
     install -Dm644 .config/xdg-desktop-portal/portals.conf \
         "$pkgdir/usr/share/voidline/xdg-desktop-portal/portals.conf"

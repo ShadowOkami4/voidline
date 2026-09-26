@@ -6,9 +6,10 @@
 --▀██▀    ▄█▀  ▄▀███▀▄▀████▄█▀  ▄▀█▄██▄██ ██ ▀█▄██ ██ ▀██▄▄██▀
 --                       ██
 --                      ▀▀▀
-Terminal = "ghostty" -- Terminal emulator default
+Terminal = "voidline-terminal" -- Terminal emulator default
 FileManager = "nautilus"  -- File manager default
-Browser = "zen"  -- Web browser default
+-- Opens the system default web browser (xdg-settings default-web-browser).
+Browser = "sh -c 'gtk4-launch \"$(xdg-settings get default-web-browser)\"'"  -- Web browser default
 
 
 --  ▄▄▄                                               ▄▄▄▄▄▄▄         ▄▄

@@ -35,6 +35,8 @@ pkgconf gcc
 ttf-material-symbols-variable noto-fonts papirus-icon-theme
 xdg-desktop-portal-gtk imagemagick pacman-contrib pipewire-alsa hypridle
 qrencode
+# File manager bound to Super+E in the bundled Hyprland config
+nautilus
 
 [optional]
 # Screen recording, colour picker, night light
@@ -55,8 +57,6 @@ orca
 colord
 # iwd credential helper
 python python-dbus python-gobject
-# File manager used by "open containing folder"
-nautilus
 
 [aur-recommended]
 # Voidline's interface typeface; Qt falls back to the default sans font.

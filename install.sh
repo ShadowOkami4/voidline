@@ -8,6 +8,7 @@ with_lyra=0
 with_sddm=0
 install_dependencies=0
 with_optional=0
+hyprland_config=auto
 start_shell=1
 dry_run=0
 non_interactive=0
@@ -52,6 +53,13 @@ Usage: ./install.sh [options]
                     pacman (and paru/yay for AUR-only extras such as Roboto Flex)
   --with-optional   Also install optional integrations (recording, colour
                     picker, hotspot, printers, sensors, …); implies --install-deps
+  --hyprland-config=full
+                    Install Voidline's complete Hyprland configuration (look,
+                    window rules, animations, keybinds, monitors, idle); the
+                    current ~/.config/hypr is backed up first. Default when
+                    no Hyprland config exists; asked otherwise.
+  --hyprland-config=integrate
+                    Keep your Hyprland config; only add Voidline's shortcuts.
   --no-start        Install without starting the shell user service
   --non-interactive Never prompt; optional components default to off
   --dry-run         Print the selected operation without building or writing
@@ -75,6 +83,7 @@ while (($#)); do
         --without-sddm) with_sddm=0; sddm_was_set=1 ;;
         --install-deps) install_dependencies=1 ;;
         --with-optional) install_dependencies=1; with_optional=1 ;;
+        --hyprland-config=full|--hyprland-config=integrate) hyprland_config=${1#*=} ;;
         --no-start) start_shell=0 ;;
         --non-interactive) non_interactive=1 ;;
         --dry-run) dry_run=1 ;;
@@ -373,8 +382,80 @@ strip_marker_blocks() {
     '
 }
 
+# ---- Complete Voidline Hyprland configuration --------------------------
+hypr_dir="$config_home/hypr"
+installed_hypr_config="$(dirname -- "$installed_hypr")/hypr-config"
+# Files the user is expected to personalise; updates never overwrite them.
+user_owned_hypr=(config.lua monitors.lua input.lua)
+
+if [[ $hyprland_config == auto ]]; then
+    if grep -qs 'Welcome to Voidline' "$hypr_dir/hyprland.lua"; then
+        hyprland_config=update
+    elif [[ ! -e $hypr_dir/hyprland.lua && ! -e $hypr_dir/hyprland.conf ]]; then
+        hyprland_config=full
+    elif [[ $non_interactive -eq 0 && -t 0 ]]; then
+        printf '%s\n' 'Voidline includes a complete Hyprland configuration (look and feel, window rules,'
+        printf '%s\n' 'animations, keybinds, monitors, idle). Settings > Display and window options edit it.'
+        read -r -p 'Replace your Hyprland config with it? Your current config is backed up first. [y/N] ' answer
+        [[ ${answer,,} == y || ${answer,,} == yes ]] && hyprland_config=full || hyprland_config=integrate
+    else
+        hyprland_config=integrate
+    fi
+elif [[ $hyprland_config == full ]] && grep -qs 'Welcome to Voidline' "$hypr_dir/hyprland.lua"; then
+    hyprland_config=update
+fi
+
+if [[ $hyprland_config == full || $hyprland_config == update ]]; then
+    [[ -d $installed_hypr_config ]] || die 66 "Missing packaged Hyprland configuration: $installed_hypr_config"
+    # Back up the whole folder unless it only holds Voidline's own templates.
+    if [[ $hyprland_config == full ]] && find "$hypr_dir" -mindepth 1 -maxdepth 1 \
+            ! -name voidline.conf ! -name voidline.lua -print -quit | grep -q .; then
+        cp -a -- "$hypr_dir" "$backup_root/hypr"
+        backed_up=1
+        note "Backed up $hypr_dir to $backup_root/hypr"
+    fi
+    while IFS= read -r -d '' source; do
+        relative=${source#"$installed_hypr_config"/}
+        target="$hypr_dir/$relative"
+        owned=0
+        for name in "${user_owned_hypr[@]}"; do
+            [[ $relative == "$name" ]] && owned=1
+        done
+        # Keep personal files on updates; replace everything on a full install.
+        if [[ $hyprland_config == update && $owned -eq 1 && -e $target ]]; then
+            continue
+        fi
+        # A user install keeps the share picker under the prefix.
+        if [[ $mode == user && $relative == xdph.conf ]]; then
+            patched=$(mktemp)
+            sed "s|/usr/bin/voidline-share-picker|$prefix/bin/voidline-share-picker|" "$source" >"$patched"
+            source=$patched
+        fi
+        if [[ $hyprland_config == update && -e $target ]] && ! cmp -s -- "$source" "$target"; then
+            backup_file "$target" "hypr-${relative//\//-}"
+        fi
+        install -D -m 644 -- "$source" "$target"
+        [[ $source != "$installed_hypr_config/$relative" ]] && rm -f -- "$source"
+    done < <(find "$installed_hypr_config" -type f -print0)
+    # hyprland.lua is now the entry point; a leftover hyprland.conf would be
+    # ambiguous. It is kept in the backup taken above.
+    if [[ -f $hypr_dir/hyprland.conf ]]; then
+        mv -f -- "$hypr_dir/hyprland.conf" "$hypr_dir/hyprland.conf.pre-voidline"
+        note "Moved the previous hyprland.conf to hyprland.conf.pre-voidline"
+    fi
+    if [[ $hyprland_config == full ]]; then
+        note "Installed the complete Voidline Hyprland configuration in $hypr_dir"
+    else
+        note "Updated the Voidline Hyprland configuration (your config.lua, monitors.lua, and input.lua were kept)"
+    fi
+fi
+
 main_config=
-if [[ -f $config_home/hypr/hyprland.lua ]]; then
+if [[ $hyprland_config == full || $hyprland_config == update ]]; then
+    # The complete configuration already starts the shell and binds every
+    # Voidline shortcut; no integration line is needed.
+    :
+elif [[ -f $config_home/hypr/hyprland.lua ]]; then
     main_config="$config_home/hypr/hyprland.lua"
     comment='--'
     integration_line='require("voidline")'
@@ -384,7 +465,9 @@ elif [[ -f $config_home/hypr/hyprland.conf ]]; then
     integration_line='source = ~/.config/hypr/voidline.conf'
 fi
 
-if [[ -z $main_config ]]; then
+if [[ $hyprland_config == full || $hyprland_config == update ]]; then
+    :
+elif [[ -z $main_config ]]; then
     warn 'No main Hyprland config was found. Integration templates were installed under ~/.config/hypr.'
 elif grep -qs 'quickshell:toggleLauncher' "$main_config" && \
         ! grep -qs "^${comment} Added by Voidline " "$main_config"; then
@@ -449,6 +532,11 @@ if systemctl --user show-environment >/dev/null 2>&1; then
     systemctl --user daemon-reload
     if [[ $with_lyra -eq 0 ]]; then
         systemctl --user stop voidline-ai.service 2>/dev/null || true
+    fi
+    # Idle locking for the bundled hypridle.conf.
+    if [[ $hyprland_config == full || $hyprland_config == update ]] \
+            && systemctl --user list-unit-files hypridle.service >/dev/null 2>&1; then
+        systemctl --user enable hypridle.service >/dev/null 2>&1 || true
     fi
     if [[ $start_shell -eq 1 ]]; then
         systemctl --user enable voidline-shell.service >/dev/null 2>&1 || \

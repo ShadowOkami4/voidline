@@ -105,6 +105,13 @@ install -m 644 "$repository/packaging/hypr/voidline.conf" \
     "$(at /usr/share/voidline/hypr/voidline.conf)"
 install -m 644 "$repository/packaging/hypr/voidline.lua" \
     "$(at /usr/share/voidline/hypr/voidline.lua)"
+# The complete Voidline Hyprland configuration; install.sh copies it into
+# ~/.config/hypr when the user chooses the full configuration.
+rm -rf -- "$(at /usr/share/voidline/hypr-config)"
+install -d -m 755 "$(at /usr/share/voidline/hypr-config)"
+cp -R "$repository/.config/hypr/." "$(at /usr/share/voidline/hypr-config/)"
+find "$(at /usr/share/voidline/hypr-config)" -type d -exec chmod 755 {} +
+find "$(at /usr/share/voidline/hypr-config)" -type f -exec chmod 644 {} +
 install -m 644 "$repository/.config/xdg-desktop-portal/portals.conf" \
     "$(at /usr/share/voidline/xdg-desktop-portal/portals.conf)"
 install -m 644 "$repository/VERSION" "$(at /usr/share/voidline/VERSION)"

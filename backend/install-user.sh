@@ -77,6 +77,9 @@ cp -R "$repository/.local/share/icons/Voidline/source/material-symbols/." \
 cp -R "$repository/assets/wallpapers/." "$prefix/share/backgrounds/voidline/"
 install -m 644 "$repository/packaging/hypr/voidline.conf" "$prefix/share/voidline/hypr/voidline.conf"
 install -m 644 "$repository/packaging/hypr/voidline.lua" "$prefix/share/voidline/hypr/voidline.lua"
+rm -rf -- "$prefix/share/voidline/hypr-config"
+install -d -m 755 "$prefix/share/voidline/hypr-config"
+cp -R "$repository/.config/hypr/." "$prefix/share/voidline/hypr-config/"
 install -m 644 "$repository/.config/xdg-desktop-portal/portals.conf" \
     "$prefix/share/voidline/xdg-desktop-portal/portals.conf"
 install -m 644 "$repository/VERSION" "$prefix/share/voidline/VERSION"
