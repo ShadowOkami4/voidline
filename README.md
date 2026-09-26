@@ -62,9 +62,13 @@ kept in the [architecture audit](.config/quickshell/void/ARCHITECTURE_AUDIT.md).
 - Rust and native build tools (the development installer builds the Rust
   components locally)
 
-The installer checks the concrete runtime dependencies. Roboto Flex, Material
-Symbols, Papirus, recording, DDC/CI, CUPS, SANE, and Lyra dependencies are
-reported separately when absent. Lyra is not part of the default install and
+All dependencies are listed in
+[`dependencies.txt`](.config/quickshell/void/dependencies.txt).
+`./install.sh --install-deps` installs the required and recommended packages
+(including the Material Symbols icon font) and enables the Bluetooth and
+power-profile services; `--with-optional` adds recording, colour picker,
+hotspot, printer, and sensor integrations. AUR-only extras such as Roboto Flex
+are installed when `paru` or `yay` is available. Lyra is not part of the default install and
 does not download a model automatically.
 
 ## Install

@@ -58,13 +58,23 @@ package_voidline-backend() {
 
 package_voidline-shell() {
     pkgdesc='Voidline Quickshell desktop shell and Settings for Hyprland'
-    depends=(voidline-backend hyprland quickshell networkmanager bluez bluez-utils
-        pipewire wireplumber brightnessctl playerctl jq curl wl-clipboard
-        cliphist grim slurp libnotify upower)
+    depends=(voidline-backend hyprland quickshell xdg-desktop-portal-hyprland
+        qt6-declarative qt6-svg qt6-imageformats polkit networkmanager upower
+        power-profiles-daemon pipewire pipewire-pulse wireplumber bluez bluez-utils
+        brightnessctl playerctl jq curl wl-clipboard cliphist grim slurp libnotify
+        util-linux iproute2 ripgrep findutils file xdg-utils xdg-user-dirs glib2
+        ttf-material-symbols-variable)
     optdepends=(
         'ttf-roboto-flex: complete Voidline typography'
-        'ttf-material-symbols-variable: Material Symbols glyphs'
         'papirus-icon-theme: application icon fallback'
+        'noto-fonts: fallback text font'
+        'xdg-desktop-portal-gtk: file chooser portal'
+        'imagemagick: profile picture cropping'
+        'pacman-contrib: update checks'
+        'qrencode: Wi-Fi and hotspot QR codes'
+        'hyprsunset: night light'
+        'lm_sensors: temperature readings'
+        'hostapd: mobile hotspot'
         'ddcutil: brightness control for compatible external displays'
         'wf-recorder: screen recording'
         'hyprpicker: color picker'

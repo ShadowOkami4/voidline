@@ -7,6 +7,7 @@ mode=system
 with_lyra=0
 with_sddm=0
 install_dependencies=0
+with_optional=0
 start_shell=1
 dry_run=0
 non_interactive=0
@@ -47,8 +48,10 @@ Usage: ./install.sh [options]
   --without-lyra    Explicitly omit/remove packaged Lyra integration
   --with-sddm       Install and select the matching SDDM theme (system only)
   --without-sddm    Do not change SDDM
-  --install-deps    Install missing packages with pacman (and an AUR helper
-                    such as paru or yay for packages not in the repositories)
+  --install-deps    Install missing required and recommended packages with
+                    pacman (and paru/yay for AUR-only extras such as Roboto Flex)
+  --with-optional   Also install optional integrations (recording, colour
+                    picker, hotspot, printers, sensors, …); implies --install-deps
   --no-start        Install without starting the shell user service
   --non-interactive Never prompt; optional components default to off
   --dry-run         Print the selected operation without building or writing
@@ -71,6 +74,7 @@ while (($#)); do
         --with-sddm) with_sddm=1; sddm_was_set=1 ;;
         --without-sddm) with_sddm=0; sddm_was_set=1 ;;
         --install-deps) install_dependencies=1 ;;
+        --with-optional) install_dependencies=1; with_optional=1 ;;
         --no-start) start_shell=0 ;;
         --non-interactive) non_interactive=1 ;;
         --dry-run) dry_run=1 ;;
@@ -116,59 +120,127 @@ fi
 # ---------------------------------------------------------------------------
 step 'Checking dependencies'
 
-# Runtime packages. Build tooling is checked by capability below so that a
-# rustup toolchain is accepted instead of forcing the conflicting rust package.
-required_packages=(
-    hyprland quickshell xdg-desktop-portal-hyprland
-    networkmanager polkit pipewire wireplumber bluez bluez-utils
-    brightnessctl playerctl jq curl wl-clipboard cliphist grim slurp
-    libnotify upower gtk4 vte4 glib2
-)
-optional_packages=(wf-recorder hyprpicker ddcutil cups sane-airscan)
-[[ $with_sddm -eq 1 ]] && required_packages+=(sddm)
-[[ $with_lyra -eq 1 ]] && required_packages+=(ollama)
-command -v cargo >/dev/null 2>&1 || required_packages+=(rust)
-command -v pkg-config >/dev/null 2>&1 || required_packages+=(pkgconf)
-command -v cc >/dev/null 2>&1 || required_packages+=(gcc)
+manifest="$repository/.config/quickshell/void/dependencies.txt"
+[[ -r $manifest ]] || die 66 "Missing dependency manifest: $manifest"
+
+# Print the packages listed under one [section] of the manifest.
+manifest_section() {
+    awk -v wanted="[$1]" '
+        { sub(/#.*/, "") }
+        /^\[/ { active = ($1 == wanted); next }
+        active { for (i = 1; i <= NF; i++) print $i }
+    ' "$manifest"
+}
 
 package_installed() {
-    # `pacman -T` also resolves provides, so e.g. quickshell-git satisfies
-    # quickshell and ollama-vulkan satisfies ollama.
+    # `pacman -T` also resolves provides, so quickshell-git satisfies
+    # quickshell and tuned-ppd satisfies power-profiles-daemon.
     pacman -T "$1" >/dev/null 2>&1
 }
 
-missing=()
-for package in "${required_packages[@]}"; do
-    package_installed "$package" || missing+=("$package")
-done
-if ((${#missing[@]})); then
-    if [[ $install_dependencies -eq 0 ]]; then
-        printf 'Missing required packages: %s\n' "${missing[*]}" >&2
-        die 69 'Re-run with --install-deps, or install them first.'
+# Resolve a manifest name to the package that should actually be installed.
+resolve_package() {
+    case "$1" in
+        power-profiles-daemon)
+            # tuned conflicts with power-profiles-daemon; its tuned-ppd
+            # subpackage provides the same D-Bus API.
+            if package_installed tuned; then printf '%s\n' tuned-ppd; else printf '%s\n' "$1"; fi ;;
+        *) printf '%s\n' "$1" ;;
+    esac
+}
+
+mapfile -t required_packages < <(manifest_section required; manifest_section build)
+mapfile -t recommended_packages < <(manifest_section recommended)
+mapfile -t optional_packages < <(manifest_section optional)
+mapfile -t aur_recommended < <(manifest_section aur-recommended)
+mapfile -t aur_optional < <(manifest_section aur-optional)
+[[ $with_sddm -eq 1 ]] && mapfile -t -O "${#required_packages[@]}" required_packages < <(manifest_section sddm)
+[[ $with_lyra -eq 1 ]] && mapfile -t -O "${#required_packages[@]}" required_packages < <(manifest_section lyra)
+# A rustup toolchain is accepted instead of the conflicting rust package.
+command -v cargo >/dev/null 2>&1 || required_packages+=(rust)
+
+missing_from() {
+    local package
+    for package in "$@"; do
+        package_installed "$package" || resolve_package "$package"
+    done
+}
+
+mapfile -t missing_required < <(missing_from "${required_packages[@]}")
+mapfile -t missing_recommended < <(missing_from "${recommended_packages[@]}")
+mapfile -t missing_optional < <(missing_from "${optional_packages[@]}")
+mapfile -t missing_aur < <(missing_from "${aur_recommended[@]}")
+mapfile -t missing_aur_optional < <(missing_from "${aur_optional[@]}")
+
+if ((${#missing_required[@]})); then
+    note "Missing required packages: ${missing_required[*]}"
+fi
+if ((${#missing_recommended[@]})); then
+    note "Missing recommended packages: ${missing_recommended[*]}"
+fi
+
+# Without --install-deps, offer to install instead of failing outright.
+if [[ $install_dependencies -eq 0 && $non_interactive -eq 0 && -t 0 ]] \
+        && ((${#missing_required[@]} + ${#missing_recommended[@]} > 0)); then
+    read -r -p 'Install the missing packages now with pacman? [Y/n] ' answer
+    [[ -z $answer || ${answer,,} == y || ${answer,,} == yes ]] && install_dependencies=1
+fi
+if [[ $install_dependencies -eq 1 && $with_optional -eq 0 && $non_interactive -eq 0 && -t 0 ]] \
+        && ((${#missing_optional[@]} > 0)); then
+    printf 'Optional integrations not installed: %s\n' "${missing_optional[*]}"
+    read -r -p 'Install optional integrations too (recording, colour picker, hotspot, printers, …)? [y/N] ' answer
+    [[ ${answer,,} == y || ${answer,,} == yes ]] && with_optional=1
+fi
+
+if [[ $install_dependencies -eq 0 ]]; then
+    if ((${#missing_required[@]})); then
+        printf '\nInstall them with:\n  sudo pacman -S --needed %s\n' "${missing_required[*]} ${missing_recommended[*]}" >&2
+        die 69 'Required packages are missing. Re-run with --install-deps, or install them first.'
     fi
+    ((${#missing_recommended[@]} == 0)) || \
+        warn "Some icons and features need: sudo pacman -S --needed ${missing_recommended[*]}"
+else
+    to_install=("${missing_required[@]}" "${missing_recommended[@]}")
+    [[ $with_optional -eq 1 ]] && to_install+=("${missing_optional[@]}")
     official=()
     unavailable=()
-    for package in "${missing[@]}"; do
+    for package in "${to_install[@]}"; do
         if pacman -Si "$package" >/dev/null 2>&1; then
             official+=("$package")
         else
             unavailable+=("$package")
         fi
     done
+    if ((${#unavailable[@]})); then
+        warn "Not found in your enabled repositories (run 'sudo pacman -Sy' if your package database is old): ${unavailable[*]}"
+    fi
     if ((${#official[@]})); then
         note "Installing from the Arch repositories: ${official[*]}"
+        # --needed skips anything already current; pacman asks before
+        # replacing conflicting packages such as pulseaudio.
         sudo pacman -S --needed "${official[@]}"
     fi
-    if ((${#unavailable[@]})); then
+
+    aur_wanted=("${missing_aur[@]}")
+    [[ $with_optional -eq 1 ]] && aur_wanted+=("${missing_aur_optional[@]}")
+    if ((${#aur_wanted[@]})); then
         aur_helper=
         for helper in paru yay; do
             command -v "$helper" >/dev/null 2>&1 && { aur_helper=$helper; break; }
         done
-        [[ -n $aur_helper ]] || die 69 \
-            "These required packages are not in the enabled pacman repositories: ${unavailable[*]}. Install them from the AUR (for example with paru or yay), then re-run the installer."
-        note "Installing from the AUR with $aur_helper: ${unavailable[*]}"
-        "$aur_helper" -S --needed "${unavailable[@]}"
+        if [[ -n $aur_helper ]]; then
+            note "Installing from the AUR with $aur_helper: ${aur_wanted[*]}"
+            "$aur_helper" -S --needed "${aur_wanted[@]}" \
+                || warn "AUR installation failed; Voidline still works without: ${aur_wanted[*]}"
+        else
+            warn "No AUR helper (paru or yay) found. Optional AUR packages not installed: ${aur_wanted[*]}"
+        fi
     fi
+
+    # Re-check: anything required that is still missing is fatal.
+    mapfile -t missing_required < <(missing_from "${required_packages[@]}")
+    ((${#missing_required[@]} == 0)) || \
+        die 69 "Still missing required packages: ${missing_required[*]}"
 fi
 
 required_commands=(cargo pkg-config cc quickshell hyprctl)
@@ -181,7 +253,7 @@ if ((${#missing_commands[@]})); then
     printf 'Missing required commands: %s\n' "${missing_commands[*]}" >&2
     [[ " ${missing_commands[*]} " == *' cargo '* ]] && \
         printf '%s\n' 'With rustup, run: rustup default stable' >&2
-    die 69 'Quickshell and Ollama may use distribution or AUR package names different from their executable names.'
+    die 69 'Install the packages that provide these commands, then re-run the installer.'
 fi
 missing_libraries=()
 for library in gtk4 vte-2.91-gtk4 libnm gio-unix-2.0; do
@@ -190,12 +262,25 @@ done
 ((${#missing_libraries[@]} == 0)) || \
     die 69 "Missing development files (pkg-config): ${missing_libraries[*]}. Install gtk4, vte4, networkmanager, and glib2."
 
-for package in ttf-roboto-flex ttf-material-symbols-variable papirus-icon-theme; do
-    package_installed "$package" || warn "Recommended package not installed: $package"
-done
-for package in "${optional_packages[@]}"; do
-    package_installed "$package" || note "Optional integration unavailable until installed: $package"
-done
+# Services the shell talks to over D-Bus. Bluetooth and power profiles are
+# enabled when present; NetworkManager is only reported, because enabling it
+# next to another network manager (iwd, systemd-networkd, connman) can
+# disconnect the machine.
+if [[ $install_dependencies -eq 1 ]] && command -v systemctl >/dev/null 2>&1; then
+    for unit in bluetooth.service power-profiles-daemon.service tuned-ppd.service; do
+        if systemctl list-unit-files "$unit" >/dev/null 2>&1 \
+                && ! systemctl is-enabled --quiet "$unit" 2>/dev/null; then
+            note "Enabling $unit"
+            sudo systemctl enable --now "$unit" || warn "Could not enable $unit"
+        fi
+    done
+fi
+if command -v systemctl >/dev/null 2>&1 && ! systemctl is-active --quiet NetworkManager.service 2>/dev/null; then
+    warn 'NetworkManager is not running, so Wi-Fi controls stay disabled. If nothing else manages your network, run: sudo systemctl enable --now NetworkManager'
+fi
+
+((${#missing_optional[@]} == 0 || with_optional == 1)) || \
+    note "Optional integrations not installed (re-run with --with-optional): ${missing_optional[*]}"
 
 # ---------------------------------------------------------------------------
 step 'Building the Rust backend, CLI, terminal, and NetworkManager helper'

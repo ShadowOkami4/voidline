@@ -1,114 +1,72 @@
 # Voidline Arch Linux dependency manifest
 #
-# Installer rule: ignore blank lines and lines beginning with '#'. Packages
-# under [official] are installed with pacman. Packages under [aur] require an
-# AUR helper or a makepkg build step.
+# install.sh reads this file. Format: a `[section]` line, then package names
+# separated by spaces or newlines. `#` starts a comment. Every name here was
+# checked against the Arch repositories and the AUR.
+#
+#   required     the shell does not work correctly without these
+#   build        needed to build the Rust backend and network helper
+#   recommended  installed with --install-deps; missing ones degrade the UI
+#                (the icon font, image tools, file chooser portal, updates)
+#   optional     feature integrations; installed with --with-optional
+#   aur-recommended / aur-optional
+#                only in the AUR; installed when paru or yay is available
+#   sddm / lyra  installed with --with-sddm / --with-lyra
 
-# [official]
-hyprland
-hypridle
-quickshell
-systemd
-python
-python-dbus
-python-gobject
-xdg-desktop-portal-hyprland
-xdg-desktop-portal-gtk
+[required]
+# Compositor, shell toolkit, and portals
+hyprland quickshell xdg-desktop-portal-hyprland qt6-declarative qt6-svg
 qt6-imageformats
-qt6-5compat
-qt5-graphicaleffects
-sddm
-networkmanager
-iwd
-iw
-hostapd
-dnsmasq
-iptables
+# Session services the shell talks to
+systemd polkit networkmanager upower power-profiles-daemon
+pipewire pipewire-pulse wireplumber bluez bluez-utils
+# Tools called by the shell and its scripts
+brightnessctl playerctl jq curl wl-clipboard cliphist grim slurp libnotify
+util-linux iproute2 ripgrep findutils file xdg-utils xdg-user-dirs glib2
+# Voidline Terminal and Settings runtime libraries
+gtk4 vte4
+
+[build]
+pkgconf gcc
+
+[recommended]
+# Material Symbols provides every icon in the shell; without it icons render
+# as their text names.
+ttf-material-symbols-variable noto-fonts papirus-icon-theme
+xdg-desktop-portal-gtk imagemagick pacman-contrib pipewire-alsa hypridle
 qrencode
-gtk3
-gtk4
-libadwaita
-gsettings-desktop-schemas
-nautilus
-bluez
-bluez-utils
-pipewire
-pipewire-audio
-pipewire-pulse
-pipewire-alsa
-wireplumber
-brightnessctl
+
+[optional]
+# Screen recording, colour picker, night light
+wf-recorder hyprpicker hyprsunset
+# External monitor brightness
 ddcutil
-imagemagick
-wf-recorder
-slurp
-grim
-jq
-libnotify
-wl-clipboard
-cliphist
-hyprpicker
-ripgrep
-curl
-upower
-tuned
-polkit
-pacman-contrib
-# Voidline provides the active Polkit agent directly through Quickshell.
-# hyprpolkitagent may be installed as a fallback, but its user service must
-# stay disabled while the native Voidline agent is enabled.
-lm_sensors
-util-linux
-usbutils
-pciutils
-udisks2
-v4l-utils
-cups
-avahi
-sane-airscan
-noto-fonts
-ttf-material-symbols-variable
-papirus-icon-theme
-playerctl
-
-# [voidline-rust-components]
-# Required to build the shared backend, voidlinectl, and Voidline Terminal.
-rust
-pkgconf
-vte4
-
-# [aur]
-ttf-roboto-flex
-linux-wifi-hotspot
-
-# [optional-vendor-backends]
-# Epson ET-281x network scanning fallback when AirScan is not advertised:
-# epsonscan2
-
-# [optional-settings-backends]
-# These controls stay visible but disabled when their backend is absent.
-sane
-colord
-hyprsunset
-wireguard-tools
-ufw
-
-# [optional-accessibility-backends]
+# Hotspot and Wi-Fi tools
+iw hostapd dnsmasq iptables
+# Hardware information
+lm_sensors usbutils pciutils udisks2 v4l-utils
+# Printers and scanners
+cups sane sane-airscan avahi
+# Security and networking settings
+ufw wireguard-tools
+# Accessibility
 orca
-wvkbd
+# Colour management
+colord
+# iwd credential helper
+python python-dbus python-gobject
+# File manager used by "open containing folder"
+nautilus
 
-# [optional-update-backends]
-# yay is needed only for listing AUR updates; Voidline never performs an
-# unattended AUR transaction.
-yay
+[aur-recommended]
+# Voidline's interface typeface; Qt falls back to the default sans font.
+ttf-roboto-flex
 
-# [optional-local-ai-backends]
-# The separate voidline-ai package owns this group and its feature manifest.
-# The base shell must not install it or start an AI service. `ollama-vulkan`
-# is the accelerated runner for AMD/Vulkan hardware; installers select the
-# matching runner and model preset only when the user chooses the AI package.
+[aur-optional]
+wvkbd linux-wifi-hotspot
+
+[sddm]
+sddm qt5-graphicaleffects qt5-quickcontrols2
+
+[lyra]
 ollama
-ollama-vulkan
-
-# [development-only]
-# openssh
