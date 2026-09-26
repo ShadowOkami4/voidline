@@ -39,3 +39,8 @@ SettingsInfoTile 1.0 SettingsInfoTile.qml
 SettingsBrandCard 1.0 SettingsBrandCard.qml
 MetricRow 1.0 MetricRow.qml
 WifiConnectionForm 1.0 WifiConnectionForm.qml
+QsTile 1.0 QsTile.qml
+QsIconTile 1.0 QsIconTile.qml
+QsSlider 1.0 QsSlider.qml
+QsNotificationCard 1.0 QsNotificationCard.qml
+QsMediaCard 1.0 QsMediaCard.qml

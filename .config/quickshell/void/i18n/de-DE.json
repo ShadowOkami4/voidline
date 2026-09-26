@@ -131,6 +131,16 @@
     }
   },
   "actionCenter": {
+    "internet": "Internet",
+    "darkTheme": "Dunkles Design",
+    "nightLight": "Nachtlicht",
+    "powerMode": "Energiemodus",
+    "ready": "Bereit",
+    "devicesConnected": "{count} verbunden",
+    "lock": "Sperren",
+    "power": "Ein/Aus",
+    "history": "Verlauf",
+    "hotspotActive": "Mobiler Hotspot aktiv",
     "network": "Netzwerk",
     "bluetooth": "Bluetooth",
     "sound": "Ton",

@@ -20,6 +20,10 @@ PanelWindow {
     readonly property int maxPanelWidth: Metrics.panelWide
     readonly property int maxBodyHeight: 780
     readonly property int collapsedWidth: 142
+    // Wide screens get the Android split shade (notifications | Quick
+    // Settings) on the home page; narrow screens stack them.
+    readonly property bool splitShade: parentBar && parentBar.screen
+        && parentBar.screen.width >= Math.round(1400 * Metrics.scale)
     function normalizedPage(requested) {
         return requested === "wifi" || requested === "bluetooth" || requested === "sound"
             || requested === "power" || requested === "project" || requested === "hotspot"
@@ -32,7 +36,7 @@ PanelWindow {
             return Metrics.panelMedium
         if (page === "bluetooth" || page === "project")
             return 480
-        return Metrics.panelCompact
+        return splitShade ? Math.round(980 * Metrics.scale) : Math.round(500 * Metrics.scale)
     }
     readonly property int targetPanelWidth: Math.min(requestedPanelWidth(currentPage),
         parentBar && parentBar.screen ? Math.max(360, parentBar.screen.width - 48) : maxPanelWidth)
@@ -323,6 +327,8 @@ PanelWindow {
                             return
                         if ("active" in item)
                             item.active = Qt.binding(() => root.contentReady)
+                        if ("split" in item)
+                            item.split = Qt.binding(() => root.splitShade)
                         if ("screenName" in item)
                             item.screenName = Qt.binding(() => parentBar && parentBar.screen
                                 ? parentBar.screen.name : "")
