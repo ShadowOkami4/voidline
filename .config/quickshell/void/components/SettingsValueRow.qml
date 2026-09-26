@@ -24,7 +24,7 @@ Item {
             Layout.preferredWidth: Math.round(40 * Metrics.scale)
             Layout.preferredHeight: Math.round(40 * Metrics.scale)
             radius: width / 2
-            color: Theme.surfaceContainerHighest
+            color: "transparent"
             MaterialIcon {
                 anchors.centerIn: parent
                 text: root.icon

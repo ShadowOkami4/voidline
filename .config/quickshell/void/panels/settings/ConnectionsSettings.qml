@@ -340,18 +340,6 @@ SettingsMasonry {
         icon: ConnectivityService.ethernetConnected ? "lan"
             : (ConnectivityService.wifiConnected ? "wifi" : "wifi_off")
 
-        SettingsToggle {
-            width: parent.width
-            icon: "wifi"
-            title: I18n.tr("network.wifi")
-            subtitle: ConnectivityService.wifiConnected
-                ? ConnectivityService.wifiLabel
-                : (ConnectivityService.wifiEnabled
-                    ? I18n.tr("network.ready") : I18n.tr("network.wirelessOff"))
-            checked: ConnectivityService.wifiEnabled
-            enabled: ConnectivityService.wifiAvailable && !ConnectivityService.wifiChanging
-            onToggled: value => ConnectivityService.setWifiEnabled(value)
-        }
         SettingsAction {
             width: parent.width
             icon: "lan"

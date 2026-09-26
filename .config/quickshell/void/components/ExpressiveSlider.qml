@@ -19,6 +19,15 @@ Item {
     // Retained as public styling hooks for existing page declarations.
     property color leadingColor: Theme.surfaceHigh
     property color leadingIconColor: muted ? Theme.textMuted : activeColor
+    // Layout hooks: Settings rows align the icon, labels and track to the
+    // same columns as the other list rows.
+    property int leftInset: Metrics.contentInset
+    property int rightInset: Metrics.contentInset
+    property int iconColumn: Metrics.iconL
+    property int textIndent: leftInset + Metrics.iconL + Metrics.spaceS
+    property int trackIndent: leftInset
+    property int titleSize: Metrics.textTitle
+    property int subtitleSize: Metrics.textCaption
     signal moved(real value)
     signal iconClicked
 
@@ -47,7 +56,7 @@ Item {
         id: leadingIcon
         anchors {
             left: parent.left
-            leftMargin: Metrics.contentInset
+            leftMargin: root.leftInset + Math.max(0, (root.iconColumn - Metrics.iconL) / 2)
             top: parent.top
             topMargin: Metrics.spaceM
         }
@@ -62,7 +71,7 @@ Item {
     Text {
         anchors {
             left: parent.left
-            leftMargin: Metrics.contentInset + Metrics.iconL + Metrics.spaceS
+            leftMargin: root.textIndent
             top: parent.top
             topMargin: Metrics.spaceS
             right: valueLabel.left
@@ -71,7 +80,7 @@ Item {
         text: root.title
         color: Theme.text
         font.family: Theme.fontFamily
-        font.pixelSize: Metrics.textTitle
+        font.pixelSize: root.titleSize
         font.weight: Font.Medium
         elide: Text.ElideRight
     }
@@ -79,16 +88,16 @@ Item {
     Text {
         anchors {
             left: parent.left
-            leftMargin: Metrics.contentInset + Metrics.iconL + Metrics.spaceS
+            leftMargin: root.textIndent
             top: parent.top
-            topMargin: Metrics.spaceS + Metrics.textTitle + Metrics.titleSubtitleGap
+            topMargin: Metrics.spaceS + root.titleSize + Metrics.titleSubtitleGap
             right: parent.right
-            rightMargin: Metrics.contentInset
+            rightMargin: root.rightInset
         }
         text: root.subtitle
         color: Theme.textMuted
         font.family: Theme.fontFamily
-        font.pixelSize: Metrics.textCaption
+        font.pixelSize: root.subtitleSize
         font.weight: Font.Medium
         elide: Text.ElideRight
     }
@@ -99,7 +108,7 @@ Item {
             top: parent.top
             topMargin: Metrics.spaceS
             right: parent.right
-            rightMargin: Metrics.contentInset
+            rightMargin: root.rightInset
         }
         text: root.valueText
         color: root.muted ? Theme.textMuted : root.activeColor
@@ -114,9 +123,9 @@ Item {
         id: track
         anchors {
             left: parent.left
-            leftMargin: Metrics.contentInset
+            leftMargin: root.trackIndent
             right: parent.right
-            rightMargin: Metrics.contentInset
+            rightMargin: root.rightInset
             bottom: parent.bottom
             bottomMargin: Metrics.spaceS
         }

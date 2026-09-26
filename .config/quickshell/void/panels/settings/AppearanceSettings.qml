@@ -18,172 +18,6 @@ SettingsMasonry {
         iconContainerColor: Theme.secondaryContainer
         iconColor: Theme.secondary
 
-        Rectangle {
-            width: parent.width
-            height: 178
-            color: "transparent"
-
-            Row {
-                anchors {
-                    fill: parent
-                    margins: 14
-                }
-                spacing: 12
-
-                Repeater {
-                    model: [
-                        {
-                            id: "light", label: "Light",
-                            background: "#F4F2F7", surface: "#FFFFFF",
-                            raised: "#E9E6EF", ink: "#28252D", accent: "#879F98"
-                        },
-                        {
-                            id: "dark", label: "Dark",
-                            background: "#151418", surface: "#232126",
-                            raised: "#302D34", ink: "#F0EAF1", accent: "#A6C8BE"
-                        }
-                    ]
-
-                    Rectangle {
-                        id: themePreview
-                        required property var modelData
-                        width: (parent.width - 12) / 2
-                        height: parent.height
-                        radius: Theme.radiusLarge
-                        color: modelData.background
-                        border.width: Appearance.colorMode === modelData.id ? 3 : 1
-                        border.color: Appearance.colorMode === modelData.id
-                            ? Theme.accent : Theme.outlineSoft
-                        clip: true
-                        scale: previewTap.pressed ? 0.985 : 1
-
-                        Rectangle {
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                top: parent.top
-                                margins: 11
-                            }
-                            height: 18
-                            radius: 9
-                            color: themePreview.modelData.raised
-
-                            Rectangle {
-                                anchors {
-                                    left: parent.left
-                                    verticalCenter: parent.verticalCenter
-                                    leftMargin: 8
-                                }
-                                width: parent.width * 0.32
-                                height: 6
-                                radius: 3
-                                color: themePreview.modelData.accent
-                            }
-                        }
-
-                        Row {
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                top: parent.top
-                                bottom: label.top
-                                leftMargin: 11
-                                rightMargin: 11
-                                topMargin: 38
-                                bottomMargin: 7
-                            }
-                            spacing: 7
-
-                            Rectangle {
-                                width: parent.width * 0.28
-                                height: parent.height
-                                radius: 12
-                                color: themePreview.modelData.surface
-
-                                Column {
-                                    anchors {
-                                        fill: parent
-                                        margins: 7
-                                    }
-                                    spacing: 5
-                                    Repeater {
-                                        model: 4
-                                        Rectangle {
-                                            width: parent.width
-                                            height: 7
-                                            radius: 4
-                                            color: index === 1
-                                                ? themePreview.modelData.accent
-                                                : themePreview.modelData.raised
-                                        }
-                                    }
-                                }
-                            }
-
-                            Rectangle {
-                                width: parent.width * 0.72 - 7
-                                height: parent.height
-                                radius: 14
-                                color: themePreview.modelData.surface
-
-                                Column {
-                                    anchors {
-                                        fill: parent
-                                        margins: 9
-                                    }
-                                    spacing: 6
-                                    Rectangle {
-                                        width: parent.width * 0.62
-                                        height: 8
-                                        radius: 4
-                                        color: themePreview.modelData.ink
-                                        opacity: 0.82
-                                    }
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 22
-                                        radius: 11
-                                        color: themePreview.modelData.raised
-                                    }
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 22
-                                        radius: 11
-                                        color: themePreview.modelData.accent
-                                        opacity: 0.82
-                                    }
-                                }
-                            }
-                        }
-
-                        Text {
-                            id: label
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                bottom: parent.bottom
-                                bottomMargin: 8
-                            }
-                            horizontalAlignment: Text.AlignHCenter
-                            text: themePreview.modelData.label
-                            color: themePreview.modelData.ink
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 11
-                            font.weight: Font.Bold
-                        }
-
-                        TapHandler {
-                            id: previewTap
-                            onTapped: Appearance.setColorMode(themePreview.modelData.id)
-                        }
-                        Behavior on scale {
-                            NumberAnimation { duration: Motion.instant }
-                        }
-                    }
-                }
-            }
-        }
-
         SettingsChoice {
             width: parent.width
             title: "Theme"
@@ -204,6 +38,8 @@ SettingsMasonry {
         SettingsChoice {
             width: parent.width
             maxColumns: 5
+            // Only relevant when the palette is not taken from the wallpaper.
+            visible: !Appearance.magicColors
             title: "Accent color"
             subtitle: Appearance.magicColors
                 ? "Used when dynamic colors are turned off"
@@ -374,15 +210,24 @@ SettingsMasonry {
             value: Appearance.pendingBarStyle
             onSelected: value => Appearance.setBarStyle(value)
         }
+        SettingsToggle {
+            width: parent.width
+            visible: Appearance.pendingBarStyle === "taskbar"
+            icon: "vertical_align_bottom"
+            title: "Auto-hide taskbar"
+            subtitle: "Slide the taskbar away until the pointer touches the bottom edge"
+            checked: Appearance.taskbarAutoHide
+            onToggled: value => Appearance.setTaskbarAutoHide(value)
+        }
         SettingsChoice {
             width: parent.width
+            // The taskbar always sits at the bottom, so the edge choice is hidden.
+            visible: Appearance.pendingBarStyle !== "taskbar"
             title: "Bar position"
             subtitle: Appearance.barTransitioning ? "Moving the bar…"
-                : (Appearance.barStyle === "taskbar" ? "The taskbar always sits at the bottom"
-                    : "Optimized layouts are used on every edge")
+                : "Optimized layouts are used on every edge"
             options: ["top", "bottom", "left", "right"]
             optionLabels: ["Top", "Bottom", "Left", "Right"]
-            disabledOptions: Appearance.barStyle === "taskbar" ? ["top", "left", "right"] : []
             value: Appearance.requestedBarPosition
             onSelected: value => Appearance.setBarPosition(value)
         }

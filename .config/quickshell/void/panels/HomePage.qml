@@ -289,24 +289,6 @@ Item {
 
                 QsTile {
                     Layout.fillWidth: true
-                    icon: NotificationService.doNotDisturb ? "do_not_disturb_on" : "do_not_disturb_off"
-                    title: I18n.tr("actionCenter.dnd")
-                    subtitle: NotificationService.doNotDisturb ? I18n.tr("common.on") : I18n.tr("common.off")
-                    active: NotificationService.doNotDisturb
-                    onToggled: NotificationService.setDoNotDisturb(!NotificationService.doNotDisturb)
-                }
-
-                QsTile {
-                    Layout.fillWidth: true
-                    icon: Theme.darkMode ? "dark_mode" : "light_mode"
-                    title: I18n.tr("actionCenter.darkTheme")
-                    subtitle: Theme.darkMode ? I18n.tr("common.on") : I18n.tr("common.off")
-                    active: Theme.darkMode
-                    onToggled: Appearance.setColorMode(Theme.darkMode ? "light" : "dark")
-                }
-
-                QsTile {
-                    Layout.fillWidth: true
                     icon: PowerService.profileMode === "performance" ? "bolt"
                         : (PowerService.profileMode === "saver" ? "eco" : "balance")
                     title: I18n.tr("actionCenter.power")
@@ -327,6 +309,44 @@ Item {
                 columnSpacing: Metrics.spaceS
                 rowSpacing: Metrics.spaceS
 
+                QsIconTile {
+                    Layout.fillWidth: true
+                    icon: NotificationService.doNotDisturb ? "do_not_disturb_on" : "do_not_disturb_off"
+                    accessibleName: I18n.tr("actionCenter.dnd")
+                    active: NotificationService.doNotDisturb
+                    onClicked: NotificationService.setDoNotDisturb(!NotificationService.doNotDisturb)
+                }
+                QsIconTile {
+                    Layout.fillWidth: true
+                    icon: Theme.darkMode ? "dark_mode" : "light_mode"
+                    accessibleName: I18n.tr("actionCenter.darkTheme")
+                    active: Theme.darkMode
+                    onClicked: Appearance.setColorMode(Theme.darkMode ? "light" : "dark")
+                }
+                QsIconTile {
+                    Layout.fillWidth: true
+                    icon: "nightlight"
+                    accessibleName: I18n.tr("actionCenter.nightLight")
+                    active: SystemSettingsService.nightLightEnabled
+                    available: SystemSettingsService.available("nightlight")
+                    onClicked: SystemSettingsService.setNightLight(!SystemSettingsService.nightLightEnabled)
+                }
+                QsIconTile {
+                    Layout.fillWidth: true
+                    icon: "coffee"
+                    accessibleName: I18n.tr("actionCenter.keepAwake")
+                    active: SystemActionService.keepAwakeActive
+                    available: !SystemActionService.keepAwakeStopping
+                    onClicked: SystemActionService.toggleKeepAwake()
+                }
+                QsIconTile {
+                    Layout.fillWidth: true
+                    icon: "wifi_tethering"
+                    accessibleName: I18n.tr("actionCenter.hotspot")
+                    active: SystemActionService.hotspotActive
+                    available: SystemActionService.hotspotAvailable
+                    onClicked: root.openPage("hotspot")
+                }
                 QsIconTile {
                     Layout.fillWidth: true
                     icon: "screenshot_region"
@@ -354,34 +374,10 @@ Item {
                 }
                 QsIconTile {
                     Layout.fillWidth: true
-                    icon: "wifi_tethering"
-                    accessibleName: I18n.tr("actionCenter.hotspot")
-                    active: SystemActionService.hotspotActive
-                    available: SystemActionService.hotspotAvailable
-                    onClicked: root.openPage("hotspot")
-                }
-                QsIconTile {
-                    Layout.fillWidth: true
                     icon: "cast"
                     accessibleName: I18n.tr("actionCenter.project")
                     active: SystemActionService.monitorCount > 1
                     onClicked: root.openPage("project")
-                }
-                QsIconTile {
-                    Layout.fillWidth: true
-                    icon: "coffee"
-                    accessibleName: I18n.tr("actionCenter.keepAwake")
-                    active: SystemActionService.keepAwakeActive
-                    available: !SystemActionService.keepAwakeStopping
-                    onClicked: SystemActionService.toggleKeepAwake()
-                }
-                QsIconTile {
-                    Layout.fillWidth: true
-                    icon: "nightlight"
-                    accessibleName: I18n.tr("actionCenter.nightLight")
-                    active: SystemSettingsService.nightLightEnabled
-                    available: SystemSettingsService.available("nightlight")
-                    onClicked: SystemSettingsService.setNightLight(!SystemSettingsService.nightLightEnabled)
                 }
             }
 

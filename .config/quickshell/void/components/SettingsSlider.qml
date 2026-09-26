@@ -15,7 +15,7 @@ Rectangle {
     property bool enabled: true
     signal changed(real value)
 
-    implicitHeight: Metrics.sliderHeight
+    implicitHeight: Math.round(84 * Metrics.scale)
     radius: 0
     color: "transparent"
     border.width: 0
@@ -41,6 +41,13 @@ Rectangle {
             return displayed + root.suffix
         }
         iconInteractive: false
+        leftInset: Metrics.spaceXL
+        rightInset: Metrics.spaceXL
+        iconColumn: Math.round(40 * Metrics.scale)
+        textIndent: Metrics.spaceXL + Math.round(40 * Metrics.scale) + Metrics.spaceM
+        trackIndent: textIndent
+        titleSize: Metrics.appTextTitle
+        subtitleSize: Metrics.appTextSupporting
         onMoved: value => root.changed(root.snapped(value))
     }
 

@@ -22,6 +22,9 @@ QtObject {
     // The taskbar always lives on the bottom edge; the previous edge is
     // restored when another style is chosen.
     property string positionBeforeTaskbar: "top"
+    // The taskbar hides below the screen edge and slides in when the pointer
+    // reaches the bottom edge, so windows keep the full height.
+    property bool taskbarAutoHide: true
     readonly property bool panelsAttached: barStyle === "frame"
     // Desktop entry ids pinned to the taskbar dock, in display order.
     property var pinnedApps: ["org.gnome.Nautilus", "firefox", "voidline-terminal", "voidline-settings"]
@@ -97,6 +100,7 @@ QtObject {
             root.positionBeforeTaskbar = ["top", "bottom", "left", "right"]
                 .indexOf(data.positionBeforeTaskbar) >= 0
                 ? data.positionBeforeTaskbar : "top"
+            root.taskbarAutoHide = data.taskbarAutoHide !== false
             if (Array.isArray(data.pinnedApps))
                 root.pinnedApps = data.pinnedApps
                     .filter(value => typeof value === "string" && /^[A-Za-z0-9._-]{1,128}$/.test(value))
@@ -183,6 +187,7 @@ QtObject {
             barPosition: barPosition,
             barStyle: barStyle,
             positionBeforeTaskbar: positionBeforeTaskbar,
+            taskbarAutoHide: taskbarAutoHide,
             pinnedApps: pinnedApps,
             workspacePlacement: workspacePlacement,
             musicPlacement: musicPlacement,
@@ -284,6 +289,13 @@ QtObject {
             pendingBarPosition = barPosition
         }
         beginBarRelocation()
+    }
+
+    function setTaskbarAutoHide(value) {
+        if (taskbarAutoHide === !!value)
+            return
+        taskbarAutoHide = !!value
+        persist()
     }
 
     function togglePinnedApp(appId) {

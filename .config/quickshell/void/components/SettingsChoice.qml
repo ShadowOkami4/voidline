@@ -27,6 +27,8 @@ Rectangle {
         anchors {
             fill: parent
             margins: Metrics.spaceXL
+            // Line up with the text column of icon rows.
+            leftMargin: Metrics.spaceXL + Math.round(40 * Metrics.scale) + Metrics.spaceM
         }
         spacing: Metrics.labelControlGap
 

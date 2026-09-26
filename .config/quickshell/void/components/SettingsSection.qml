@@ -11,6 +11,7 @@ Column {
     property color iconContainerColor: Theme.accentContainer
     property color iconColor: Theme.accent
     property bool fullWidth: false
+    property bool showSubtitle: false
     // Plain sections skip the segmented row backgrounds, for content that
     // brings its own cards (for example the About tile grid).
     // Pixel lists are flat: rows sit directly on the pane. Set plain: false
@@ -27,8 +28,8 @@ Column {
     Column {
         width: parent.width
         visible: root.title.length > 0
-        // Aligns with row text: 24 px inset + 40 px icon column + 16 px gap.
-        leftPadding: Math.round(80 * Metrics.scale)
+        // Aligns with row text: page inset + 40 px icon column + row gap.
+        leftPadding: Metrics.spaceXL + Math.round(40 * Metrics.scale) + Metrics.spaceM
         rightPadding: Metrics.spaceXL
         topPadding: Metrics.spaceM
         bottomPadding: 2
@@ -45,7 +46,9 @@ Column {
         }
         Text {
             width: parent.width - parent.leftPadding - parent.rightPadding
-            visible: root.subtitle.length > 0
+            // Section explanations stay searchable but are not drawn: Pixel
+            // lists label a group with its title only.
+            visible: root.showSubtitle && root.subtitle.length > 0
             text: root.subtitle
             color: Theme.textMuted
             font.family: Theme.fontFamily

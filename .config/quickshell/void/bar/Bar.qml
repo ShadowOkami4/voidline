@@ -11,7 +11,8 @@ import "../services"
 //   islands   each group floats as its own pill
 //   floating  one detached, rounded rail
 //   minimal   no surface; a soft scrim keeps content legible
-//   taskbar   bottom dock with App Center, pinned and running apps
+//   taskbar   bottom dock with App Center, pinned and running apps; it hides
+//             below the screen edge until the pointer touches the edge
 // Only "frame" draws the concave joins and attached panels.
 PanelWindow {
     id: bar
@@ -30,6 +31,17 @@ PanelWindow {
     readonly property int railSize: Theme.barThickness
     readonly property int islandPadding: Metrics.spaceM
     readonly property color islandColor: Theme.panel
+    // Auto-hide (taskbar only): reserve no space and slide the dock away
+    // unless the pointer is on it or one of its panels is open.
+    readonly property bool autoHide: taskbar && Appearance.taskbarAutoHide
+    readonly property bool panelOpen: ShellState.isControlCenterScreen(screen)
+        || ShellState.isLauncherScreen(screen)
+        || ShellState.isMusicScreen(screen)
+        || ShellState.isClockScreen(screen)
+    property bool pointerHeld: false
+    readonly property bool revealed: !autoHide || pointerHeld || panelOpen
+    readonly property int hideOffset: revealed ? 0 : railSize + edgeGap + Metrics.spaceS
+    readonly property int revealTriggerSize: Math.max(2, Math.round(3 * Metrics.scale))
 
     anchors {
         top: position !== "bottom"
@@ -40,17 +52,76 @@ PanelWindow {
 
     implicitWidth: horizontal ? 0 : railSize + (framed ? curveSize : edgeGap * 2)
     implicitHeight: horizontal ? railSize + (framed ? curveSize : edgeGap * 2) : 0
-    exclusiveZone: railSize + edgeGap
+    exclusiveZone: autoHide ? 0 : railSize + edgeGap
     color: "transparent"
+
+    // While auto-hidden only a thin strip on the screen edge takes input;
+    // when shown, only the three islands do, so the gaps stay click-through.
+    mask: autoHide ? autoHideMask : null
+
+    Region {
+        id: autoHideMask
+        Region {
+            x: 0
+            y: bar.height - bar.revealTriggerSize
+            width: bar.width
+            height: bar.revealTriggerSize
+        }
+        Region {
+            x: barSurface.x + taskbarLeft.x
+            y: bar.revealed ? barSurface.y : bar.height
+            width: taskbarLeft.width
+            height: bar.revealed ? barSurface.height : 0
+        }
+        Region {
+            x: barSurface.x + taskbarCenter.x
+            y: bar.revealed ? barSurface.y : bar.height
+            width: taskbarCenter.width
+            height: bar.revealed ? barSurface.height : 0
+        }
+        Region {
+            x: barSurface.x + taskbarRight.x
+            y: bar.revealed ? barSurface.y : bar.height
+            width: taskbarRight.width
+            height: bar.revealed ? barSurface.height : 0
+        }
+    }
+
+    HoverHandler {
+        enabled: bar.autoHide
+        onHoveredChanged: {
+            if (hovered) {
+                autoHideDelay.stop()
+                bar.pointerHeld = true
+            } else {
+                autoHideDelay.restart()
+            }
+        }
+    }
+
+    Timer {
+        id: autoHideDelay
+        interval: 650
+        onTriggered: bar.pointerHeld = false
+    }
 
     Item {
         id: barSurface
         x: bar.framed ? (position === "right" ? curveSize : 0) : bar.edgeGap
-        y: bar.framed ? (position === "bottom" ? curveSize : 0) : bar.edgeGap
+        y: (bar.framed ? (position === "bottom" ? curveSize : 0) : bar.edgeGap) + bar.hideOffset
         width: horizontal ? bar.width - (bar.framed ? 0 : bar.edgeGap * 2) : railSize
         height: horizontal ? railSize : bar.height - (bar.framed ? 0 : bar.edgeGap * 2)
         opacity: Appearance.barVisible ? 1 : 0
         scale: Appearance.barVisible ? 1 : 0.985
+
+        Behavior on y {
+            enabled: bar.autoHide
+            NumberAnimation {
+                duration: bar.revealed ? Motion.springDefault : Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: bar.revealed ? Motion.spatialDefault : Motion.effectsFast
+            }
+        }
 
         Behavior on opacity {
             NumberAnimation {
@@ -170,6 +241,7 @@ PanelWindow {
             visible: bar.taskbar
 
             Rectangle {
+                id: taskbarLeft
                 anchors {
                     left: parent.left
                     top: parent.top
@@ -186,6 +258,7 @@ PanelWindow {
             }
 
             Rectangle {
+                id: taskbarCenter
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                     top: parent.top
@@ -203,6 +276,7 @@ PanelWindow {
             }
 
             Rectangle {
+                id: taskbarRight
                 anchors {
                     right: parent.right
                     top: parent.top

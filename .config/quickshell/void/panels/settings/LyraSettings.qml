@@ -32,14 +32,6 @@ SettingsMasonry {
             onClicked: AssistantService.acknowledgeBeta()
         }
 
-        SettingsToggle {
-            width: parent.width
-            icon: AssistantService.assistantEnabled ? "neurology" : "smart_toy"
-            title: I18n.tr("assistant.enable")
-            subtitle: I18n.tr("assistant.enableHint")
-            checked: AssistantService.assistantEnabled
-            onToggled: value => AssistantService.setAssistantEnabled(value)
-        }
 
         SettingsChoice {
             width: parent.width

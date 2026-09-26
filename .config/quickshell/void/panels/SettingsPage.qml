@@ -105,8 +105,6 @@ FocusScope {
                 available: ConnectivityService.bluetoothAvailable }
         case "notifications":
             return { title: I18n.tr("settings.mainSwitch.dnd"), checked: NotificationService.doNotDisturb, available: true }
-        case "appearance":
-            return { title: I18n.tr("settings.mainSwitch.darkTheme"), checked: Theme.darkMode, available: true }
         case "assistant":
             return { title: I18n.tr("settings.mainSwitch.assistant"), checked: AssistantService.assistantEnabled, available: true }
         default:
@@ -121,8 +119,6 @@ FocusScope {
             ConnectivityService.toggleBluetooth()
         else if (id === "notifications")
             NotificationService.setDoNotDisturb(checked)
-        else if (id === "appearance")
-            Appearance.setColorMode(checked ? "dark" : "light")
         else if (id === "assistant")
             AssistantService.setAssistantEnabled(checked)
     }

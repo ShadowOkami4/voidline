@@ -35,9 +35,10 @@ Rectangle {
         spacing: Metrics.spaceM
 
         Rectangle {
-            Layout.preferredWidth: 58
+            // Wordmark logos need a wider pill than the 40 px icon column.
+            Layout.preferredWidth: Math.round(58 * Metrics.scale)
             Layout.preferredHeight: Math.round(40 * Metrics.scale)
-            radius: width / 2
+            radius: height / 2
             color: Theme.surfaceContainerHighest
 
             Image {
@@ -94,5 +95,5 @@ Rectangle {
         enabled: root.interactive
         onTapped: root.clicked()
     }
-    SettingsDivider { leftInset: 58 + Metrics.cardPadding + Metrics.spaceM }
+    SettingsDivider { }
 }

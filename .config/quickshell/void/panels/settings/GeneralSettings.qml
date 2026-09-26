@@ -77,14 +77,6 @@ SettingsMasonry {
 
         SettingsToggle {
             width: parent.width
-            icon: "do_not_disturb_on"
-            title: "Do Not Disturb"
-            subtitle: "Keep notifications in history without interrupting you"
-            checked: Appearance.doNotDisturb
-            onToggled: value => NotificationService.setDoNotDisturb(value)
-        }
-        SettingsToggle {
-            width: parent.width
             icon: "notification_important"
             title: "Popup notifications"
             subtitle: "Show new notifications in the top-right connected popup"
@@ -964,31 +956,24 @@ SettingsMasonry {
         subtitle: I18n.tr("settings.about.subtitle")
         icon: "info"
 
-        GridLayout {
-            width: parent.width
-            columns: root.twoColumns ? 2 : 1
-            columnSpacing: Metrics.spaceS
-            rowSpacing: Metrics.spaceS
+        // Pixel "About" list: one flat row per fact, value on the right.
+        Repeater {
+            model: [
+                { icon: "computer", title: I18n.tr("settings.about.deviceName"), value: SettingsService.hostName, subtitle: SettingsService.osName },
+                { icon: "memory", title: I18n.tr("settings.about.processor"), value: SettingsService.cpu, subtitle: "CPU" },
+                { icon: "developer_board", title: I18n.tr("settings.about.graphics"), value: SettingsService.gpu, subtitle: "GPU" },
+                { icon: "memory_alt", title: I18n.tr("settings.about.installedMemory"), value: SettingsService.installedRam, subtitle: I18n.tr("settings.about.installedMemoryHint") },
+                { icon: "hard_drive", title: I18n.tr("settings.about.storage"), value: SettingsService.storageCapacity, subtitle: I18n.tr("settings.about.storageUsed", { value: SettingsService.storageUsed }) },
+                { icon: "terminal", title: I18n.tr("settings.about.kernel"), value: SettingsService.kernel, subtitle: I18n.tr("settings.about.kernelType", { type: SettingsService.kernelType }) },
+                { icon: "schedule", title: I18n.tr("settings.about.uptime"), value: SettingsService.uptime, subtitle: I18n.tr("settings.about.uptimeHint") }
+            ]
 
-            Repeater {
-                model: [
-                    { icon: "computer", title: I18n.tr("settings.about.deviceName"), value: SettingsService.hostName, subtitle: SettingsService.osName },
-                    { icon: "memory", title: I18n.tr("settings.about.processor"), value: SettingsService.cpu, subtitle: "CPU" },
-                    { icon: "developer_board", title: I18n.tr("settings.about.graphics"), value: SettingsService.gpu, subtitle: "GPU" },
-                    { icon: "memory_alt", title: I18n.tr("settings.about.installedMemory"), value: SettingsService.installedRam, subtitle: I18n.tr("settings.about.installedMemoryHint") },
-                    { icon: "hard_drive", title: I18n.tr("settings.about.storage"), value: SettingsService.storageCapacity, subtitle: I18n.tr("settings.about.storageUsed", { value: SettingsService.storageUsed }) },
-                    { icon: "terminal", title: I18n.tr("settings.about.kernel"), value: SettingsService.kernel, subtitle: I18n.tr("settings.about.kernelType", { type: SettingsService.kernelType }) },
-                    { icon: "schedule", title: I18n.tr("settings.about.uptime"), value: SettingsService.uptime, subtitle: I18n.tr("settings.about.uptimeHint") }
-                ]
-
-                SettingsInfoTile {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    icon: modelData.icon
-                    title: modelData.title
-                    value: modelData.value
-                    subtitle: modelData.subtitle
-                }
+            SettingsValueRow {
+                required property var modelData
+                width: parent ? parent.width : 0
+                icon: modelData.icon
+                title: modelData.title
+                value: modelData.value || modelData.subtitle
             }
         }
     }
@@ -1000,43 +985,36 @@ SettingsMasonry {
         subtitle: I18n.tr("settings.about.componentsHint")
         icon: "layers"
 
-        GridLayout {
+        SettingsBrandRow {
             width: parent.width
-            columns: root.twoColumns ? 2 : 1
-            columnSpacing: Metrics.settingsPageGap
-            rowSpacing: Metrics.settingsPageGap
-
-            SettingsBrandCard {
-                Layout.fillWidth: true
-                logoSource: "file://" + Paths.shellRoot + "/assets/branding/arch-linux.svg"
-                title: "Arch Linux"
-                subtitle: SettingsService.osName
-                value: I18n.tr("settings.about.operatingSystem")
-            }
-            SettingsBrandCard {
-                Layout.fillWidth: true
-                logoSource: "file://" + Paths.shellRoot + "/assets/branding/hyprland.svg"
-                title: "Hyprland"
-                subtitle: SettingsService.hyprlandVersion
-                value: SettingsService.windowManager
-            }
-            SettingsBrandCard {
-                Layout.fillWidth: true
-                logoSource: "file://" + Paths.shellRoot + "/assets/branding/quickshell.svg"
-                title: "Quickshell"
-                subtitle: SettingsService.quickshellVersion
-                value: I18n.tr("settings.about.shellRuntime")
-            }
-            SettingsBrandCard {
-                Layout.fillWidth: true
-                logoSource: "file://" + Paths.shellRoot + "/assets/branding/voidline.svg"
-                title: "Voidline"
-                subtitle: root.message.length > 0 ? root.message
-                    : I18n.tr("settings.about.version", { version: SettingsService.voidlineVersion })
-                value: I18n.tr("settings.about.desktopShell")
-                interactive: true
-                onClicked: root.tapVersion()
-            }
+            logoSource: "file://" + Paths.shellRoot + "/assets/branding/arch-linux.svg"
+            title: "Arch Linux"
+            subtitle: SettingsService.osName
+            value: I18n.tr("settings.about.operatingSystem")
+        }
+        SettingsBrandRow {
+            width: parent.width
+            logoSource: "file://" + Paths.shellRoot + "/assets/branding/hyprland.svg"
+            title: "Hyprland"
+            subtitle: SettingsService.hyprlandVersion
+            value: SettingsService.windowManager
+        }
+        SettingsBrandRow {
+            width: parent.width
+            logoSource: "file://" + Paths.shellRoot + "/assets/branding/quickshell.svg"
+            title: "Quickshell"
+            subtitle: SettingsService.quickshellVersion
+            value: I18n.tr("settings.about.shellRuntime")
+        }
+        SettingsBrandRow {
+            width: parent.width
+            logoSource: "file://" + Paths.shellRoot + "/assets/branding/voidline.svg"
+            title: "Voidline"
+            subtitle: root.message.length > 0 ? root.message
+                : I18n.tr("settings.about.version", { version: SettingsService.voidlineVersion })
+            value: I18n.tr("settings.about.desktopShell")
+            interactive: true
+            onClicked: root.tapVersion()
         }
 
         Rectangle {

@@ -341,7 +341,7 @@ PanelWindow {
                     ColumnLayout {
                         id: actionsPage
                         anchors.fill: parent
-                        spacing: 10
+                        spacing: Metrics.spaceS
                         enabled: root.pendingAction.length === 0
                         opacity: root.pendingAction.length === 0 ? root.revealValue(0.02) : 0
                         visible: opacity > 0.001
@@ -363,186 +363,130 @@ PanelWindow {
                             }
                         }
 
-                        // Android 16 power menu: big action tiles; Power off
-                        // uses the error colour, Restart the accent colour.
-                        GridLayout {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            columns: 2
-                            columnSpacing: Metrics.spaceS
-                            rowSpacing: Metrics.spaceS
+                        // Slim M3 Expressive power list: one pill per action,
+                        // Power off as the single filled (error) action, and
+                        // Keep awake as a switch below a divider.
+                        Repeater {
+                            model: [
+                                { action: "lock", title: I18n.tr("power.lock"), icon: "lock" },
+                                { action: "suspend", title: I18n.tr("power.sleep"), icon: "bedtime" },
+                                { action: "logout", title: I18n.tr("power.logOut"), icon: "logout" },
+                                { action: "reboot", title: I18n.tr("power.restart"), icon: "restart_alt" },
+                                { action: "poweroff", title: I18n.tr("power.powerOff"), icon: "power_settings_new" }
+                            ]
 
-                            Repeater {
-                                model: [
-                                    { action: "poweroff", title: I18n.tr("power.powerOff"), icon: "power_settings_new", tone: "danger" },
-                                    { action: "reboot", title: I18n.tr("power.restart"), icon: "restart_alt", tone: "accent" },
-                                    { action: "suspend", title: I18n.tr("power.sleep"), icon: "bedtime", tone: "neutral" },
-                                    { action: "lock", title: I18n.tr("power.lock"), icon: "lock", tone: "neutral" }
-                                ]
+                            delegate: Rectangle {
+                                id: actionRow
+                                required property var modelData
+                                required property int index
+                                readonly property bool danger: modelData.action === "poweroff"
+                                readonly property color ink: danger ? Theme.dangerInk : Theme.text
 
-                                delegate: Rectangle {
-                                    id: bigAction
-                                    required property var modelData
-                                    required property int index
-                                    readonly property bool danger: modelData.tone === "danger"
-                                    readonly property bool accent: modelData.tone === "accent"
-                                    readonly property color ink: danger ? Theme.dangerInk
-                                        : (accent ? Theme.accentInk : Theme.text)
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.round(52 * Metrics.scale)
+                                radius: rowTap.pressed ? Metrics.radiusM : height / 2
+                                color: danger ? (rowHover.hovered ? Qt.lighter(Theme.danger, 1.08) : Theme.danger)
+                                    : (rowHover.hovered ? Theme.surfaceHover : Theme.surfaceContainerHighest)
+                                opacity: root.revealValue(index * 0.06)
+                                    * (SystemActionService.sessionActionRunning ? 0.5 : 1)
+                                transform: Translate {
+                                    x: root.revealDirection
+                                        * (1 - root.revealValue(actionRow.index * 0.06)) * 24
+                                }
+                                Accessible.role: Accessible.Button
+                                Accessible.name: modelData.title
 
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-                                    radius: bigTap.pressed ? Metrics.radiusL
-                                        : (danger || accent ? Math.round(40 * Metrics.scale) : Metrics.radiusXL)
-                                    color: danger ? (bigHover.hovered ? Qt.lighter(Theme.danger, 1.08) : Theme.danger)
-                                        : (accent ? (bigHover.hovered ? Theme.accentStrong : Theme.accent)
-                                            : (bigHover.hovered ? Theme.surfaceHover : Theme.surfaceHigh))
-                                    opacity: root.revealValue(index * 0.07)
-                                        * (SystemActionService.sessionActionRunning ? 0.5 : 1)
-                                    transform: Translate {
-                                        x: root.revealDirection
-                                            * (1 - root.revealValue(bigAction.index * 0.07)) * 24
-                                    }
-                                    Accessible.role: Accessible.Button
-                                    Accessible.name: modelData.title
-
-                                    Behavior on radius {
-                                        NumberAnimation {
-                                            duration: Motion.springFast
-                                            easing.type: Easing.BezierSpline
-                                            easing.bezierCurve: Motion.spatialFast
-                                        }
-                                    }
-                                    Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
-
-                                    ColumnLayout {
-                                        anchors.fill: parent
-                                        anchors.margins: Metrics.spaceL
-                                        spacing: 0
-
-                                        Rectangle {
-                                            Layout.preferredWidth: Math.round(48 * Metrics.scale)
-                                            Layout.preferredHeight: Layout.preferredWidth
-                                            radius: width / 2
-                                            color: bigAction.danger || bigAction.accent
-                                                ? Theme.withAlpha(bigAction.ink, 0.14) : Theme.surfaceContainerHighest
-
-                                            MaterialIcon {
-                                                anchors.centerIn: parent
-                                                text: bigAction.modelData.icon
-                                                size: Math.round(24 * Metrics.scale)
-                                                fill: 1
-                                                color: bigAction.ink
-                                            }
-                                        }
-                                        Item { Layout.fillHeight: true }
-                                        Text {
-                                            Layout.fillWidth: true
-                                            text: bigAction.modelData.title
-                                            color: bigAction.ink
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: Math.round(18 * Metrics.scale)
-                                            font.weight: Font.DemiBold
-                                            elide: Text.ElideRight
-                                        }
-                                    }
-
-                                    HoverHandler {
-                                        id: bigHover
-                                        cursorShape: Qt.PointingHandCursor
-                                    }
-                                    TapHandler {
-                                        id: bigTap
-                                        enabled: !SystemActionService.sessionActionRunning
-                                        onTapped: root.requestAction(bigAction.modelData.action)
+                                Behavior on radius {
+                                    NumberAnimation {
+                                        duration: Motion.springFast
+                                        easing.type: Easing.BezierSpline
+                                        easing.bezierCurve: Motion.spatialFast
                                     }
                                 }
+                                Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: Math.round(8 * Metrics.scale)
+                                    anchors.rightMargin: Metrics.spaceL
+                                    spacing: Metrics.spaceM
+
+                                    Rectangle {
+                                        Layout.preferredWidth: Math.round(36 * Metrics.scale)
+                                        Layout.preferredHeight: Layout.preferredWidth
+                                        radius: width / 2
+                                        color: actionRow.danger ? Theme.withAlpha(actionRow.ink, 0.16)
+                                            : Theme.surfaceContainer
+
+                                        MaterialIcon {
+                                            anchors.centerIn: parent
+                                            text: actionRow.modelData.icon
+                                            size: Math.round(20 * Metrics.scale)
+                                            fill: 1
+                                            color: actionRow.danger ? actionRow.ink : Theme.accent
+                                        }
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: actionRow.modelData.title
+                                        color: actionRow.ink
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Math.round(15 * Metrics.scale)
+                                        font.weight: Font.DemiBold
+                                        elide: Text.ElideRight
+                                    }
+                                }
+
+                                HoverHandler {
+                                    id: rowHover
+                                    cursorShape: Qt.PointingHandCursor
+                                }
+                                TapHandler {
+                                    id: rowTap
+                                    enabled: !SystemActionService.sessionActionRunning
+                                    onTapped: root.requestAction(actionRow.modelData.action)
+                                }
                             }
+                        }
+
+                        Item { Layout.fillHeight: true }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Metrics.divider
+                            color: Theme.outlineVariant
+                            opacity: root.revealValue(0.3)
                         }
 
                         RowLayout {
                             Layout.fillWidth: true
                             Layout.fillHeight: false
-                            Layout.preferredHeight: Math.round(52 * Metrics.scale)
-                            spacing: Metrics.spaceS
-                            opacity: root.revealValue(0.3)
+                            Layout.preferredHeight: Math.round(44 * Metrics.scale)
+                            Layout.leftMargin: Math.round(8 * Metrics.scale)
+                            spacing: Metrics.spaceM
+                            opacity: root.revealValue(0.3) * (SystemActionService.keepAwakeStopping ? 0.5 : 1)
 
-                            Rectangle {
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                radius: logoutTap.pressed ? Metrics.radiusM : height / 2
-                                color: logoutHover.hovered ? Theme.surfaceHover : Theme.surfaceContainerHighest
-                                Accessible.role: Accessible.Button
-                                Accessible.name: I18n.tr("power.logOut")
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Metrics.spaceS
-                                    MaterialIcon {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "logout"
-                                        size: Math.round(20 * Metrics.scale)
-                                    }
-                                    Text {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: I18n.tr("power.logOut")
-                                        color: Theme.text
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Math.round(14 * Metrics.scale)
-                                        font.weight: Font.DemiBold
-                                    }
-                                }
-                                HoverHandler {
-                                    id: logoutHover
-                                    cursorShape: Qt.PointingHandCursor
-                                }
-                                TapHandler {
-                                    id: logoutTap
-                                    enabled: !SystemActionService.sessionActionRunning
-                                    onTapped: root.requestAction("logout")
-                                }
+                            MaterialIcon {
+                                Layout.preferredWidth: Math.round(36 * Metrics.scale)
+                                horizontalAlignment: Text.AlignHCenter
+                                text: "coffee"
+                                size: Math.round(20 * Metrics.scale)
+                                fill: SystemActionService.keepAwakeActive ? 1 : 0
+                                color: SystemActionService.keepAwakeActive ? Theme.accent : Theme.textMuted
                             }
-
-                            Rectangle {
+                            Text {
                                 Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                radius: awakeTap.pressed ? Metrics.radiusM : height / 2
-                                color: SystemActionService.keepAwakeActive ? Theme.accentContainer
-                                    : (awakeHover.hovered ? Theme.surfaceHover : Theme.surfaceContainerHighest)
-                                opacity: SystemActionService.keepAwakeStopping ? 0.5 : 1
-                                Accessible.role: Accessible.CheckBox
-                                Accessible.name: I18n.tr("power.keepAwake")
-                                Accessible.checked: SystemActionService.keepAwakeActive
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Metrics.spaceS
-                                    MaterialIcon {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "coffee"
-                                        size: Math.round(20 * Metrics.scale)
-                                        fill: SystemActionService.keepAwakeActive ? 1 : 0
-                                        color: SystemActionService.keepAwakeActive
-                                            ? Theme.accentContainerInk : Theme.text
-                                    }
-                                    Text {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: I18n.tr("power.keepAwake")
-                                        color: SystemActionService.keepAwakeActive
-                                            ? Theme.accentContainerInk : Theme.text
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Math.round(14 * Metrics.scale)
-                                        font.weight: Font.DemiBold
-                                    }
-                                }
-                                HoverHandler {
-                                    id: awakeHover
-                                    cursorShape: Qt.PointingHandCursor
-                                }
-                                TapHandler {
-                                    id: awakeTap
-                                    enabled: !SystemActionService.keepAwakeStopping
-                                    onTapped: SystemActionService.toggleKeepAwake()
-                                }
+                                text: I18n.tr("power.keepAwake")
+                                color: Theme.text
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Math.round(14 * Metrics.scale)
+                                elide: Text.ElideRight
+                            }
+                            ToggleSwitch {
+                                checked: SystemActionService.keepAwakeActive
+                                enabled: !SystemActionService.keepAwakeStopping
+                                showIcons: true
+                                onToggled: SystemActionService.toggleKeepAwake()
                             }
                         }
                     }

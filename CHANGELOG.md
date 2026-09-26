@@ -21,7 +21,16 @@
   layout on wide screens, pill tiles, thick sliders, media card.
 - Pixel-style Settings: flat lists, pastel category icons, main switch bars.
 - Pixel lock clock (new default), right-hand unlock column, matching SDDM
-  layout, and a tile-based power menu.
+  layout, and a slim list-style power menu (Power off is the only filled
+  action; Keep awake is a switch).
+- Taskbar auto-hides by default: it reserves no screen space and slides in
+  when the pointer touches the bottom edge or one of its panels opens
+  (Settings > Appearance > Auto-hide taskbar).
+- Quick Settings: Do Not Disturb and Dark theme moved to the small icon
+  tiles; only Internet, Bluetooth, Sound, and Power keep large tiles.
+- Settings decluttered: section explanations are no longer drawn, duplicate
+  toggles under the main switch are gone, sliders and button groups line up
+  with the list text column, and About uses flat rows.
 
 ## 0.3.0dev — 2026-08-12
 
