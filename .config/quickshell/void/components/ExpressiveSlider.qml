@@ -120,11 +120,21 @@ Item {
             bottom: parent.bottom
             bottomMargin: Metrics.spaceS
         }
-        height: 30
+        height: Math.round(32 * Metrics.scale)
         clip: true
 
         readonly property real edgeInset: 2.5
-        readonly property real gapSize: 5
+        readonly property real gapSize: Math.round(6 * Metrics.scale)
+        property real barHeight: Math.round((dragArea.pressed ? 20 : 16) * Metrics.scale)
+        readonly property real innerRadius: Math.max(2, Math.round(2 * Metrics.scale))
+
+        Behavior on barHeight {
+            NumberAnimation {
+                duration: Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Motion.spatialFast
+            }
+        }
         readonly property real thumbCenter: edgeInset
             + Math.max(0, width - edgeInset * 2) * activeSegment.visualValue
 
@@ -135,16 +145,17 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             x: 0
             width: Math.max(0, track.thumbCenter - track.gapSize)
-            height: dragArea.pressed ? 16 : 12
-            radius: Math.min(3, width / 2)
+            height: track.barHeight
+            // M3 Expressive track: round outer end, tight corners at the handle.
+            topLeftRadius: Math.min(height / 2, width / 2)
+            bottomLeftRadius: topLeftRadius
+            topRightRadius: Math.min(track.innerRadius, width / 2)
+            bottomRightRadius: topRightRadius
             color: root.activeColor
 
             Behavior on visualValue {
                 enabled: !dragArea.pressed
                 NumberAnimation { duration: Motion.fast; easing.type: Motion.standardCurve }
-            }
-            Behavior on height {
-                NumberAnimation { duration: Motion.instant; easing.type: Motion.standardCurve }
             }
         }
 
@@ -152,40 +163,44 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             x: Math.min(parent.width, track.thumbCenter + track.gapSize)
             width: Math.max(0, parent.width - x)
-            height: dragArea.pressed ? 16 : 12
-            radius: Math.min(3, width / 2)
-            color: Theme.outlineSoft
+            height: track.barHeight
+            topLeftRadius: Math.min(track.innerRadius, width / 2)
+            bottomLeftRadius: topLeftRadius
+            topRightRadius: Math.min(height / 2, width / 2)
+            bottomRightRadius: topRightRadius
+            color: Theme.withAlpha(root.activeColor, Theme.darkMode ? 0.22 : 0.26)
 
-            Behavior on height {
-                NumberAnimation { duration: Motion.instant; easing.type: Motion.standardCurve }
-            }
         }
 
         Rectangle {
             anchors {
                 right: parent.right
-                rightMargin: 7
+                rightMargin: Math.round(6 * Metrics.scale)
                 verticalCenter: parent.verticalCenter
             }
-            width: 3
-            height: 3
-            radius: 1.5
+            width: Math.round(4 * Metrics.scale)
+            height: width
+            radius: width / 2
             visible: activeSegment.visualValue < 0.96
-            color: Theme.textMuted
-            opacity: 0.7
+            color: root.activeColor
         }
 
         Rectangle {
             id: handle
             x: track.thumbCenter - width / 2
             anchors.verticalCenter: parent.verticalCenter
-            width: dragArea.pressed ? 3 : 4
-            height: dragArea.pressed ? 32 : 26
+            width: dragArea.pressed ? 2 : 4
+            height: Math.round(30 * Metrics.scale)
             radius: width / 2
             color: root.muted ? Theme.textMuted : root.activeColor
 
-            Behavior on width { NumberAnimation { duration: Motion.instant; easing.type: Motion.standardCurve } }
-            Behavior on height { NumberAnimation { duration: Motion.instant; easing.type: Motion.standardCurve } }
+            Behavior on width {
+                NumberAnimation {
+                    duration: Motion.springFast
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Motion.spatialFast
+                }
+            }
             Behavior on color { ColorAnimation { duration: Motion.fast } }
         }
     }

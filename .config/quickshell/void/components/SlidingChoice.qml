@@ -19,15 +19,22 @@ Rectangle {
         Math.ceil(options.length / columns))
     readonly property int selectedIndex:
         options.map(option => String(option)).indexOf(value)
-    readonly property real inset: Metrics.spaceXS
-    readonly property real gap: Metrics.space2XS
+    // Material 3 Expressive connected button group: segments touch through a
+    // narrow gap, the outer ends are fully round, and the selected segment
+    // morphs into a filled pill.
+    readonly property real inset: 0
+    readonly property real gap: Metrics.segmentGap
     readonly property real segmentWidth: (width - inset * 2
         - gap * (columns - 1)) / columns
     readonly property real segmentHeight: Metrics.minimumHitSize
 
+    readonly property int pressedIndex: wholeControlTap.pressed
+        ? indexAt(wholeControlTap.point.position.x, wholeControlTap.point.position.y)
+        : -1
+
     implicitHeight: inset * 2 + rows * segmentHeight + gap * (rows - 1)
-    radius: Theme.radiusLarge
-    color: Theme.groupSurfaceRaised
+    radius: segmentHeight / 2
+    color: "transparent"
     opacity: enabled ? 1 : 0.46
     clip: true
     activeFocusOnTab: enabled
@@ -112,41 +119,6 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: selectionBlob
-        readonly property int selectedColumn: root.selectedIndex % root.columns
-        readonly property int selectedRow: Math.floor(root.selectedIndex / root.columns)
-
-        x: root.inset + selectedColumn * (root.segmentWidth + root.gap)
-        y: root.inset + selectedRow * (root.segmentHeight + root.gap)
-        width: root.segmentWidth
-        height: root.segmentHeight
-        radius: Metrics.stateRadius
-        color: Theme.accentContainer
-        visible: root.selectedIndex >= 0
-
-        Behavior on x {
-            NumberAnimation {
-                duration: Motion.selectionSlide
-                easing.type: Motion.expressiveCurve
-                easing.overshoot: 0.24
-            }
-        }
-        Behavior on y {
-            NumberAnimation {
-                duration: Motion.selectionSlide
-                easing.type: Motion.expressiveCurve
-                easing.overshoot: 0.18
-            }
-        }
-        Behavior on width {
-            NumberAnimation {
-                duration: Motion.fast
-                easing.type: Motion.standardCurve
-            }
-        }
-    }
-
     GridLayout {
         anchors {
             fill: parent
@@ -167,46 +139,82 @@ Rectangle {
                     String(modelData) === root.value
                 readonly property bool optionEnabled:
                     root.optionIsEnabled(index)
+                readonly property int column: index % root.columns
+                readonly property bool rowStart: column === 0
+                readonly property bool rowEnd: column === root.columns - 1
+                    || index === root.options.length - 1
+                readonly property bool isPressed: root.pressedIndex === index
+                readonly property real full: height / 2
+                readonly property real innerRadius: isPressed
+                    ? Metrics.radiusXS : Metrics.pressedRadius
 
                 Layout.fillWidth: true
                 Layout.preferredHeight: root.segmentHeight
-                scale: 1
                 opacity: optionEnabled ? 1 : 0.38
+
+                Rectangle {
+                    id: segment
+                    anchors.fill: parent
+                    color: optionItem.isSelected ? Theme.accent
+                        : (optionHover.hovered && optionItem.optionEnabled
+                            ? Theme.surfaceHover : Theme.groupSurfaceRaised)
+                    topLeftRadius: optionItem.isSelected || optionItem.rowStart
+                        ? optionItem.full : optionItem.innerRadius
+                    bottomLeftRadius: topLeftRadius
+                    topRightRadius: optionItem.isSelected || optionItem.rowEnd
+                        ? optionItem.full : optionItem.innerRadius
+                    bottomRightRadius: topRightRadius
+
+                    Behavior on topLeftRadius {
+                        NumberAnimation {
+                            duration: Motion.springFast
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Motion.spatialFast
+                        }
+                    }
+                    Behavior on topRightRadius {
+                        NumberAnimation {
+                            duration: Motion.springFast
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Motion.spatialFast
+                        }
+                    }
+                    Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+                }
 
                 Text {
                     anchors {
                         fill: parent
-                        leftMargin: 5
-                        rightMargin: 5
+                        leftMargin: Metrics.spaceS
+                        rightMargin: Metrics.spaceS
                     }
                     text: root.optionLabels.length > optionItem.index
                         ? root.optionLabels[optionItem.index]
                         : String(optionItem.modelData)
                     color: optionItem.isSelected
-                        ? Theme.accent : Theme.textMuted
+                        ? Theme.accentInk : Theme.text
                     font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: Metrics.appTextSupporting
                     font.weight: optionItem.isSelected
-                        ? Font.Bold : Font.DemiBold
+                        ? Font.Bold : Font.Medium
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
+
+                    Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
                 }
 
-                HoverHandler { id: optionHover }
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: Motion.instant
-                        easing.type: Motion.standardCurve
-                    }
+                HoverHandler {
+                    id: optionHover
+                    cursorShape: optionItem.optionEnabled
+                        ? Qt.PointingHandCursor : Qt.ArrowCursor
                 }
             }
         }
     }
 
-    // This handler sits at the shared control level, including above the
-    // animated selection blob. It fixes the dead area that previously appeared
-    // when the indicator itself was clicked or touched.
+    // This handler sits at the shared control level so the gaps between
+    // segments never become dead areas.
     TapHandler {
         id: wholeControlTap
         enabled: root.enabled

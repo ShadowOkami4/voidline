@@ -11,16 +11,27 @@ QtObject {
         * (Appearance.uiDensity === "compact" ? 0.92
             : (Appearance.uiDensity === "spacious" ? 1.08 : 1.0))
 
-    readonly property int radiusS: Math.round(10 * scale)
+    // Material 3 Expressive shape scale: extra-small 4, small 8, medium 12,
+    // large 16, large-increased 20, extra-large 28, extra-large-increased 32,
+    // extra-extra-large 48. Voidline maps its four historic steps onto the
+    // roomier end of that scale so containers read as soft, confident shapes.
+    readonly property int radiusXS: Math.round(4 * scale)
+    readonly property int radiusS: Math.round(12 * scale)
     readonly property int radiusM: Math.round(16 * scale)
-    readonly property int radiusL: Math.round(22 * scale)
-    readonly property int radiusXL: Math.round(28 * scale)
+    readonly property int radiusL: Math.round(24 * scale)
+    readonly property int radiusXL: Math.round(32 * scale)
+    readonly property int radiusXXL: Math.round(48 * scale)
     readonly property int panelRadius: radiusXL
     readonly property int cardRadius: radiusL
-    readonly property int tileRadius: radiusM
+    readonly property int tileRadius: radiusL
     readonly property int buttonRadius: radiusM
     readonly property int stateRadius: radiusM
     readonly property int iconContainerRadius: radiusM
+    // Shape morphing: pressed controls tighten to this radius, and segmented
+    // groups use it on the inner corners that face a neighbour.
+    readonly property int pressedRadius: Math.round(8 * scale)
+    readonly property int segmentInnerRadius: radiusXS
+    readonly property int segmentGap: Math.max(2, Math.round(2 * scale))
     readonly property int pillRadius: 999
 
     readonly property int space2XS: Math.round(3 * scale)
@@ -29,6 +40,7 @@ QtObject {
     readonly property int spaceM: Math.round(12 * scale)
     readonly property int spaceL: Math.round(18 * scale)
     readonly property int spaceXL: Math.round(24 * scale)
+    readonly property int spaceXXL: Math.round(32 * scale)
     readonly property int panelPadding: spaceL
     readonly property int pagePadding: spaceXL
     readonly property int sectionGap: spaceL
@@ -116,6 +128,7 @@ QtObject {
     readonly property int connectionOverlap: 1
     readonly property int screenFrame: Math.max(4, Math.round(4 * scale))
     readonly property int border: Math.max(1, Math.round(scale))
+    readonly property int divider: Math.max(1, Math.round(scale))
     readonly property int focusBorder: Math.max(2, Math.round(2 * scale))
     readonly property int hairlineRadius: Math.max(2, Math.round(2 * scale))
     readonly property int trackRadius: Math.max(4, Math.round(5 * scale))

@@ -15,16 +15,26 @@ Item {
     implicitWidth: 112
     implicitHeight: 82
     opacity: available ? 1 : 0.45
-    scale: tap.pressed ? 0.965 : 1
+    scale: tap.pressed ? 0.97 : 1
 
+    // Material 3 Expressive shape morph: inactive tiles are rounded squares,
+    // active tiles become filled pills, and a press tightens the corners.
     Rectangle {
         anchors.fill: parent
-        radius: Theme.cardRadius
-        color: root.active ? Theme.surfaceActive : (hover.hovered ? Theme.surfaceHover : Theme.surface)
-        border.width: root.active ? 1 : 0
-        border.color: Theme.outline
+        radius: tap.pressed ? Metrics.radiusM
+            : (root.active ? height / 2 : Metrics.tileRadius)
+        color: root.active
+            ? (hover.hovered ? Theme.accentStrong : Theme.accent)
+            : (hover.hovered ? Theme.surfaceHover : Theme.surface)
 
-        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Behavior on radius {
+            NumberAnimation {
+                duration: Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Motion.spatialFast
+            }
+        }
+        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
     }
 
     ColumnLayout {
@@ -36,13 +46,14 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             text: root.icon
             size: 25
-            color: root.active ? Theme.accent : Theme.text
+            fill: root.active ? 1 : 0
+            color: root.active ? Theme.accentInk : Theme.text
         }
 
         Text {
             Layout.fillWidth: true
             text: root.title
-            color: Theme.text
+            color: root.active ? Theme.accentInk : Theme.text
             font.family: Theme.fontFamily
             font.pixelSize: 13
             font.weight: Font.DemiBold
@@ -54,7 +65,8 @@ Item {
             Layout.fillWidth: true
             visible: text.length > 0
             text: root.subtitle
-            color: Theme.textMuted
+            color: root.active ? Theme.accentInk : Theme.textMuted
+            opacity: root.active ? 0.8 : 1
             font.family: Theme.fontFamily
             font.pixelSize: 11
             horizontalAlignment: Text.AlignHCenter
@@ -70,6 +82,10 @@ Item {
     }
 
     Behavior on scale {
-        NumberAnimation { duration: Motion.instant; easing.type: Motion.standardCurve }
+        NumberAnimation {
+            duration: Motion.springFast
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Motion.spatialFast
+        }
     }
 }

@@ -13,6 +13,7 @@ Item {
     property bool showChevron: true
     property color containerColor: active ? Theme.accentContainer : Theme.surface
     property color iconColor: active ? Theme.accent : Theme.text
+    property color titleColor: active ? Theme.accentContainerInk : Theme.text
     signal clicked
 
     implicitHeight: prominent ? 116 : 104
@@ -21,10 +22,21 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: root.prominent ? Theme.radiusExtraLarge : Theme.radiusLarge
-        color: hover.hovered ? Theme.surfaceHigh : root.containerColor
+        radius: tap.pressed ? Metrics.radiusM
+            : (root.prominent || root.active ? Metrics.radiusXL : Metrics.radiusL)
+        color: hover.hovered
+            ? (root.active ? Qt.tint(root.containerColor, Theme.withAlpha(Theme.accent, 0.08))
+                : Theme.surfaceHigh)
+            : root.containerColor
 
-        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Behavior on radius {
+            NumberAnimation {
+                duration: Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Motion.spatialFast
+            }
+        }
+        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
     }
 
     Rectangle {
@@ -35,13 +47,24 @@ Item {
         }
         width: root.prominent ? 44 : 36
         height: width
-        radius: Theme.radiusMedium
+        // Active icon containers morph from a rounded square into a circle.
+        radius: root.active ? width / 2 : Metrics.radiusS
         color: root.active ? root.iconColor : Theme.surfaceHover
+
+        Behavior on radius {
+            NumberAnimation {
+                duration: Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Motion.spatialFast
+            }
+        }
+        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
 
         MaterialIcon {
             anchors.centerIn: parent
             text: root.icon
             size: root.prominent ? 24 : 20
+            fill: root.active ? 1 : 0
             color: root.active ? Theme.accentInk : root.iconColor
         }
     }
@@ -68,7 +91,7 @@ Item {
             bottomMargin: 1
         }
         text: root.title
-        color: Theme.text
+        color: root.titleColor
         font.family: Theme.fontFamily
         font.pixelSize: root.prominent ? 15 : 13
         font.weight: Font.Bold
@@ -102,6 +125,10 @@ Item {
     }
 
     Behavior on scale {
-        NumberAnimation { duration: Motion.instant; easing.type: Motion.standardCurve }
+        NumberAnimation {
+            duration: Motion.springFast
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Motion.spatialFast
+        }
     }
 }

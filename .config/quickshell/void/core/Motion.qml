@@ -46,4 +46,23 @@ QtObject {
     readonly property int pageCurve: Easing.OutQuint
     readonly property int pageExitCurve: Easing.InQuint
     readonly property int expressiveCurve: Easing.OutBack
+
+    // Material 3 Expressive motion scheme. Spatial springs (position, size,
+    // shape) overshoot slightly; effects springs (colour, opacity) never do.
+    // Use with `easing.type: Easing.BezierSpline` and `easing.bezierCurve`.
+    // With Reduce Motion, spatial curves fall back to the non-bouncy form.
+    readonly property var spatialFast: Appearance.reduceMotion
+        ? effectsFast : [0.42, 1.67, 0.21, 0.9, 1, 1]
+    readonly property var spatialDefault: Appearance.reduceMotion
+        ? effectsDefault : [0.38, 1.21, 0.22, 1, 1, 1]
+    readonly property var spatialSlow: Appearance.reduceMotion
+        ? effectsDefault : [0.39, 1.29, 0.35, 0.98, 1, 1]
+    readonly property var effectsFast: [0.31, 0.94, 0.34, 1, 1, 1]
+    readonly property var effectsDefault: [0.34, 0.8, 0.34, 1, 1, 1]
+    readonly property var emphasizedDecelerate: [0.05, 0.7, 0.1, 1, 1, 1]
+    readonly property var emphasizedAccelerate: [0.3, 0, 0.8, 0.15, 1, 1]
+    readonly property int springFast: Appearance.reduceMotion ? 1 : Math.round(350 * durationScale)
+    readonly property int springDefault: Appearance.reduceMotion ? 1 : Math.round(500 * durationScale)
+    readonly property int springSlow: Appearance.reduceMotion ? 1 : Math.round(650 * durationScale)
+    readonly property int effectsFastDuration: Appearance.reduceMotion ? 1 : Math.round(150 * durationScale)
 }

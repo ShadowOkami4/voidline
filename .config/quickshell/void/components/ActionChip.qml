@@ -24,19 +24,36 @@ Item {
         }
         width: Math.min(70, root.width)
         height: Math.max(40, root.height - 19)
-        radius: Metrics.tileRadius
+        // Shape morph: rounded square at rest, pill when active, tighter when pressed.
+        radius: tap.pressed ? Metrics.pressedRadius
+            : (root.active ? height / 2 : Metrics.radiusM)
         color: root.active ? root.activeContainer : (hover.hovered ? Theme.surfaceHigh : Theme.surfaceLow)
+
+        Behavior on radius {
+            NumberAnimation {
+                duration: Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Motion.spatialFast
+            }
+        }
 
         MaterialIcon {
             anchors.centerIn: parent
             text: root.icon
             size: root.active ? Metrics.iconL : Metrics.iconM
+            fill: root.active ? 1 : 0
             color: root.active ? root.activeContent : Theme.textMuted
 
-            Behavior on size { NumberAnimation { duration: Motion.selectionPulse; easing.type: Motion.expressiveCurve } }
+            Behavior on size {
+                NumberAnimation {
+                    duration: Motion.springFast
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Motion.spatialFast
+                }
+            }
         }
 
-        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
     }
 
     Text {
@@ -62,5 +79,11 @@ Item {
         onTapped: root.clicked()
     }
 
-    Behavior on scale { NumberAnimation { duration: Motion.instant } }
+    Behavior on scale {
+        NumberAnimation {
+            duration: Motion.springFast
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Motion.spatialFast
+        }
+    }
 }

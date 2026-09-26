@@ -11,87 +11,73 @@ QtObject {
     readonly property color defaultAccent: Appearance.accentColor
     readonly property color wallpaperSeed: pickWallpaperAccent(quantizer.colors)
     readonly property bool magicAccentAvailable: Appearance.magicColors && quantizer.colors.length > 0
+    // Material 3 Expressive: every role is a tone of one seed colour. The
+    // wallpaper seeds the scheme when Magic Colors is on; otherwise the chosen
+    // accent does, so containers always belong to the same hue family as the
+    // accent instead of falling back to an unrelated baseline palette.
+    readonly property color seed: magicAccentAvailable ? wallpaperSeed : defaultAccent
+    readonly property bool highContrast: Appearance.highContrast
 
-    // Magic Colors now produces a complete tonal scheme. Neutrals carry only
-    // a quiet trace of wallpaper hue while accents deliberately cap chroma,
-    // keeping text contrast calm and avoiding neon-looking containers.
-    readonly property color background: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.045 : 0.985, 0.07)
-        : (darkMode ? "#141218" : "#FFFBFE")
+    // Neutral surfaces carry a quiet trace of the seed hue. The container
+    // ladder follows the M3 surface-container roles from lowest to highest.
+    readonly property color background: neutralTone(seed, darkMode ? 0.045 : 0.985, 0.07)
+    readonly property color surfaceContainerLowest: neutralTone(seed, darkMode ? 0.035 : 1.0, 0.06)
+    readonly property color surfaceContainerLow: neutralTone(seed, darkMode ? 0.075 : 0.965, 0.065)
+    readonly property color surfaceContainer: neutralTone(seed, darkMode ? 0.095 : 0.945, 0.085)
+    readonly property color surfaceContainerHigh: neutralTone(seed, darkMode ? 0.145 : 0.915, 0.095)
+    readonly property color surfaceContainerHighest: neutralTone(seed, darkMode ? 0.2 : 0.885, 0.105)
+    readonly property color surfaceBright: neutralTone(seed, darkMode ? 0.24 : 0.985, 0.11)
+
     // Connected shell surfaces stay opaque. Their shared colour makes the bar,
     // frame joins, and attached panels read as one uninterrupted shape.
-    readonly property color panel: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.095 : 0.95, 0.085)
-        : (darkMode ? "#211F26" : "#F3EDF7")
-    readonly property color panelRaised: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.145 : 0.91, 0.095)
-        : (darkMode ? "#2B2930" : "#ECE6F0")
+    readonly property color panel: surfaceContainer
+    readonly property color panelRaised: surfaceContainerHigh
     readonly property color surface: panelRaised
-    readonly property color surfaceHover: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.225 : 0.84, 0.11)
-        : (darkMode ? "#36333B" : "#E7E0EC")
-    readonly property color surfaceLow: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.075 : 0.97, 0.065)
-        : (darkMode ? "#1D1B20" : "#F7F2FA")
-    readonly property color surfaceHigh: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.235 : 0.83, 0.115)
-        : (darkMode ? "#36333A" : "#E6E0E9")
-    // Shared application/panel group surfaces. These sit between the panel
-    // canvas and interactive highlights, avoiding both black list wells and
-    // a stack of competing outlined rectangles.
-    readonly property color groupSurface: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.155 : 0.925, 0.085)
-        : (darkMode ? "#252229" : "#F3EDF7")
-    readonly property color groupSurfaceRaised: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.205 : 0.875, 0.105)
-        : (darkMode ? "#302D34" : "#EAE4EE")
-    readonly property color text: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.91 : 0.11, 0.055)
-        : (darkMode ? "#E6E1E5" : "#1D1B20")
-    readonly property color textMuted: magicAccentAvailable
-        ? neutralTone(wallpaperSeed, darkMode ? 0.72 : 0.32, 0.075)
-        : (darkMode ? "#CAC4D0" : "#49454F")
-    readonly property color outline: magicAccentAvailable
-        ? neutralTone(wallpaperSeed,
-            Appearance.highContrast ? (darkMode ? 0.76 : 0.28)
-                : (darkMode ? 0.57 : 0.46), 0.12)
-        : (darkMode ? "#77727D" : "#87818C")
-    readonly property color outlineSoft: magicAccentAvailable
-        ? neutralTone(wallpaperSeed,
-            Appearance.highContrast ? (darkMode ? 0.52 : 0.50)
-                : (darkMode ? 0.29 : 0.78), 0.10)
-        : (darkMode ? "#454149" : "#CEC8D1")
+    readonly property color surfaceHover: neutralTone(seed, darkMode ? 0.225 : 0.84, 0.11)
+    readonly property color surfaceLow: surfaceContainerLow
+    readonly property color surfaceHigh: neutralTone(seed, darkMode ? 0.235 : 0.83, 0.115)
+    // Shared application/panel group surfaces. Segmented list groups use
+    // these between the panel canvas and interactive highlights.
+    readonly property color groupSurface: neutralTone(seed, darkMode ? 0.155 : 0.93, 0.085)
+    readonly property color groupSurfaceRaised: neutralTone(seed, darkMode ? 0.205 : 0.875, 0.105)
+    readonly property color text: neutralTone(seed, darkMode ? 0.91 : 0.11, 0.055)
+    readonly property color textMuted: neutralTone(seed, darkMode ? 0.72 : 0.32, 0.075)
+    readonly property color outline: neutralTone(seed,
+        highContrast ? (darkMode ? 0.76 : 0.28) : (darkMode ? 0.57 : 0.46), 0.12)
+    readonly property color outlineSoft: neutralTone(seed,
+        highContrast ? (darkMode ? 0.52 : 0.50) : (darkMode ? 0.29 : 0.78), 0.10)
     readonly property color divider: withAlpha(outlineSoft,
-        Appearance.highContrast ? 0.78 : (darkMode ? 0.46 : 0.58))
-    readonly property color danger: darkMode ? "#E6B8B5" : "#A93F3B"
-    readonly property color dangerContainer: magicAccentAvailable
-        ? shiftedTone(wallpaperSeed, -0.025, darkMode ? 0.22 : 0.91, 0.20)
-        : (darkMode ? "#5C3535" : "#FFDAD6")
+        highContrast ? 0.78 : (darkMode ? 0.46 : 0.58))
+    readonly property color danger: darkMode ? "#FFB4AB" : "#BA1A1A"
+    readonly property color dangerInk: darkMode ? "#690005" : "#FFFFFF"
+    readonly property color dangerContainer: darkMode ? "#93000A" : "#FFDAD6"
+    readonly property color dangerContainerInk: darkMode ? "#FFDAD6" : "#410002"
     readonly property color shadow: "#000000"
+    readonly property color scrim: withAlpha("#000000", darkMode ? 0.56 : 0.32)
 
-    readonly property color accent: magicAccentAvailable
-        ? chromaTone(wallpaperSeed, darkMode ? 0.73 : 0.40, 0.32)
-        : defaultAccent
-    readonly property color accentStrong: magicAccentAvailable
-        ? chromaTone(wallpaperSeed, darkMode ? 0.65 : 0.34, 0.36)
-        : (darkMode ? "#B69DF8" : "#57408F")
-    readonly property color accentContainer: magicAccentAvailable
-        ? chromaTone(wallpaperSeed, darkMode ? 0.255 : 0.91, 0.20)
-        : (darkMode ? "#4F378B" : "#EADDFF")
-    readonly property color secondary: magicAccentAvailable
-        ? shiftedTone(wallpaperSeed, 0.055, darkMode ? 0.71 : 0.42, 0.25)
-        : (darkMode ? "#CCC2DC" : "#625B71")
-    readonly property color secondaryContainer: magicAccentAvailable
-        ? shiftedTone(wallpaperSeed, 0.055, darkMode ? 0.245 : 0.90, 0.16)
-        : (darkMode ? "#4A4458" : "#E8DEF8")
-    readonly property color tertiary: magicAccentAvailable
-        ? shiftedTone(wallpaperSeed, -0.075, darkMode ? 0.72 : 0.42, 0.25)
-        : (darkMode ? "#EFB8C8" : "#7D5260")
-    readonly property color tertiaryContainer: magicAccentAvailable
-        ? shiftedTone(wallpaperSeed, -0.075, darkMode ? 0.25 : 0.90, 0.16)
-        : (darkMode ? "#633B48" : "#FFD8E4")
+    readonly property color accent: chromaTone(seed, darkMode ? 0.76 : 0.40, 0.42)
+    readonly property color accentStrong: chromaTone(seed, darkMode ? 0.66 : 0.33, 0.46)
+    readonly property color accentContainer: chromaTone(seed, darkMode ? 0.27 : 0.9, 0.3)
+    readonly property color accentContainerInk: chromaTone(seed, darkMode ? 0.9 : 0.14, 0.34)
+    readonly property color secondary: shiftedTone(seed, 0.04, darkMode ? 0.74 : 0.40, 0.26)
+    readonly property color secondaryContainer: shiftedTone(seed, 0.04, darkMode ? 0.25 : 0.9, 0.2)
+    readonly property color secondaryContainerInk: shiftedTone(seed, 0.04, darkMode ? 0.9 : 0.14, 0.26)
+    readonly property color tertiary: shiftedTone(seed, -0.1, darkMode ? 0.76 : 0.40, 0.3)
+    readonly property color tertiaryContainer: shiftedTone(seed, -0.1, darkMode ? 0.27 : 0.9, 0.24)
+    readonly property color tertiaryContainerInk: shiftedTone(seed, -0.1, darkMode ? 0.9 : 0.14, 0.3)
     readonly property color surfaceActive: accentContainer
-    readonly property color accentInk: darkMode ? "#211F26" : "#FFFFFF"
+    // "On primary": readable content placed on an accent-filled shape.
+    readonly property color accentInk: darkMode ? chromaTone(seed, 0.15, 0.36) : "#FFFFFF"
+
+    // Material role aliases for new components; the Voidline names above stay
+    // for existing callers.
+    // ("on*" names are reserved for signal handlers in QML, so content colours
+    // use the Voidline "*Ink" suffix instead.)
+    readonly property color primary: accent
+    readonly property color primaryContainer: accentContainer
+    readonly property color outlineVariant: outlineSoft
+    readonly property color error: danger
+    readonly property color errorContainer: dangerContainer
 
     readonly property string fontFamily: Appearance.interfaceFont
     readonly property string symbolFont: "Material Symbols Rounded"
@@ -102,9 +88,7 @@ QtObject {
             : (Appearance.uiDensity === "spacious" ? 1.08 : 1.0))
     readonly property int barHeight: Math.round(42 * densityScale)
     readonly property int sideBarWidth: Math.round(58 * densityScale)
-    // One UI-inspired shape scale. Containers keep a clear hierarchy instead
-    // of choosing a new radius for every component or interaction state.
-    // Compatibility aliases. New components use Metrics so geometry can be
+    // Material 3 Expressive shape scale lives in Metrics. Compatibility aliases. New components use Metrics so geometry can be
     // changed independently from the wallpaper color system.
     readonly property int radiusSmall: Metrics.radiusS
     readonly property int radiusMedium: Metrics.radiusM
@@ -181,18 +165,25 @@ QtObject {
         return Qt.hsla(stats.hue, saturation, lightness, 1)
     }
 
+    // Accent roles keep a confident, fixed-feeling chroma (as M3 tonal
+    // palettes do) so muted seeds still produce a clearly coloured scheme.
+    // Near-grey seeds stay monochrome instead of inventing a hue.
+    function accentSaturation(stats, maximumSaturation, floor) {
+        if (stats.saturation < 0.06)
+            return 0.04
+        return Math.max(floor, Math.min(maximumSaturation, stats.saturation * 0.85))
+    }
+
     function chromaTone(colorValue, lightness, maximumSaturation) {
         const stats = colorStats(colorValue)
-        const saturation = Math.max(0.12,
-            Math.min(maximumSaturation, stats.saturation * 0.62))
-        return Qt.hsla(stats.hue, saturation, lightness, 1)
+        return Qt.hsla(stats.hue, accentSaturation(stats, maximumSaturation, 0.3),
+            lightness, 1)
     }
 
     function shiftedTone(colorValue, hueShift, lightness, maximumSaturation) {
         const stats = colorStats(colorValue)
         const hue = (stats.hue + hueShift + 1) % 1
-        const saturation = Math.max(0.10,
-            Math.min(maximumSaturation || 0.34, stats.saturation * 0.52))
-        return Qt.hsla(hue, saturation, lightness, 1)
+        return Qt.hsla(hue, accentSaturation(stats, maximumSaturation || 0.34, 0.2),
+            lightness, 1)
     }
 }

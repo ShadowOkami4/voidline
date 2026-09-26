@@ -30,6 +30,8 @@ Rectangle {
         rightMargin: root.rightInset
     }
     height: Metrics.divider
-    visible: allowed && hasVisibleRowBefore()
+    // Segmented groups separate rows with gaps instead of hairlines.
+    visible: allowed && !(parent && parent.parent && parent.parent.segmented === true)
+        && hasVisibleRowBefore()
     color: Theme.divider
 }
