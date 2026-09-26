@@ -93,34 +93,33 @@ FocusScope {
     }
 
     function heroInfo(id) {
-        const hero = key => I18n.tr("settings.hero." + key)
         const fallback = category()
         switch (id) {
         case "connections":
             if (ConnectivityService.ethernetConnected)
-                return { icon: "lan", title: hero("wired"), subtitle: ConnectivityService.activeNetworkLabel || "", active: true }
+                return { icon: "lan", title: I18n.tr("settings.hero.wired"), subtitle: ConnectivityService.activeNetworkLabel || "", active: true }
             if (ConnectivityService.wifiConnected)
                 return { icon: "wifi", title: ConnectivityService.wifiSsid || fallback.title,
                     subtitle: ConnectivityService.activeNetworkLabel || "", active: true }
             return { icon: ConnectivityService.wifiEnabled ? "wifi_find" : "wifi_off",
-                title: ConnectivityService.wifiEnabled ? hero("notConnected") : hero("wifiOff"),
+                title: ConnectivityService.wifiEnabled ? I18n.tr("settings.hero.notConnected") : I18n.tr("settings.hero.wifiOff"),
                 subtitle: fallback.subtitle, active: false }
         case "audio":
             return { icon: AudioService.outputMuted ? "volume_off" : "volume_up",
                 title: AudioService.outputLabel || fallback.title,
-                subtitle: AudioService.outputMuted ? hero("muted")
+                subtitle: AudioService.outputMuted ? I18n.tr("settings.hero.muted")
                     : I18n.tr("settings.hero.volume", { value: Math.round(Number(AudioService.outputVolume || 0) * 100) }),
                 active: !AudioService.outputMuted }
         case "devices": {
             const count = Number(ConnectivityService.connectedBluetoothDevices || 0)
             return { icon: ConnectivityService.bluetoothEnabled ? "bluetooth_connected" : "bluetooth_disabled",
-                title: !ConnectivityService.bluetoothEnabled ? hero("bluetoothOff")
-                    : (count > 0 ? I18n.tr("settings.hero.devicesConnected", { count: count }) : hero("noDevices")),
+                title: !ConnectivityService.bluetoothEnabled ? I18n.tr("settings.hero.bluetoothOff")
+                    : (count > 0 ? I18n.tr("settings.hero.devicesConnected", { count: count }) : I18n.tr("settings.hero.noDevices")),
                 subtitle: fallback.subtitle, active: ConnectivityService.bluetoothEnabled && count > 0 }
         }
         case "notifications":
             return { icon: NotificationService.doNotDisturb ? "do_not_disturb_on" : "notifications_active",
-                title: NotificationService.doNotDisturb ? hero("dndOn")
+                title: NotificationService.doNotDisturb ? I18n.tr("settings.hero.dndOn")
                     : I18n.tr("settings.hero.notificationsCount", { count: NotificationService.count || 0 }),
                 subtitle: fallback.subtitle, active: !NotificationService.doNotDisturb }
         case "display":
@@ -129,22 +128,22 @@ FocusScope {
                 subtitle: fallback.subtitle, active: true }
         case "appearance":
             return { icon: Theme.darkMode ? "dark_mode" : "light_mode",
-                title: Appearance.colorMode === "auto" ? hero("autoTheme")
-                    : (Appearance.colorMode === "light" ? hero("lightTheme") : hero("darkTheme")),
-                subtitle: Appearance.magicColors ? hero("wallpaperColors") : hero("accentColor"),
+                title: Appearance.colorMode === "auto" ? I18n.tr("settings.hero.autoTheme")
+                    : (Appearance.colorMode === "light" ? I18n.tr("settings.hero.lightTheme") : I18n.tr("settings.hero.darkTheme")),
+                subtitle: Appearance.magicColors ? I18n.tr("settings.hero.wallpaperColors") : I18n.tr("settings.hero.accentColor"),
                 active: true }
         case "security":
             return { icon: SecurityService.firewallEnabled ? "shield_lock" : "shield",
-                title: SecurityService.firewallEnabled ? hero("firewallOn") : hero("firewallOff"),
+                title: SecurityService.firewallEnabled ? I18n.tr("settings.hero.firewallOn") : I18n.tr("settings.hero.firewallOff"),
                 subtitle: fallback.subtitle, active: SecurityService.firewallEnabled }
         case "updates":
             return { icon: UpdateService.count > 0 ? "system_update" : "verified",
                 title: UpdateService.count > 0
-                    ? I18n.tr("settings.hero.updatesAvailable", { count: UpdateService.count }) : hero("upToDate"),
+                    ? I18n.tr("settings.hero.updatesAvailable", { count: UpdateService.count }) : I18n.tr("settings.hero.upToDate"),
                 subtitle: fallback.subtitle, active: UpdateService.count > 0 }
         case "assistant":
             return { icon: "neurology",
-                title: AssistantService.assistantEnabled ? hero("assistantOn") : hero("assistantOff"),
+                title: AssistantService.assistantEnabled ? I18n.tr("settings.hero.assistantOn") : I18n.tr("settings.hero.assistantOff"),
                 subtitle: fallback.subtitle, active: AssistantService.assistantEnabled }
         case "system":
             return { icon: "computer",
