@@ -13,6 +13,8 @@ PanelWindow {
     readonly property string barPosition: Appearance.barPosition
 
     anchors { top: true; bottom: true; left: true; right: true }
+    // The frame belongs to the "frame" bar style only.
+    visible: Appearance.barStyle === "frame"
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     focusable: false

@@ -398,6 +398,7 @@ pub enum AppearanceSetting {
     ColorMode(ColorMode),
     MagicColors(bool),
     BarPosition(BarPosition),
+    BarStyle(BarStyle),
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -415,6 +416,18 @@ pub enum BarPosition {
     Bottom,
     Left,
     Right,
+}
+
+/// Bar presentation. `Frame` keeps the connected bar and screen frame with
+/// attached panels; the other styles float and detach their panels.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum BarStyle {
+    Frame,
+    Islands,
+    Floating,
+    Minimal,
+    Taskbar,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -634,6 +647,21 @@ fn validate_handle(value: &str) -> Result<(), ValidationError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn bar_style_round_trips_and_rejects_unknown_styles() {
+        let setting = AppearanceSetting::BarStyle(BarStyle::Islands);
+        let json = serde_json::to_string(&setting).unwrap();
+        assert_eq!(json, r#"{"name":"bar_style","value":"islands"}"#);
+        assert_eq!(
+            serde_json::from_str::<AppearanceSetting>(&json).unwrap(),
+            setting
+        );
+        assert!(
+            serde_json::from_str::<AppearanceSetting>(r#"{"name":"bar_style","value":"dock"}"#)
+                .is_err()
+        );
+    }
 
     #[test]
     fn rejects_unknown_request_fields() {

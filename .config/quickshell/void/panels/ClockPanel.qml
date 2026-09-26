@@ -96,16 +96,17 @@ PanelWindow {
 
     Item {
         id: attachedSurface
+        readonly property bool attached: Theme.panelsAttached
         readonly property bool topAttached: Appearance.barPosition === "top"
         readonly property bool bottomAttached: Appearance.barPosition === "bottom"
         readonly property bool leftAttached: Appearance.barPosition === "left"
         readonly property bool rightAttached: Appearance.barPosition === "right"
 
-        x: topAttached || bottomAttached ? 0
-            : (leftAttached ? Theme.sideBarWidth - 1
-                : root.width - Theme.sideBarWidth - width + 1)
-        y: topAttached ? Theme.barHeight - 1
-            : (bottomAttached ? root.height - Theme.barHeight - height + 1 : 0)
+        x: topAttached || bottomAttached ? Theme.panelSideGap
+            : (leftAttached ? Theme.panelInset
+                : root.width - Theme.panelInset - width)
+        y: topAttached ? Theme.panelInset
+            : (bottomAttached ? root.height - Theme.panelInset - height : Theme.panelSideGap)
         width: root.expanded ? root.targetWidth + root.cornerSize
             : (topAttached || bottomAttached ? Math.round(142 * Metrics.scale) : 0)
         height: root.expanded ? root.targetHeight
@@ -129,49 +130,49 @@ PanelWindow {
             x: root.targetWidth; y: 0
             width: root.cornerSize; height: root.cornerSize
             orientation: "top-right"
-            visible: attachedSurface.topAttached
+            visible: attachedSurface.attached && attachedSurface.topAttached
         }
         ConcaveJoin {
             x: 0; y: root.targetBodyHeight
             width: root.cornerSize; height: root.cornerSize
             orientation: "top-right"
-            visible: attachedSurface.topAttached
+            visible: attachedSurface.attached && attachedSurface.topAttached
         }
         ConcaveJoin {
             x: root.targetWidth; y: root.targetBodyHeight
             width: root.cornerSize; height: root.cornerSize
             orientation: "bottom-right"
-            visible: attachedSurface.bottomAttached
+            visible: attachedSurface.attached && attachedSurface.bottomAttached
         }
         ConcaveJoin {
             x: 0; y: 0
             width: root.cornerSize; height: root.cornerSize
             orientation: "bottom-right"
-            visible: attachedSurface.bottomAttached
+            visible: attachedSurface.attached && attachedSurface.bottomAttached
         }
         ConcaveJoin {
             x: 0; y: root.targetBodyHeight
             width: root.cornerSize; height: root.cornerSize
             orientation: "left-bottom"
-            visible: attachedSurface.leftAttached
+            visible: attachedSurface.attached && attachedSurface.leftAttached
         }
         ConcaveJoin {
             x: root.targetWidth; y: 0
             width: root.cornerSize; height: root.cornerSize
             orientation: "top-right"
-            visible: attachedSurface.leftAttached
+            visible: attachedSurface.attached && attachedSurface.leftAttached
         }
         ConcaveJoin {
             x: root.targetWidth; y: root.targetBodyHeight
             width: root.cornerSize; height: root.cornerSize
             orientation: "top-left"
-            visible: attachedSurface.rightAttached
+            visible: attachedSurface.attached && attachedSurface.rightAttached
         }
         ConcaveJoin {
             x: 0; y: 0
             width: root.cornerSize; height: root.cornerSize
             orientation: "top-left"
-            visible: attachedSurface.rightAttached
+            visible: attachedSurface.attached && attachedSurface.rightAttached
         }
 
         Rectangle {
@@ -188,26 +189,26 @@ PanelWindow {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
                 height: Theme.panelRadius
                 color: Theme.panel
-                visible: attachedSurface.topAttached || attachedSurface.leftAttached
+                visible: attachedSurface.attached && attachedSurface.topAttached || attachedSurface.leftAttached
                     || attachedSurface.rightAttached
             }
             Rectangle {
                 anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                 height: Theme.panelRadius
                 color: Theme.panel
-                visible: attachedSurface.bottomAttached
+                visible: attachedSurface.attached && attachedSurface.bottomAttached
             }
             Rectangle {
                 anchors { top: parent.top; bottom: parent.bottom; left: parent.left }
                 width: Theme.panelRadius
                 color: Theme.panel
-                visible: !attachedSurface.rightAttached
+                visible: attachedSurface.attached && !attachedSurface.rightAttached
             }
             Rectangle {
                 anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
                 width: Theme.panelRadius
                 color: Theme.panel
-                visible: attachedSurface.rightAttached
+                visible: attachedSurface.attached && attachedSurface.rightAttached
             }
 
             ClockPage {

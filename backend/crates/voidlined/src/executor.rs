@@ -345,6 +345,11 @@ impl Executor {
                     self.quickshell_ipc(&["appearance", "setBarPosition", &position])
                         .await?
                 }
+                AppearanceSetting::BarStyle(style) => {
+                    let style = format!("{style:?}").to_ascii_lowercase();
+                    self.quickshell_ipc(&["appearance", "setBarStyle", &style])
+                        .await?
+                }
             },
             Action::SetVolume { percent, muted } => {
                 let percent_arg = format!("{percent}%");

@@ -397,6 +397,10 @@ Scope {
             Appearance.setBarPosition(position)
         }
 
+        function setBarStyle(style: string): void {
+            Appearance.setBarStyle(style)
+        }
+
         function setWorkspacePlacement(position: string): void {
             Appearance.setWorkspacePlacement(position)
         }

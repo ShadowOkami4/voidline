@@ -416,16 +416,17 @@ PanelWindow {
 
     Item {
         id: attachedSurface
+        readonly property bool attached: Theme.panelsAttached
         readonly property bool topAttached: Appearance.barPosition === "top"
         readonly property bool bottomAttached: Appearance.barPosition === "bottom"
         readonly property bool leftAttached: Appearance.barPosition === "left"
         x: topAttached || bottomAttached
             ? Math.round((root.width - width) / 2)
             : (Appearance.barPosition === "left"
-                ? Theme.sideBarWidth - 1
-                : root.width - Theme.sideBarWidth - width + 1)
-        y: topAttached ? Theme.barHeight - 1
-            : (bottomAttached ? root.height - Theme.barHeight - height + 1
+                ? Theme.panelInset
+                : root.width - Theme.panelInset - width)
+        y: topAttached ? Theme.panelInset
+            : (bottomAttached ? root.height - Theme.panelInset - height
                 : Math.round((root.height - height) / 2))
         width: root.surfaceExpanded
             ? root.targetBodyWidth + ((topAttached || bottomAttached)
@@ -458,7 +459,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             preferredRendererType: Shape.CurveRenderer
-            visible: attachedSurface.topAttached
+            visible: attachedSurface.attached && attachedSurface.topAttached
 
             ShapePath {
                 id: leftJoinPath
@@ -487,7 +488,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             preferredRendererType: Shape.CurveRenderer
-            visible: attachedSurface.topAttached
+            visible: attachedSurface.attached && attachedSurface.topAttached
 
             ShapePath {
                 id: rightJoinPath
@@ -516,7 +517,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "bottom-left"
-            visible: attachedSurface.bottomAttached
+            visible: attachedSurface.attached && attachedSurface.bottomAttached
         }
         ConcaveJoin {
             x: attachedSurface.width - width
@@ -524,7 +525,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "bottom-right"
-            visible: attachedSurface.bottomAttached
+            visible: attachedSurface.attached && attachedSurface.bottomAttached
         }
         ConcaveJoin {
             x: 0
@@ -532,7 +533,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "left-top"
-            visible: attachedSurface.leftAttached
+            visible: attachedSurface.attached && attachedSurface.leftAttached
         }
         ConcaveJoin {
             x: 0
@@ -540,7 +541,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "left-bottom"
-            visible: attachedSurface.leftAttached
+            visible: attachedSurface.attached && attachedSurface.leftAttached
         }
         ConcaveJoin {
             x: attachedSurface.width - width
@@ -548,7 +549,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "right-top"
-            visible: !attachedSurface.topAttached
+            visible: attachedSurface.attached && !attachedSurface.topAttached
                 && !attachedSurface.bottomAttached
                 && !attachedSurface.leftAttached
         }
@@ -558,7 +559,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "right-bottom"
-            visible: !attachedSurface.topAttached
+            visible: attachedSurface.attached && !attachedSurface.topAttached
                 && !attachedSurface.bottomAttached
                 && !attachedSurface.leftAttached
         }
@@ -580,7 +581,7 @@ PanelWindow {
             Shape {
                 anchors.fill: parent
                 preferredRendererType: Shape.CurveRenderer
-                visible: attachedSurface.topAttached
+                visible: attachedSurface.attached && attachedSurface.topAttached
 
                 ShapePath {
                     id: panelBodyPath
@@ -611,7 +612,7 @@ PanelWindow {
 
             Rectangle {
                 anchors.fill: parent
-                visible: !attachedSurface.topAttached
+                visible: !attachedSurface.attached || !attachedSurface.topAttached
                 radius: Theme.panelRadius
                 color: Theme.panel
             }
@@ -624,7 +625,7 @@ PanelWindow {
                 }
                 height: Theme.panelRadius
                 color: Theme.panel
-                visible: attachedSurface.bottomAttached
+                visible: attachedSurface.attached && attachedSurface.bottomAttached
             }
             Rectangle {
                 anchors {
@@ -634,7 +635,7 @@ PanelWindow {
                 }
                 width: Theme.panelRadius
                 color: Theme.panel
-                visible: attachedSurface.leftAttached
+                visible: attachedSurface.attached && attachedSurface.leftAttached
             }
             Rectangle {
                 anchors {
@@ -644,7 +645,7 @@ PanelWindow {
                 }
                 width: Theme.panelRadius
                 color: Theme.panel
-                visible: !attachedSurface.topAttached
+                visible: attachedSurface.attached && !attachedSurface.topAttached
                     && !attachedSurface.bottomAttached
                     && !attachedSurface.leftAttached
             }

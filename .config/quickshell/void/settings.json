@@ -3,6 +3,7 @@
   "magicColors": true,
   "wallpaperPath": "",
   "barPosition": "top",
+  "barStyle": "frame",
   "workspacePlacement": "center",
   "musicPlacement": "bar",
   "clockStyle": "split",

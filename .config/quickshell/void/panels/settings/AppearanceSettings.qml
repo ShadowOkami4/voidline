@@ -349,7 +349,7 @@ SettingsMasonry {
 
     SettingsSection {
         title: "Bar and panels"
-        subtitle: "Panels remain attached to the section that opened them"
+        subtitle: "Bar style, position, and what lives in the bar"
         icon: "dock_to_bottom"
         iconContainerColor: Theme.secondaryContainer
         iconColor: Theme.secondary
@@ -364,10 +364,25 @@ SettingsMasonry {
 
         SettingsChoice {
             width: parent.width
+            title: "Bar style"
+            subtitle: Appearance.barStyle === "frame"
+                ? "Connected bar with a screen frame; panels attach to it"
+                : "Panels open as floating cards"
+            options: Appearance.barStyles
+            optionLabels: ["Frame", "Pills", "Floating", "Minimal", "Taskbar"]
+            maxColumns: 5
+            value: Appearance.pendingBarStyle
+            onSelected: value => Appearance.setBarStyle(value)
+        }
+        SettingsChoice {
+            width: parent.width
             title: "Bar position"
-            subtitle: Appearance.barTransitioning ? "Moving the bar…" : "Optimized layouts are used on every edge"
+            subtitle: Appearance.barTransitioning ? "Moving the bar…"
+                : (Appearance.barStyle === "taskbar" ? "The taskbar always sits at the bottom"
+                    : "Optimized layouts are used on every edge")
             options: ["top", "bottom", "left", "right"]
             optionLabels: ["Top", "Bottom", "Left", "Right"]
+            disabledOptions: Appearance.barStyle === "taskbar" ? ["top", "left", "right"] : []
             value: Appearance.requestedBarPosition
             onSelected: value => Appearance.setBarPosition(value)
         }

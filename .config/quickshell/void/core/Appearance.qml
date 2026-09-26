@@ -14,6 +14,17 @@ QtObject {
     property string wallpaperPath: ""
     property string barPosition: "top"
     property string pendingBarPosition: "top"
+    // Bar presentation. "frame" keeps the connected bar, screen frame, and
+    // attached panels; every other style floats and detaches its panels.
+    readonly property var barStyles: ["frame", "islands", "floating", "minimal", "taskbar"]
+    property string barStyle: "frame"
+    property string pendingBarStyle: "frame"
+    // The taskbar always lives on the bottom edge; the previous edge is
+    // restored when another style is chosen.
+    property string positionBeforeTaskbar: "top"
+    readonly property bool panelsAttached: barStyle === "frame"
+    // Desktop entry ids pinned to the taskbar dock, in display order.
+    property var pinnedApps: ["org.gnome.Nautilus", "firefox", "voidline-terminal", "voidline-settings"]
     property bool barVisible: true
     property bool barTransitioning: false
     readonly property string requestedBarPosition: barTransitioning ? pendingBarPosition : barPosition
@@ -80,6 +91,20 @@ QtObject {
             root.barPosition = ["top", "bottom", "left", "right"].indexOf(data.barPosition) >= 0
                 ? data.barPosition : "top"
             root.pendingBarPosition = root.barPosition
+            root.barStyle = root.barStyles.indexOf(data.barStyle) >= 0
+                ? data.barStyle : "frame"
+            root.pendingBarStyle = root.barStyle
+            root.positionBeforeTaskbar = ["top", "bottom", "left", "right"]
+                .indexOf(data.positionBeforeTaskbar) >= 0
+                ? data.positionBeforeTaskbar : "top"
+            if (Array.isArray(data.pinnedApps))
+                root.pinnedApps = data.pinnedApps
+                    .filter(value => typeof value === "string" && /^[A-Za-z0-9._-]{1,128}$/.test(value))
+                    .slice(0, 24)
+            if (root.barStyle === "taskbar") {
+                root.barPosition = "bottom"
+                root.pendingBarPosition = "bottom"
+            }
             root.workspacePlacement = ["clock", "center", "action"].indexOf(data.workspacePlacement) >= 0
                 ? data.workspacePlacement : "center"
             root.musicPlacement = ["bar", "clock", "action", "hidden"].indexOf(data.musicPlacement) >= 0
@@ -156,6 +181,9 @@ QtObject {
             magicColors: magicColors,
             wallpaperPath: wallpaperPath,
             barPosition: barPosition,
+            barStyle: barStyle,
+            positionBeforeTaskbar: positionBeforeTaskbar,
+            pinnedApps: pinnedApps,
             workspacePlacement: workspacePlacement,
             musicPlacement: musicPlacement,
             clockStyle: clockStyle,
@@ -228,10 +256,51 @@ QtObject {
     function setBarPosition(value) {
         if (["top", "bottom", "left", "right"].indexOf(value) < 0)
             return
+        // The taskbar is bottom-only; remember the request for later.
+        if (barStyle === "taskbar") {
+            positionBeforeTaskbar = value
+            persist()
+            return
+        }
         if (!barTransitioning && value === barPosition)
             return
 
         pendingBarPosition = value
+        beginBarRelocation()
+    }
+
+    function setBarStyle(value) {
+        if (barStyles.indexOf(value) < 0)
+            return
+        if (!barTransitioning && value === barStyle)
+            return
+        pendingBarStyle = value
+        if (value === "taskbar" && barStyle !== "taskbar") {
+            positionBeforeTaskbar = barPosition
+            pendingBarPosition = "bottom"
+        } else if (value !== "taskbar" && barStyle === "taskbar") {
+            pendingBarPosition = positionBeforeTaskbar
+        } else {
+            pendingBarPosition = barPosition
+        }
+        beginBarRelocation()
+    }
+
+    function togglePinnedApp(appId) {
+        const id = String(appId || "").replace(/\.desktop$/, "")
+        if (!/^[A-Za-z0-9._-]{1,128}$/.test(id))
+            return
+        const next = pinnedApps.slice()
+        const index = next.indexOf(id)
+        if (index >= 0)
+            next.splice(index, 1)
+        else if (next.length < 24)
+            next.push(id)
+        pinnedApps = next
+        persist()
+    }
+
+    function beginBarRelocation() {
         barTransitioning = true
         barVisible = false
         ShellState.closePanels()
@@ -496,6 +565,7 @@ QtObject {
         repeat: false
         onTriggered: {
             root.barPosition = root.pendingBarPosition
+            root.barStyle = root.pendingBarStyle
             root.persist()
             barRelocationReveal.restart()
         }

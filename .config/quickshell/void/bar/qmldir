@@ -6,3 +6,4 @@ MusicButton 1.0 MusicButton.qml
 StatusGroup 1.0 StatusGroup.qml
 TrayGroup 1.0 TrayGroup.qml
 TrayItem 1.0 TrayItem.qml
+TaskbarDock 1.0 TaskbarDock.qml

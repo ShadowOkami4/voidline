@@ -213,8 +213,8 @@ PanelWindow {
         width: Metrics.powerDrawerWidth - Metrics.iconS + root.joinSize
         height: root.drawerBodyHeight + root.joinSize * 2
         x: root.openFromLeft
-            ? (root.isOpen ? 0 : -width - 2)
-            : (root.isOpen ? root.width - width : root.width + 2)
+            ? (root.isOpen ? Theme.panelSideGap : -width - 2)
+            : (root.isOpen ? root.width - width - Theme.panelSideGap : root.width + 2)
         y: Math.round((root.height - height) / 2)
         scale: 0.985 + root.revealProgress * 0.015
         opacity: 0.88 + root.revealProgress * 0.12
@@ -258,9 +258,17 @@ PanelWindow {
             }
             y: root.joinSize
             height: root.drawerBodyHeight
+            // Outside the frame style the drawer floats as a rounded card.
+            Rectangle {
+                anchors.fill: parent
+                visible: !Theme.panelsAttached
+                radius: Metrics.panelRadius
+                color: Theme.panel
+            }
+
             Shape {
                 anchors.fill: parent
-                visible: root.openFromLeft
+                visible: Theme.panelsAttached && root.openFromLeft
                 antialiasing: true
 
                 ShapePath {
@@ -293,7 +301,7 @@ PanelWindow {
 
             Shape {
                 anchors.fill: parent
-                visible: !root.openFromLeft
+                visible: Theme.panelsAttached && !root.openFromLeft
                 antialiasing: true
 
                 ShapePath {
@@ -751,6 +759,7 @@ PanelWindow {
             anchors.right: root.openFromLeft ? undefined : parent.right
             width: root.joinSize
             height: root.joinSize
+            visible: Theme.panelsAttached
             antialiasing: true
             property color surfaceColor: Theme.panel
             property bool leftEdge: root.openFromLeft
@@ -787,6 +796,7 @@ PanelWindow {
             anchors.right: root.openFromLeft ? undefined : parent.right
             width: root.joinSize
             height: root.joinSize
+            visible: Theme.panelsAttached
             antialiasing: true
             property color surfaceColor: Theme.panel
             property bool leftEdge: root.openFromLeft

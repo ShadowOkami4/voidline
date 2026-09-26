@@ -88,6 +88,24 @@ QtObject {
             : (Appearance.uiDensity === "spacious" ? 1.08 : 1.0))
     readonly property int barHeight: Math.round(42 * densityScale)
     readonly property int sideBarWidth: Math.round(58 * densityScale)
+    readonly property int taskbarHeight: Math.round(64 * densityScale)
+    // Bar-style geometry shared by the bar and every panel it opens.
+    // In the "frame" style panels attach flush to the bar and join it with
+    // concave corners; in every other style they float as rounded cards with
+    // a gap from the bar and the screen edges.
+    readonly property bool panelsAttached: Appearance.panelsAttached
+    readonly property bool barHorizontal: Appearance.barPosition === "top"
+        || Appearance.barPosition === "bottom"
+    readonly property int barEdgeGap: Appearance.barStyle === "frame"
+        || Appearance.barStyle === "minimal" ? 0 : Metrics.spaceS
+    readonly property int barThickness: Appearance.barStyle === "taskbar"
+        ? taskbarHeight : (barHorizontal ? barHeight : sideBarWidth)
+    readonly property int panelGap: panelsAttached ? 0 : Metrics.spaceS
+    // Distance from the bar's screen edge to where a panel begins.
+    readonly property int panelInset: panelsAttached ? barThickness - 1
+        : barThickness + barEdgeGap + panelGap
+    // Margin between a floating panel and the other screen edges.
+    readonly property int panelSideGap: panelsAttached ? 0 : Metrics.spaceS
     // Material 3 Expressive shape scale lives in Metrics. Compatibility aliases. New components use Metrics so geometry can be
     // changed independently from the wallpaper color system.
     readonly property int radiusSmall: Metrics.radiusS

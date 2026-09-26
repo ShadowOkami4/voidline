@@ -12,11 +12,11 @@ use tokio::net::UnixStream;
 use tokio::process::Command as TokioCommand;
 use tokio::time::sleep;
 use voidline_protocol::{
-    Action, AppearanceSetting, BarPosition, ClipboardOperation, Confirmation, InformationTopic,
-    MAX_REQUEST_BYTES, MediaCommand, OnlineLookupKind, PROTOCOL_VERSION, Panel, PanelOperation,
-    PowerMode, RecordingOperation, Request, RequestEnvelope, ResourcePurpose, ResponseEnvelope,
-    ResponseStatus, ScreenshotMode, SearchKind, SearchLocation, SessionAction, SettingsPage,
-    StateModule, WorkspaceCommand,
+    Action, AppearanceSetting, BarPosition, BarStyle, ClipboardOperation, Confirmation,
+    InformationTopic, MAX_REQUEST_BYTES, MediaCommand, OnlineLookupKind, PROTOCOL_VERSION, Panel,
+    PanelOperation, PowerMode, RecordingOperation, Request, RequestEnvelope, ResourcePurpose,
+    ResponseEnvelope, ResponseStatus, ScreenshotMode, SearchKind, SearchLocation, SessionAction,
+    SettingsPage, StateModule, WorkspaceCommand,
 };
 
 #[derive(Parser)]
@@ -153,6 +153,10 @@ enum AppearanceCommand {
     Bar {
         position: BarPositionArg,
     },
+    /// Choose the bar style: frame, islands, floating, minimal, or taskbar.
+    BarStyle {
+        style: BarStyleArg,
+    },
     Colors {
         mode: ColorModeArg,
     },
@@ -209,6 +213,7 @@ macro_rules! value_enum_map {
 }
 
 value_enum_map!(BarPositionArg => BarPosition { Top, Bottom, Left, Right });
+value_enum_map!(BarStyleArg => BarStyle { Frame, Islands, Floating, Minimal, Taskbar });
 value_enum_map!(SearchKindArg => SearchKind { Applications, Games, Files, FileContents });
 value_enum_map!(SearchLocationArg => SearchLocation { Home, Desktop, Documents, Downloads, Music, Pictures, Videos, Projects });
 value_enum_map!(ScreenshotArg => ScreenshotMode { Region, Window, Screen });
@@ -341,6 +346,7 @@ async fn request_for(command: Commands) -> Result<Option<Request>> {
                 AppearanceCommand::Bar { position } => {
                     AppearanceSetting::BarPosition(position.into())
                 }
+                AppearanceCommand::BarStyle { style } => AppearanceSetting::BarStyle(style.into()),
                 AppearanceCommand::Colors { mode } => AppearanceSetting::ColorMode(match mode {
                     ColorModeArg::Light => voidline_protocol::ColorMode::Light,
                     ColorModeArg::Dark => voidline_protocol::ColorMode::Dark,

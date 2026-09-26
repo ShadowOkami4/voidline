@@ -164,6 +164,7 @@ voidlinectl wallpaper set "$HOME/Pictures/Wallpapers/example.png"
 voidlinectl panel open action-center
 voidlinectl settings open display
 voidlinectl appearance bar left
+voidlinectl appearance bar-style islands   # frame | islands | floating | minimal | taskbar
 voidlinectl --dry-run session reboot
 ```
 

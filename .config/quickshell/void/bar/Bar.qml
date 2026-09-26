@@ -6,13 +6,30 @@ import "../core"
 import "../panels"
 import "../services"
 
+// The bar supports five styles (Appearance.barStyle):
+//   frame     solid rail joined to the screen frame; panels attach to it
+//   islands   each group floats as its own pill
+//   floating  one detached, rounded rail
+//   minimal   no surface; a soft scrim keeps content legible
+//   taskbar   bottom dock with App Center, pinned and running apps
+// Only "frame" draws the concave joins and attached panels.
 PanelWindow {
     id: bar
 
     readonly property string position: Appearance.barPosition
     readonly property bool horizontal: position === "top" || position === "bottom"
+    readonly property string barStyle: Appearance.barStyle
+    readonly property bool framed: barStyle === "frame"
+    readonly property bool islands: barStyle === "islands"
+    readonly property bool floating: barStyle === "floating"
+    readonly property bool minimal: barStyle === "minimal"
+    readonly property bool taskbar: barStyle === "taskbar" && horizontal
     readonly property int curveSize: Theme.concaveRadius
-    readonly property int railSize: horizontal ? Theme.barHeight : Theme.sideBarWidth
+    // Detached styles keep a gap to the screen edge.
+    readonly property int edgeGap: Theme.barEdgeGap
+    readonly property int railSize: Theme.barThickness
+    readonly property int islandPadding: Metrics.spaceM
+    readonly property color islandColor: Theme.panel
 
     anchors {
         top: position !== "bottom"
@@ -21,18 +38,17 @@ PanelWindow {
         right: position !== "left"
     }
 
-    implicitWidth: horizontal ? 0 : railSize + curveSize
-    implicitHeight: horizontal ? railSize + curveSize : 0
-    exclusiveZone: railSize
+    implicitWidth: horizontal ? 0 : railSize + (framed ? curveSize : edgeGap * 2)
+    implicitHeight: horizontal ? railSize + (framed ? curveSize : edgeGap * 2) : 0
+    exclusiveZone: railSize + edgeGap
     color: "transparent"
 
-    Rectangle {
+    Item {
         id: barSurface
-        x: position === "right" ? curveSize : 0
-        y: position === "bottom" ? curveSize : 0
-        width: horizontal ? bar.width : railSize
-        height: horizontal ? railSize : bar.height
-        color: Theme.panel
+        x: bar.framed ? (position === "right" ? curveSize : 0) : bar.edgeGap
+        y: bar.framed ? (position === "bottom" ? curveSize : 0) : bar.edgeGap
+        width: horizontal ? bar.width - (bar.framed ? 0 : bar.edgeGap * 2) : railSize
+        height: horizontal ? railSize : bar.height - (bar.framed ? 0 : bar.edgeGap * 2)
         opacity: Appearance.barVisible ? 1 : 0
         scale: Appearance.barVisible ? 1 : 0.985
 
@@ -50,48 +66,155 @@ PanelWindow {
             }
         }
 
-        RowLayout {
+        // Rail surface for frame and floating.
+        Rectangle {
+            anchors.fill: parent
+            visible: bar.framed || bar.floating
+            radius: bar.floating ? Math.min(width, height) / 2 : 0
+            color: Theme.panel
+        }
+
+        // Minimal: a scrim fading away from the screen edge.
+        Rectangle {
+            visible: bar.minimal
+            anchors.fill: parent
+            anchors.margins: -Metrics.spaceS
+            gradient: Gradient {
+                orientation: bar.horizontal ? Gradient.Vertical : Gradient.Horizontal
+                GradientStop {
+                    position: 0
+                    color: bar.position === "top" || bar.position === "left"
+                        ? Theme.withAlpha(Theme.background, 0.72) : "transparent"
+                }
+                GradientStop {
+                    position: 1
+                    color: bar.position === "top" || bar.position === "left"
+                        ? "transparent" : Theme.withAlpha(Theme.background, 0.72)
+                }
+            }
+        }
+
+        // Pill drawn behind one group in the islands style.
+        component IslandBackground: Rectangle {
+            property Item target
+            visible: bar.islands && target && target.visible
+                && target.width > 0 && target.height > 0
+            x: bar.horizontal ? target.x - bar.islandPadding : 0
+            y: bar.horizontal ? 0 : target.y - bar.islandPadding
+            width: bar.horizontal ? target.width + bar.islandPadding * 2 : parent.width
+            height: bar.horizontal ? parent.height : target.height + bar.islandPadding * 2
+            radius: Math.min(width, height) / 2
+            color: bar.islandColor
+        }
+
+        // ---------------- horizontal: three groups ----------------
+        Item {
             anchors {
                 fill: parent
-                leftMargin: 20 + bar.curveSize
-                rightMargin: 20 + bar.curveSize
+                leftMargin: bar.framed ? 20 + bar.curveSize : (bar.islands ? bar.islandPadding : 16)
+                rightMargin: bar.framed ? 20 + bar.curveSize : (bar.islands ? bar.islandPadding : 16)
             }
-            spacing: 0
-            visible: bar.horizontal
+            visible: bar.horizontal && !bar.taskbar
 
-            Item {
-                Layout.preferredWidth: (barSurface.width - 40 - bar.curveSize * 2) / 3
-                Layout.fillHeight: true
-                RowLayout {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 7
-                    ClockGroup { shellScreen: bar.screen }
-                    WorkspaceIndicator {
-                        visible: Appearance.workspacePlacement === "clock"
-                    }
-                    MusicButton {
-                        shellScreen: bar.screen
-                        visible: Appearance.musicPlacement === "clock"
-                    }
+            IslandBackground { target: leftGroup }
+            IslandBackground { target: centerGroup }
+            IslandBackground { target: rightGroup }
+
+            RowLayout {
+                id: leftGroup
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 7
+                ClockGroup { shellScreen: bar.screen }
+                WorkspaceIndicator {
+                    visible: Appearance.workspacePlacement === "clock"
+                }
+                MusicButton {
+                    shellScreen: bar.screen
+                    visible: Appearance.musicPlacement === "clock"
                 }
             }
 
-            Item {
-                Layout.preferredWidth: (barSurface.width - 40 - bar.curveSize * 2) / 3
-                Layout.fillHeight: true
-                WorkspaceGroup {
+            WorkspaceGroup {
+                id: centerGroup
+                anchors.centerIn: parent
+                shellScreen: bar.screen
+            }
+
+            RowLayout {
+                id: rightGroup
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 7
+                TrayGroup {
+                    barWindow: bar
+                    barPosition: bar.position
+                }
+                MusicButton {
+                    shellScreen: bar.screen
+                    visible: Appearance.musicPlacement === "action"
+                }
+                WorkspaceIndicator {
+                    visible: Appearance.workspacePlacement === "action"
+                }
+                StatusGroup {
+                    panelActive: ShellState.isControlCenterScreen(bar.screen)
+                    onClicked: ShellState.toggleControlCenter(bar.screen)
+                }
+            }
+        }
+
+        // ---------------- taskbar ----------------
+        Item {
+            anchors.fill: parent
+            visible: bar.taskbar
+
+            Rectangle {
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+                width: taskbarWorkspaces.implicitWidth + bar.islandPadding * 2
+                radius: height / 2
+                color: bar.islandColor
+
+                WorkspaceIndicator {
+                    id: taskbarWorkspaces
+                    anchors.centerIn: parent
+                }
+            }
+
+            Rectangle {
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+                width: dock.implicitWidth + bar.islandPadding * 2
+                radius: height / 2
+                color: bar.islandColor
+
+                TaskbarDock {
+                    id: dock
                     anchors.centerIn: parent
                     shellScreen: bar.screen
                 }
             }
 
-            Item {
-                Layout.preferredWidth: (barSurface.width - 40 - bar.curveSize * 2) / 3
-                Layout.fillHeight: true
+            Rectangle {
+                anchors {
+                    right: parent.right
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+                width: taskbarStatus.implicitWidth + bar.islandPadding * 2
+                radius: height / 2
+                color: bar.islandColor
+
                 RowLayout {
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
+                    id: taskbarStatus
+                    anchors.centerIn: parent
                     spacing: 7
                     TrayGroup {
                         barWindow: bar
@@ -99,121 +222,140 @@ PanelWindow {
                     }
                     MusicButton {
                         shellScreen: bar.screen
-                        visible: Appearance.musicPlacement === "action"
-                    }
-                    WorkspaceIndicator {
-                        visible: Appearance.workspacePlacement === "action"
+                        visible: Appearance.musicPlacement !== "hidden"
                     }
                     StatusGroup {
                         panelActive: ShellState.isControlCenterScreen(bar.screen)
                         onClicked: ShellState.toggleControlCenter(bar.screen)
                     }
+                    ClockGroup { shellScreen: bar.screen }
                 }
             }
         }
 
-        ColumnLayout {
+        // ---------------- vertical: three groups ----------------
+        Item {
             anchors {
                 fill: parent
-                topMargin: 10
-                bottomMargin: 10
+                topMargin: bar.islands ? bar.islandPadding : 10
+                bottomMargin: bar.islands ? bar.islandPadding : 10
             }
-            spacing: 8
             visible: !bar.horizontal
 
-            ClockGroup {
-                Layout.alignment: Qt.AlignHCenter
-                vertical: true
-                shellScreen: bar.screen
+            IslandBackground { target: topColumn }
+            IslandBackground { target: middleColumn }
+            IslandBackground { target: bottomColumn }
+
+            ColumnLayout {
+                id: topColumn
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 8
+
+                ClockGroup {
+                    Layout.alignment: Qt.AlignHCenter
+                    vertical: true
+                    shellScreen: bar.screen
+                }
+
+                MusicButton {
+                    Layout.alignment: Qt.AlignHCenter
+                    shellScreen: bar.screen
+                    visible: Appearance.musicPlacement === "clock"
+                }
+
+                WorkspaceIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    vertical: true
+                    visible: Appearance.workspacePlacement === "clock"
+                }
             }
 
-            MusicButton {
-                Layout.alignment: Qt.AlignHCenter
-                shellScreen: bar.screen
-                visible: Appearance.musicPlacement === "clock"
+            ColumnLayout {
+                id: middleColumn
+                anchors.centerIn: parent
+                spacing: 8
+
+                MusicButton {
+                    Layout.alignment: Qt.AlignHCenter
+                    shellScreen: bar.screen
+                    visible: Appearance.musicPlacement === "bar"
+                }
+
+                IconButton {
+                    Layout.alignment: Qt.AlignHCenter
+                    icon: "apps"
+                    accessibleName: "Launcher"
+                    active: ShellState.isLauncherScreen(bar.screen)
+                    onClicked: ShellState.toggleLauncher(bar.screen)
+                }
+
+                WorkspaceIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    vertical: true
+                    visible: Appearance.workspacePlacement === "center"
+                }
             }
 
-            WorkspaceIndicator {
-                Layout.alignment: Qt.AlignHCenter
-                vertical: true
-                visible: Appearance.workspacePlacement === "clock"
-            }
+            ColumnLayout {
+                id: bottomColumn
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 8
 
-            Item { Layout.fillHeight: true }
+                MusicButton {
+                    Layout.alignment: Qt.AlignHCenter
+                    shellScreen: bar.screen
+                    visible: Appearance.musicPlacement === "action"
+                }
 
-            MusicButton {
-                Layout.alignment: Qt.AlignHCenter
-                shellScreen: bar.screen
-                visible: Appearance.musicPlacement === "bar"
-            }
+                WorkspaceIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    vertical: true
+                    visible: Appearance.workspacePlacement === "action"
+                }
 
-            IconButton {
-                Layout.alignment: Qt.AlignHCenter
-                icon: "apps"
-                accessibleName: "Launcher"
-                active: ShellState.isLauncherScreen(bar.screen)
-                onClicked: ShellState.toggleLauncher(bar.screen)
-            }
+                TrayGroup {
+                    Layout.alignment: Qt.AlignHCenter
+                    barWindow: bar
+                    barPosition: bar.position
+                    vertical: true
+                }
 
-            WorkspaceIndicator {
-                Layout.alignment: Qt.AlignHCenter
-                vertical: true
-                visible: Appearance.workspacePlacement === "center"
-            }
+                IconButton {
+                    Layout.alignment: Qt.AlignHCenter
+                    icon: SystemActionService.hotspotActive ? "wifi_tethering"
+                        : (ConnectivityService.ethernetConnected ? "lan"
+                            : (ConnectivityService.wifiConnected ? "wifi"
+                                : (ConnectivityService.wifiEnabled ? "wifi_find" : "signal_wifi_off")))
+                    accessibleName: "Action Center"
+                    active: ShellState.isControlCenterScreen(bar.screen)
+                    onClicked: ShellState.toggleControlCenter(bar.screen)
+                }
 
-            Item { Layout.fillHeight: true }
+                MaterialIcon {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: AudioService.outputMuted ? "volume_off" : "volume_up"
+                    size: 17
+                    color: AudioService.outputMuted ? Theme.textMuted : Theme.accent
+                }
 
-            MusicButton {
-                Layout.alignment: Qt.AlignHCenter
-                shellScreen: bar.screen
-                visible: Appearance.musicPlacement === "action"
-            }
-
-            WorkspaceIndicator {
-                Layout.alignment: Qt.AlignHCenter
-                vertical: true
-                visible: Appearance.workspacePlacement === "action"
-            }
-
-            TrayGroup {
-                Layout.alignment: Qt.AlignHCenter
-                barWindow: bar
-                barPosition: bar.position
-                vertical: true
-            }
-
-            IconButton {
-                Layout.alignment: Qt.AlignHCenter
-                icon: SystemActionService.hotspotActive ? "wifi_tethering"
-                    : (ConnectivityService.ethernetConnected ? "lan"
-                        : (ConnectivityService.wifiConnected ? "wifi"
-                            : (ConnectivityService.wifiEnabled ? "wifi_find" : "signal_wifi_off")))
-                accessibleName: "Action Center"
-                active: ShellState.isControlCenterScreen(bar.screen)
-                onClicked: ShellState.toggleControlCenter(bar.screen)
-            }
-
-            MaterialIcon {
-                Layout.alignment: Qt.AlignHCenter
-                text: AudioService.outputMuted ? "volume_off" : "volume_up"
-                size: 17
-                color: AudioService.outputMuted ? Theme.textMuted : Theme.accent
-            }
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                visible: PowerService.available
-                text: PowerService.percentage + "%"
-                color: PowerService.percentage <= 15 ? Theme.danger : Theme.textMuted
-                font.family: Theme.fontFamily
-                font.pixelSize: 9
-                font.weight: Font.Bold
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: PowerService.available
+                    text: PowerService.percentage + "%"
+                    color: PowerService.percentage <= 15 ? Theme.danger : Theme.textMuted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 9
+                    font.weight: Font.Bold
+                }
             }
         }
     }
 
     ConcaveJoin {
         id: firstCorner
+        visible: bar.framed
         width: curveSize
         height: curveSize
         x: position === "right" ? 0 : (horizontal ? 0 : railSize)
@@ -231,6 +373,7 @@ PanelWindow {
 
     ConcaveJoin {
         id: secondCorner
+        visible: bar.framed
         width: curveSize
         height: curveSize
         x: horizontal ? bar.width - width : (position === "left" ? railSize : 0)

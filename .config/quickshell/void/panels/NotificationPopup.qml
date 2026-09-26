@@ -20,8 +20,8 @@ PanelWindow {
         right: true
     }
     margins {
-        top: Appearance.barPosition === "top" ? Theme.barHeight + 10 : 12
-        right: Appearance.barPosition === "right" ? Theme.barHeight + 10 : 12
+        top: Appearance.barPosition === "top" ? Theme.barThickness + Theme.barEdgeGap + 10 : 12
+        right: Appearance.barPosition === "right" ? Theme.barThickness + Theme.barEdgeGap + 10 : 12
     }
     implicitWidth: 420
     implicitHeight: 220

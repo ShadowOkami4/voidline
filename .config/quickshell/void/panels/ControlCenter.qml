@@ -152,17 +152,18 @@ PanelWindow {
 
     Item {
         id: attachedSurface
+        readonly property bool attached: Theme.panelsAttached
         readonly property bool topAttached: Appearance.barPosition === "top"
         readonly property bool bottomAttached: Appearance.barPosition === "bottom"
         readonly property bool leftAttached: Appearance.barPosition === "left"
         readonly property bool rightAttached: Appearance.barPosition === "right"
-        x: topAttached || bottomAttached ? root.width - width
+        x: topAttached || bottomAttached ? root.width - width - Theme.panelSideGap
             : (Appearance.barPosition === "left"
-                ? Theme.sideBarWidth - 1
-                : root.width - Theme.sideBarWidth - width + 1)
-        y: topAttached ? Theme.barHeight - 1
-            : (bottomAttached ? root.height - Theme.barHeight - height + 1
-                : root.height - height)
+                ? Theme.panelInset
+                : root.width - Theme.panelInset - width)
+        y: topAttached ? Theme.panelInset
+            : (bottomAttached ? root.height - Theme.panelInset - height
+                : root.height - height - Theme.panelSideGap)
         width: root.surfaceExpanded
             ? root.targetPanelWidth + root.cornerSize
             : (topAttached || bottomAttached ? root.collapsedWidth : 0)
@@ -193,7 +194,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "top-left"
-            visible: attachedSurface.topAttached
+            visible: attachedSurface.attached && attachedSurface.topAttached
         }
         ConcaveJoin {
             x: attachedSurface.width - width
@@ -201,7 +202,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "top-left"
-            visible: attachedSurface.topAttached
+            visible: attachedSurface.attached && attachedSurface.topAttached
         }
 
         ConcaveJoin {
@@ -210,7 +211,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "bottom-left"
-            visible: attachedSurface.bottomAttached
+            visible: attachedSurface.attached && attachedSurface.bottomAttached
         }
         ConcaveJoin {
             x: attachedSurface.width - width
@@ -218,7 +219,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "bottom-left"
-            visible: attachedSurface.bottomAttached
+            visible: attachedSurface.attached && attachedSurface.bottomAttached
         }
         ConcaveJoin {
             x: 0
@@ -226,7 +227,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "left-top"
-            visible: attachedSurface.leftAttached
+            visible: attachedSurface.attached && attachedSurface.leftAttached
         }
         ConcaveJoin {
             x: attachedSurface.width - width
@@ -234,7 +235,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "bottom-right"
-            visible: attachedSurface.leftAttached
+            visible: attachedSurface.attached && attachedSurface.leftAttached
         }
         ConcaveJoin {
             x: attachedSurface.width - width
@@ -242,7 +243,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "right-top"
-            visible: attachedSurface.rightAttached
+            visible: attachedSurface.attached && attachedSurface.rightAttached
         }
         ConcaveJoin {
             x: 0
@@ -250,7 +251,7 @@ PanelWindow {
             width: root.cornerSize
             height: root.cornerSize
             orientation: "bottom-left"
-            visible: attachedSurface.rightAttached
+            visible: attachedSurface.attached && attachedSurface.rightAttached
         }
 
         Rectangle {
@@ -267,25 +268,25 @@ PanelWindow {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
                 height: Theme.panelRadius
                 color: Theme.panel
-                visible: attachedSurface.topAttached
+                visible: attachedSurface.attached && attachedSurface.topAttached
             }
             Rectangle {
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
                 height: Theme.panelRadius
                 color: Theme.panel
-                visible: !attachedSurface.topAttached
+                visible: attachedSurface.attached && !attachedSurface.topAttached
             }
             Rectangle {
                 anchors { top: parent.top; bottom: parent.bottom; left: parent.left }
                 width: Theme.panelRadius
                 color: Theme.panel
-                visible: attachedSurface.leftAttached
+                visible: attachedSurface.attached && attachedSurface.leftAttached
             }
             Rectangle {
                 anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
                 width: Theme.panelRadius
                 color: Theme.panel
-                visible: !attachedSurface.leftAttached
+                visible: attachedSurface.attached && !attachedSurface.leftAttached
             }
 
             Item {

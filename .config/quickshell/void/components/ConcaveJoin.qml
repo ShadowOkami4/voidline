@@ -18,6 +18,8 @@ Canvas {
         || orientation === "left-top"
         || orientation === "right-top"
     readonly property real curve: 0.5522847498
+    // Concave joins only exist in the connected "frame" bar style.
+    readonly property bool styleAllows: Appearance.panelsAttached
 
     implicitWidth: Theme.concaveRadius
     implicitHeight: Theme.concaveRadius
@@ -32,6 +34,7 @@ Canvas {
     }
 
     onOrientationChanged: requestPaint()
+    onStyleAllowsChanged: requestPaint()
     onFillColorChanged: requestPaint()
     onWidthChanged: requestPaint()
     onHeightChanged: requestPaint()
@@ -40,6 +43,8 @@ Canvas {
     onPaint: {
         const context = getContext("2d")
         context.reset()
+        if (!root.styleAllows)
+            return
         context.fillStyle = root.fillColor
         context.beginPath()
         context.moveTo(mappedX(0), mappedY(0))
