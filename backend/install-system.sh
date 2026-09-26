@@ -45,7 +45,6 @@ install -d -m 755 \
     "$(at /usr/bin)" \
     "$(at /usr/lib/voidline)" \
     "$(at /usr/lib/systemd/user)" \
-    "$(at /usr/share/voidline/quickshell)" \
     "$(at /usr/share/voidline/material-symbols)" \
     "$(at /usr/share/voidline/hypr)" \
     "$(at /usr/share/voidline/xdg-desktop-portal)" \
@@ -81,12 +80,20 @@ install -m 755 "$repository/.config/quickshell/void/helpers/network-secret-helpe
 
 install -m 644 "$repository/.config/quickshell/void/helpers/org.voidline.network.policy" \
     "$(at /usr/share/polkit-1/actions/org.voidline.network.policy)"
-cp -R "$repository/.config/quickshell/void/." \
-    "$(at /usr/share/voidline/quickshell/)"
-find "$(at /usr/share/voidline/quickshell)" -type d -exec chmod 755 {} +
-find "$(at /usr/share/voidline/quickshell)" -type f -exec chmod 644 {} +
-find "$(at /usr/share/voidline/quickshell/scripts)" -type f \
+# Stage the shell next to its final location and swap it in, so files removed
+# upstream do not linger and a running shell never sees a half-copied tree.
+shell_target=$(at /usr/share/voidline/quickshell)
+shell_staging=$(at /usr/share/voidline/.quickshell.new)
+shell_previous=$(at /usr/share/voidline/.quickshell.old)
+rm -rf -- "$shell_staging" "$shell_previous"
+cp -R "$repository/.config/quickshell/void/." "$shell_staging/"
+find "$shell_staging" -type d -exec chmod 755 {} +
+find "$shell_staging" -type f -exec chmod 644 {} +
+find "$shell_staging/scripts" -type f \
     \( -name '*.sh' -o -name 'voidline-share-picker' \) -exec chmod 755 {} +
+[ ! -d "$shell_target" ] || mv -- "$shell_target" "$shell_previous"
+mv -- "$shell_staging" "$shell_target"
+rm -rf -- "$shell_previous"
 
 cp -R "$repository/.local/share/icons/Voidline/source/material-symbols/." \
     "$(at /usr/share/voidline/material-symbols/)"

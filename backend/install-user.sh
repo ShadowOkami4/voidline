@@ -21,12 +21,22 @@ command -v cargo >/dev/null 2>&1 || {
     exit 69
 }
 
-cargo build --locked --release --manifest-path "$workspace/Cargo.toml" --workspace
-"$workspace/build-network-helper.sh"
+# /install.sh builds before calling this script; a direct invocation builds
+# here. The target directory is pinned because the steps below read from it.
+if [ "${VOIDLINE_SKIP_BUILD:-0}" != 1 ]; then
+    CARGO_TARGET_DIR="$workspace/target" cargo build --locked --release \
+        --manifest-path "$workspace/Cargo.toml" --workspace
+    "$workspace/build-network-helper.sh"
+fi
+for binary in voidlined voidlinectl voidline-terminal voidline-network; do
+    [ -x "$workspace/target/release/$binary" ] || {
+        printf 'Missing release binary: %s\n' "$binary" >&2
+        exit 66
+    }
+done
 install -d -m 755 \
     "$prefix/lib/voidline" \
     "$prefix/bin" \
-    "$prefix/share/voidline/quickshell" \
     "$prefix/share/voidline/material-symbols" \
     "$prefix/share/voidline/hypr" \
     "$prefix/share/voidline/xdg-desktop-portal" \
@@ -49,11 +59,19 @@ done
 install -m 755 "$repository/.config/quickshell/void/scripts/voidline-share-picker" \
     "$prefix/bin/voidline-share-picker"
 
-cp -R "$repository/.config/quickshell/void/." "$prefix/share/voidline/quickshell/"
-find "$prefix/share/voidline/quickshell" -type d -exec chmod 755 {} +
-find "$prefix/share/voidline/quickshell" -type f -exec chmod 644 {} +
-find "$prefix/share/voidline/quickshell/scripts" -type f \
+# Stage the shell next to its final location and swap it in, so files removed
+# upstream do not linger and a running shell never sees a half-copied tree.
+shell_target="$prefix/share/voidline/quickshell"
+shell_staging="$prefix/share/voidline/.quickshell.new"
+rm -rf -- "$shell_staging" "$prefix/share/voidline/.quickshell.old"
+cp -R "$repository/.config/quickshell/void/." "$shell_staging/"
+find "$shell_staging" -type d -exec chmod 755 {} +
+find "$shell_staging" -type f -exec chmod 644 {} +
+find "$shell_staging/scripts" -type f \
     \( -name '*.sh' -o -name 'voidline-share-picker' \) -exec chmod 755 {} +
+[ ! -d "$shell_target" ] || mv -- "$shell_target" "$prefix/share/voidline/.quickshell.old"
+mv -- "$shell_staging" "$shell_target"
+rm -rf -- "$prefix/share/voidline/.quickshell.old"
 cp -R "$repository/.local/share/icons/Voidline/source/material-symbols/." \
     "$prefix/share/voidline/material-symbols/"
 cp -R "$repository/assets/wallpapers/." "$prefix/share/backgrounds/voidline/"

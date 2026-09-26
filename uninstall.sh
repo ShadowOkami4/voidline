@@ -42,13 +42,15 @@ for config in "$config_home/hypr/hyprland.conf" "$config_home/hypr/hyprland.lua"
     if grep -q 'Added by Voidline' "$config"; then
         cp -a -- "$config" "$backup_root/$(basename "$config")"
         temporary=$(mktemp "$(dirname "$config")/.voidline-uninstall.XXXXXX")
+        # Remove every marked block from any Voidline version; older installers
+        # could append the integration line more than once.
         if [[ $config == *.lua ]]; then
-            sed '/^-- Added by Voidline 0\.3\.0dev$/,+1d' "$config" >"$temporary"
+            sed '/^-- Added by Voidline /,+1d' "$config" >"$temporary"
         else
-            sed '/^# Added by Voidline 0\.3\.0dev$/,+1d' "$config" >"$temporary"
+            sed '/^# Added by Voidline /,+1d' "$config" >"$temporary"
         fi
         chmod --reference="$config" "$temporary" 2>/dev/null || chmod 600 "$temporary"
-        mv -f -- "$temporary" "$config"
+        mv -f -- "$temporary" "$(readlink -f -- "$config")"
     fi
 done
 rm -f -- "$config_home/hypr/voidline.conf" "$config_home/hypr/voidline.lua"
@@ -68,7 +70,7 @@ if [[ $purge_generated -eq 1 ]]; then
     [[ -d $runtime_home/voidline ]] && rm -R -- "$runtime_home/voidline"
     rm -f -- "$state_home/voidline"/*.json "$state_home/voidline"/*.state 2>/dev/null || true
 fi
-systemctl --user daemon-reload
+systemctl --user daemon-reload 2>/dev/null || true
 printf '%s\n' 'Voidline-installed files were removed.'
 printf '%s\n' 'Personal configuration, data, wallpapers, and backups were preserved.'
 printf 'Any edited Hyprland config was backed up under %s.\n' "$backup_root"
