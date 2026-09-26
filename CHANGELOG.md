@@ -13,6 +13,15 @@
   shape-morphing switches, icon buttons, tiles and chips, segmented Settings
   groups, connected button groups, and restyled bar, notifications, power
   drawer, lock screen, and SDDM theme.
+- Bar styles: frame (default, panels attach to the bar and screen frame),
+  pills, floating, minimal, and taskbar (bottom dock with pinned and running
+  apps). Outside frame mode every panel floats. `voidlinectl appearance
+  bar-style <style>` and Settings > Appearance switch styles.
+- Android 16 Quick Settings shade: split notifications | Quick Settings
+  layout on wide screens, pill tiles, thick sliders, media card.
+- Pixel-style Settings: flat lists, pastel category icons, main switch bars.
+- Pixel lock clock (new default), right-hand unlock column, matching SDDM
+  layout, and a tile-based power menu.
 
 ## 0.3.0dev — 2026-08-12
 

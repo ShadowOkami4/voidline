@@ -77,6 +77,15 @@ cd voidline
 ./install.sh --install-deps
 ```
 
+To test a development branch instead of a release, clone that branch and
+run the same installer:
+
+```bash
+git clone --branch <branch> --depth 1 https://github.com/ShadowOkami4/voidline.git
+cd voidline
+./install.sh --install-deps
+```
+
 The default system install builds as the current user and uses `sudo` only for
 the packaged files under `/usr`. It never runs Quickshell, the backend, the
 terminal, or Lyra as root.
