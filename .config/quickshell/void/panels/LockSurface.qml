@@ -51,9 +51,15 @@ FocusScope {
         smooth: true
     }
 
+    // Scrim keeps text legible over any wallpaper while letting its colour
+    // through; the clock and unlock controls float directly on it.
     Rectangle {
         anchors.fill: parent
-        color: Theme.darkMode ? "#A6100E14" : "#8A141218"
+        gradient: Gradient {
+            GradientStop { position: 0; color: Theme.withAlpha(Theme.background, Theme.darkMode ? 0.42 : 0.28) }
+            GradientStop { position: 0.55; color: Theme.withAlpha(Theme.background, Theme.darkMode ? 0.5 : 0.36) }
+            GradientStop { position: 1; color: Theme.withAlpha(Theme.background, Theme.darkMode ? 0.82 : 0.7) }
+        }
     }
 
     LockClock {
@@ -67,100 +73,107 @@ FocusScope {
         date: clock.date
     }
 
-    Rectangle {
+    // Material 3 Expressive unlock cluster: avatar, emphasized greeting, a
+    // pill password field on a tonal container, and a filled unlock button
+    // that morphs while authentication runs.
+    Item {
         id: unlockCard
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
-            bottomMargin: Math.max(70, parent.height * 0.13)
+            bottomMargin: Math.max(56, parent.height * 0.1)
         }
-        width: Math.min(430, parent.width - 48)
-        height: 226
-        radius: Theme.radiusExtraLarge
-        color: Theme.panel
-        border.width: 1
-        border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.42)
-        scale: LockService.authenticating ? 0.99 : 1
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Motion.fast
-                easing.type: Motion.standardCurve
-            }
-        }
+        width: Math.min(Math.round(420 * Metrics.scale), parent.width - 48)
+        height: unlockColumn.implicitHeight
 
         ColumnLayout {
-            anchors {
-                fill: parent
-                margins: 20
-            }
-            spacing: 12
+            id: unlockColumn
+            width: parent.width
+            spacing: Metrics.spaceM
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 80
-                spacing: 14
+            Item {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: Math.round(96 * Metrics.scale)
+                Layout.preferredHeight: Layout.preferredWidth
+
                 Rectangle {
-                    Layout.preferredWidth: 76
-                    Layout.preferredHeight: 76
-                    radius: Theme.radiusExtraLarge
-                    color: Theme.accentContainer
-                    border.width: 1
-                    border.color: Qt.rgba(Theme.accent.r,
-                        Theme.accent.g, Theme.accent.b, 0.72)
+                    id: avatarRing
+                    anchors.fill: parent
+                    radius: width / 2
+                    color: "transparent"
+                    border.width: Math.max(3, Math.round(3 * Metrics.scale))
+                    border.color: LockService.messageIsError ? Theme.danger : Theme.accent
 
-                    RoundedImage {
-                        anchors {
-                            fill: parent
-                            margins: 4
-                        }
-                        radius: Theme.radiusLarge
-                        source: ProfileImageService.avatarSource
-                        fallbackIcon: "person"
-                        fallbackColor: Theme.groupSurfaceRaised
-                    }
+                    Behavior on border.color { ColorAnimation { duration: Motion.effectsFastDuration } }
                 }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 0
-                    Text {
-                        Layout.fillWidth: true
-                        text: I18n.tr("lock.welcome")
-                        color: Theme.text
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 19
-                        font.weight: Font.Bold
+                RoundedImage {
+                    anchors {
+                        fill: parent
+                        margins: avatarRing.border.width + Math.round(3 * Metrics.scale)
                     }
-                    Text {
-                        Layout.fillWidth: true
-                        text: I18n.tr("lock.prompt")
-                        color: Theme.textMuted
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                    }
+                    radius: width / 2
+                    source: ProfileImageService.avatarSource
+                    fallbackIcon: "person"
+                    fallbackColor: Theme.accentContainer
+                    fallbackIconSize: Math.round(width * 0.52)
+                    fallbackIconColor: Theme.accentContainerInk
                 }
-                MaterialIcon {
-                    text: "lock"
-                    size: 20
-                    color: Theme.accent
-                }
+            }
+
+            Text {
+                Layout.fillWidth: true
+                Layout.topMargin: Metrics.spaceXS
+                text: I18n.tr("lock.welcome")
+                color: Theme.text
+                font.family: Theme.fontFamily
+                font.pixelSize: Math.round(26 * Metrics.scale)
+                font.weight: Font.Bold
+                font.variableAxes: ({ "wght": 720, "wdth": 110, "opsz": 32 })
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+            }
+            Text {
+                Layout.fillWidth: true
+                Layout.topMargin: -Metrics.spaceS
+                text: I18n.tr("lock.prompt")
+                color: Theme.textMuted
+                font.family: Theme.fontFamily
+                font.pixelSize: Metrics.appTextSupporting
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
             }
 
             Rectangle {
+                id: passwordField
                 Layout.fillWidth: true
-                Layout.preferredHeight: 54
-                radius: Theme.radiusMedium
-                color: passwordInput.activeFocus ? Theme.surfaceHigh : Theme.surfaceLow
-                border.width: passwordInput.activeFocus ? 2 : 1
-                border.color: passwordInput.activeFocus ? Theme.accent : Theme.outlineSoft
+                Layout.topMargin: Metrics.spaceS
+                Layout.preferredHeight: Math.round(64 * Metrics.scale)
+                radius: height / 2
+                color: passwordInput.activeFocus ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+                border.width: LockService.messageIsError ? 2 : (passwordInput.activeFocus ? 2 : 0)
+                border.color: LockService.messageIsError ? Theme.danger : Theme.accent
+
+                // Expressive error feedback: a short horizontal shake.
+                transform: Translate { id: shakeOffset }
+                SequentialAnimation {
+                    id: shake
+                    NumberAnimation { target: shakeOffset; property: "x"; to: -10; duration: 50; easing.type: Easing.OutQuad }
+                    NumberAnimation { target: shakeOffset; property: "x"; to: 8; duration: 70; easing.type: Easing.InOutQuad }
+                    NumberAnimation { target: shakeOffset; property: "x"; to: -5; duration: 70; easing.type: Easing.InOutQuad }
+                    NumberAnimation {
+                        target: shakeOffset; property: "x"; to: 0; duration: Motion.springFast
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.spatialFast
+                    }
+                }
 
                 RowLayout {
                     anchors {
                         fill: parent
-                        leftMargin: 16
-                        rightMargin: 8
+                        leftMargin: Math.round(24 * Metrics.scale)
+                        rightMargin: Math.round(8 * Metrics.scale)
                     }
-                    spacing: 8
+                    spacing: Metrics.spaceS
+
                     TextInput {
                         id: passwordInput
                         Layout.fillWidth: true
@@ -173,7 +186,8 @@ FocusScope {
                         selectionColor: Theme.accent
                         selectedTextColor: Theme.accentInk
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: Math.round(16 * Metrics.scale)
+                        font.letterSpacing: echoMode === TextInput.Password ? 2 : 0
                         verticalAlignment: TextInput.AlignVCenter
                         clip: true
 
@@ -182,7 +196,8 @@ FocusScope {
                             text: LockService.authenticating
                                 ? I18n.tr("lock.checkingPassword") : I18n.tr("lock.password")
                             color: Theme.textMuted
-                            font: passwordInput.font
+                            font.family: Theme.fontFamily
+                            font.pixelSize: passwordInput.font.pixelSize
                             verticalAlignment: Text.AlignVCenter
                             visible: passwordInput.text.length === 0
                         }
@@ -193,37 +208,85 @@ FocusScope {
                     IconButton {
                         id: showPassword
                         property bool checked: false
-                        size: 38
+                        size: Math.round(40 * Metrics.scale)
                         icon: checked ? "visibility_off" : "visibility"
                         accessibleName: checked ? I18n.tr("common.hidePassword")
                             : I18n.tr("common.showPassword")
                         onClicked: checked = !checked
                     }
-                    IconButton {
-                        size: 38
-                        icon: LockService.authenticating ? "progress_activity" : "arrow_forward"
-                        accessibleName: I18n.tr("lock.unlock")
-                        enabled: passwordInput.text.length > 0
+
+                    // Filled primary unlock button. It morphs from a circle
+                    // to a rounded square and spins its glyph while checking.
+                    Rectangle {
+                        id: unlockButton
+                        readonly property bool ready: passwordInput.text.length > 0
                             && !LockService.authenticating
-                        active: passwordInput.text.length > 0
-                        onClicked: root.submit()
+                        Layout.preferredWidth: Math.round(48 * Metrics.scale)
+                        Layout.preferredHeight: Layout.preferredWidth
+                        radius: LockService.authenticating || unlockTap.pressed
+                            ? Metrics.radiusM : width / 2
+                        color: ready || LockService.authenticating ? Theme.accent : Theme.surfaceHigh
+                        activeFocusOnTab: ready
+                        Accessible.role: Accessible.Button
+                        Accessible.name: I18n.tr("lock.unlock")
+
+                        Behavior on radius {
+                            NumberAnimation {
+                                duration: Motion.springFast
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Motion.spatialFast
+                            }
+                        }
+                        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+
+                        MaterialIcon {
+                            anchors.centerIn: parent
+                            text: LockService.authenticating ? "progress_activity" : "arrow_forward"
+                            size: Math.round(24 * Metrics.scale)
+                            fill: 1
+                            color: unlockButton.ready || LockService.authenticating
+                                ? Theme.accentInk : Theme.textMuted
+
+                            RotationAnimation on rotation {
+                                running: LockService.authenticating && !Appearance.reduceMotion
+                                from: 0
+                                to: 360
+                                loops: Animation.Infinite
+                                duration: Motion.spinner
+                            }
+                        }
+
+                        TapHandler {
+                            id: unlockTap
+                            enabled: unlockButton.ready
+                            onTapped: root.submit()
+                        }
+                        HoverHandler {
+                            enabled: unlockButton.ready
+                            cursorShape: Qt.PointingHandCursor
+                        }
+                        Keys.onReturnPressed: root.submit()
+                        Keys.onSpacePressed: root.submit()
                     }
                 }
 
-                Behavior on color { ColorAnimation { duration: Motion.fast } }
-                Behavior on border.color { ColorAnimation { duration: Motion.fast } }
+                Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+                Behavior on border.color { ColorAnimation { duration: Motion.effectsFastDuration } }
             }
 
             Text {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 20
+                Layout.preferredHeight: Math.round(20 * Metrics.scale)
                 text: LockService.message
-                visible: text.length > 0
+                opacity: text.length > 0 ? 1 : 0
                 color: LockService.messageIsError ? Theme.danger : Theme.textMuted
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Metrics.appTextSupporting
+                font.weight: Font.Medium
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
+
+                Behavior on opacity { NumberAnimation { duration: Motion.effectsFastDuration } }
             }
         }
     }
@@ -237,6 +300,8 @@ FocusScope {
         target: LockService
         function onAuthenticationFailed() {
             passwordInput.text = ""
+            if (!Appearance.reduceMotion)
+                shake.restart()
             passwordInput.forceActiveFocus()
         }
     }

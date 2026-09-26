@@ -11,6 +11,8 @@ Item {
     property size sourceSize: Qt.size(width * 2, height * 2)
     property string fallbackIcon: "image"
     property color fallbackColor: Theme.surfaceLow
+    property int fallbackIconSize: Math.min(42, Math.max(22, Math.min(width, height) * 0.2))
+    property color fallbackIconColor: Theme.textMuted
     property real imageScale: 1
     property real imageOffsetX: 0
     property real imageOffsetY: 0
@@ -24,8 +26,9 @@ Item {
         MaterialIcon {
             anchors.centerIn: parent
             text: root.fallbackIcon
-            size: Math.min(42, Math.max(22, Math.min(parent.width, parent.height) * 0.2))
-            color: Theme.textMuted
+            size: root.fallbackIconSize
+            fill: 1
+            color: root.fallbackIconColor
             visible: image.status !== Image.Ready
         }
     }

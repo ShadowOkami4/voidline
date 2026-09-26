@@ -12,15 +12,15 @@ case "${1:-}" in
             if valid_color "$1"; then printf '%s' "$1"; else printf '%s' "$2"; fi
         }
 
-        background_color=$(palette_color "${3:-}" '#141218')
-        panel_color=$(palette_color "${4:-}" '#211F26')
-        surface_color=$(palette_color "${5:-}" '#252229')
-        raised_color=$(palette_color "${6:-}" '#302D34')
-        text_color=$(palette_color "${7:-}" '#E6E1E5')
-        muted_color=$(palette_color "${8:-}" '#CAC4D0')
-        outline_color=$(palette_color "${9:-}" '#454149')
-        accent_color=$(palette_color "${10:-}" '#B8D8D0')
-        accent_soft_color=$(palette_color "${11:-}" '#334D48')
+        background_color=$(palette_color "${3:-}" '#0B0C0C')
+        panel_color=$(palette_color "${4:-}" '#161A19')
+        surface_color=$(palette_color "${5:-}" '#242B29')
+        raised_color=$(palette_color "${6:-}" '#2F3A37')
+        text_color=$(palette_color "${7:-}" '#E7E9E9')
+        muted_color=$(palette_color "${8:-}" '#B2BDBA')
+        outline_color=$(palette_color "${9:-}" '#43514D')
+        accent_color=$(palette_color "${10:-}" '#AFD4C9')
+        accent_soft_color=$(palette_color "${11:-}" '#305A4D')
 
         safe_user=$(printf '%s' "${USER:-user}" | tr -cd 'A-Za-z0-9_.-')
         [ -n "$safe_user" ] || exit 2

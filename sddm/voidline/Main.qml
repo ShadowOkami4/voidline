@@ -6,7 +6,7 @@ Rectangle {
 
     width: 1920
     height: 1080
-    property color background: config.backgroundColor || "#141218"
+    property color background: config.backgroundColor || "#0B0C0C"
     color: background
     focus: true
     gradient: Gradient {
@@ -19,15 +19,25 @@ Rectangle {
     property int clockWeight: 760
     property string clockStyle: "digital-large"
     property color clockColor: foreground
-    property color accent: config.accentColor || "#8FB8AC"
-    property color accentSoft: config.accentSoftColor || "#3F6C64"
-    property color panel: config.panelColor || "#211F26"
-    property color surface: config.surfaceColor || "#252229"
-    property color surfaceRaised: config.raisedSurfaceColor || "#302D34"
-    property color foreground: config.textColor || "#F1F5F3"
-    property color muted: config.mutedTextColor || "#B8C4C0"
-    property color outline: config.outlineColor || "#6572817C"
-    property color danger: config.dangerColor || "#F2B8B5"
+    property color accent: config.accentColor || "#AFD4C9"
+    property color accentSoft: config.accentSoftColor || "#305A4D"
+    property color panel: config.panelColor || "#161A19"
+    property color surface: config.surfaceColor || "#242B29"
+    property color surfaceRaised: config.raisedSurfaceColor || "#2F3A37"
+    property color foreground: config.textColor || "#E7E9E9"
+    property color muted: config.mutedTextColor || "#B2BDBA"
+    property color outline: config.outlineColor || "#43514D"
+    property color danger: config.dangerColor || "#FFB4AB"
+    // Material 3 Expressive content colours derived from the cached palette.
+    readonly property color accentInk: Qt.hsla(accent.hslHue,
+        Math.min(0.5, accent.hslSaturation), 0.14, 1)
+    readonly property color accentSoftInk: Qt.hsla(accent.hslHue,
+        Math.min(0.4, accent.hslSaturation), 0.9, 1)
+    readonly property color dangerContainer: "#93000A"
+    readonly property color dangerInk: "#FFDAD6"
+    // Material 3 Expressive spatial springs (fast and default).
+    readonly property var spatialFast: [0.42, 1.67, 0.21, 0.9, 1, 1]
+    readonly property var spatialDefault: [0.38, 1.21, 0.22, 1, 1, 1]
     property int shapeRadius: Number(config.radius) || 28
     property bool compactHeight: height < 760
     property date now: new Date()
@@ -170,9 +180,15 @@ Rectangle {
         }
     }
 
+    // Scrim: light at the top so the wallpaper shows, deeper behind the
+    // sign-in controls so text stays legible on any image.
     Rectangle {
         anchors.fill: parent
-        color: "#52060B0C"
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(root.background.r, root.background.g, root.background.b, 0.42) }
+            GradientStop { position: 0.55; color: Qt.rgba(root.background.r, root.background.g, root.background.b, 0.5) }
+            GradientStop { position: 1.0; color: Qt.rgba(root.background.r, root.background.g, root.background.b, 0.84) }
+        }
     }
 
     Rectangle {
@@ -181,31 +197,31 @@ Rectangle {
             top: parent.top
             margins: 24
         }
-        width: hostRow.width + 28
-        height: 38
-        radius: 14
-        color: root.panel
-        border.width: 1
-        border.color: root.outline
+        width: hostRow.width + 32
+        height: 44
+        radius: height / 2
+        color: root.surface
 
         Row {
             id: hostRow
             anchors.centerIn: parent
             spacing: 8
 
-            Text {
+            Image {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "desktop_windows"
-                color: root.accent
-                font.family: "Material Symbols Rounded"
-                font.pixelSize: 17
+                width: 20
+                height: 20
+                source: "assets/voidline.svg"
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                mipmap: true
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: sddm.hostName
                 color: root.foreground
                 font.family: root.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: 13
                 font.weight: Font.DemiBold
             }
         }
@@ -219,39 +235,48 @@ Rectangle {
             margins: 24
         }
         z: 30
-        width: Math.min(260, Math.max(164, userControlRow.implicitWidth + 28))
-        height: 46
-        radius: 16
-        color: root.userMenuOpen ? root.surfaceRaised : root.panel
-        border.width: 1
-        border.color: root.userMenuOpen ? root.accent : root.outline
+        width: Math.min(280, Math.max(164, userControlRow.implicitWidth + 20))
+        height: 48
+        radius: root.userMenuOpen ? 16 : height / 2
+        color: root.userMenuOpen ? root.accentSoft
+            : (userControlMouse.containsMouse ? Qt.lighter(root.surface, 1.22) : root.surface)
+        activeFocusOnTab: userList.count > 1
+
+        Behavior on radius {
+            NumberAnimation { duration: 350; easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialFast }
+        }
+        Behavior on color { ColorAnimation { duration: 150 } }
 
         Row {
             id: userControlRow
-            anchors.centerIn: parent
-            spacing: 9
+            anchors {
+                left: parent.left
+                leftMargin: 6
+                verticalCenter: parent.verticalCenter
+            }
+            spacing: 10
 
             RoundedAvatar {
                 anchors.verticalCenter: parent.verticalCenter
-                width: 30
-                height: 30
-                cornerRadius: 10
-                frameWidth: 2
+                width: 36
+                height: 36
+                frameWidth: 3
+                ringWidth: 0
                 source: root.cachedAvatar
                 fallbackSource: root.selectedSystemAvatar
                 fallbackText: root.selectedUser.length > 0
                     ? root.selectedUser.charAt(0).toUpperCase() : "V"
                 accent: root.accent
-                foreground: root.foreground
-                surface: root.surfaceRaised
+                foreground: root.accentSoftInk
+                surface: root.accentSoft
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                width: Math.min(150, implicitWidth)
+                width: Math.min(160, implicitWidth)
                 text: root.selectedDisplayName || root.selectedUser
-                color: root.foreground
+                color: root.userMenuOpen ? root.accentSoftInk : root.foreground
                 font.family: root.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: 13
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
             }
@@ -259,87 +284,101 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: userList.count > 1
                 text: root.userMenuOpen ? "expand_less" : "expand_more"
-                color: root.muted
+                color: root.userMenuOpen ? root.accentSoftInk : root.muted
                 font.family: "Material Symbols Rounded"
-                font.pixelSize: 18
+                font.pixelSize: 20
             }
         }
 
         MouseArea {
+            id: userControlMouse
             anchors.fill: parent
             enabled: userList.count > 1
+            hoverEnabled: true
             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
             onClicked: root.userMenuOpen = !root.userMenuOpen
         }
+        Keys.onSpacePressed: root.userMenuOpen = !root.userMenuOpen
+        Keys.onReturnPressed: root.userMenuOpen = !root.userMenuOpen
     }
 
+    // Material 3 menu: rounded container, pill-shaped selected item.
     Rectangle {
         id: userMenu
         anchors {
             top: userControl.bottom
             right: userControl.right
-            topMargin: 8
+            topMargin: 6
         }
         z: 29
-        width: 280
+        width: 288
         height: root.userMenuOpen
-            ? Math.min(310, userList.contentHeight + 16) : 0
-        radius: 20
+            ? Math.min(320, userList.contentHeight + 16) : 0
+        radius: 24
         color: root.panel
-        border.width: 1
-        border.color: root.outline
         clip: true
         opacity: root.userMenuOpen ? 1 : 0
-        scale: root.userMenuOpen ? 1 : 0.97
+        visible: height > 0
 
         ListView {
             id: userList
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 4
+            spacing: 2
             clip: true
             model: userModel
             currentIndex: root.selectedUserIndex
 
             delegate: Rectangle {
+                readonly property bool isSelected: root.selectedUser === name
                 width: userList.width
-                height: 54
-                radius: 15
-                color: root.selectedUser === name
+                height: 56
+                radius: isSelected ? height / 2 : 16
+                color: isSelected
                     ? root.accentSoft : userItemMouse.containsMouse
                         ? root.surfaceRaised : "transparent"
-                border.width: root.selectedUser === name ? 1 : 0
-                border.color: root.accent
+
+                Behavior on radius {
+                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialFast }
+                }
 
                 Row {
                     anchors {
                         fill: parent
                         leftMargin: 10
-                        rightMargin: 10
+                        rightMargin: 12
                     }
-                    spacing: 10
+                    spacing: 12
                     RoundedAvatar {
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 36
-                        height: 36
-                        cornerRadius: 12
-                        frameWidth: 2
+                        width: 38
+                        height: 38
+                        frameWidth: 3
+                        ringWidth: parent.parent.isSelected ? 2 : 0
                         source: "file:///var/tmp/voidline-sddm-" + name + ".avatar.png"
                         fallbackSource: icon
                         fallbackText: name.length > 0 ? name.charAt(0).toUpperCase() : "V"
                         accent: root.accent
-                        foreground: root.foreground
-                        surface: root.surfaceRaised
+                        foreground: root.accentSoftInk
+                        surface: root.accentSoft
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 56
+                        width: parent.width - 86
                         text: realName && realName.length > 0 ? realName : name
-                        color: root.foreground
+                        color: parent.parent.isSelected ? root.accentSoftInk : root.foreground
                         font.family: root.fontFamily
-                        font.pixelSize: 12
-                        font.weight: Font.DemiBold
+                        font.pixelSize: 14
+                        font.weight: parent.parent.isSelected ? Font.Bold : Font.Medium
                         elide: Text.ElideRight
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: parent.parent.isSelected
+                        text: "check"
+                        color: root.accentSoftInk
+                        font.family: "Material Symbols Rounded"
+                        font.pixelSize: 20
                     }
                 }
                 MouseArea {
@@ -363,9 +402,10 @@ Rectangle {
             }
         }
 
-        Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 140 } }
-        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        Behavior on height {
+            NumberAnimation { duration: 350; easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialDefault }
+        }
+        Behavior on opacity { NumberAnimation { duration: 150 } }
     }
 
     Timer {
@@ -380,9 +420,9 @@ Rectangle {
             top: parent.top
             horizontalCenter: parent.horizontalCenter
             topMargin: root.compactHeight ? 28
-                : Math.max(48, parent.height * 0.065)
+                : Math.max(56, parent.height * 0.08)
         }
-        spacing: -7
+        spacing: -4
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -394,40 +434,40 @@ Rectangle {
             font.family: root.clockStyle === "playful"
                 ? "URW Chancery L" : root.fontFamily
             font.pixelSize: root.compactHeight
-                ? (root.clockStyle === "minimal" ? 46 : 58)
-                : Math.max(58, Math.min(root.clockStyle === "minimal" ? 84 : 108,
-                    root.height * (root.clockStyle === "minimal" ? 0.082 : 0.105)))
+                ? (root.clockStyle === "minimal" ? 46 : 64)
+                : Math.max(64, Math.min(root.clockStyle === "minimal" ? 88 : 128,
+                    root.height * (root.clockStyle === "minimal" ? 0.085 : 0.12)))
             font.weight: root.clockStyle === "minimal"
                 ? Font.Medium : root.clockWeight
-            font.letterSpacing: root.clockStyle === "minimal" ? 0 : -2
+            font.letterSpacing: root.clockStyle === "minimal" ? 0 : -3
             horizontalAlignment: Text.AlignHCenter
             lineHeight: 0.78
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatDate(root.now, "dddd, d MMMM")
-            color: root.muted
+            color: root.foreground
+            opacity: 0.86
             font.family: root.fontFamily
-            font.pixelSize: 17
+            font.pixelSize: 18
             font.weight: Font.DemiBold
         }
     }
 
-    Rectangle {
+    // Material 3 Expressive sign-in cluster, mirroring the Voidline lock
+    // screen: ringed avatar, emphasized name, pill password field with a
+    // filled sign-in button, and a tonal session selector.
+    Item {
         id: loginCard
         anchors {
             horizontalCenter: parent.horizontalCenter
-            verticalCenter: parent.verticalCenter
-            verticalCenterOffset: root.compactHeight ? 28 : 88
+            bottom: powerRow.top
+            bottomMargin: root.compactHeight ? 24 : Math.max(40, root.height * 0.07)
         }
-        width: Math.min(470, parent.width - 48)
-        height: root.compactHeight ? 314 : 374
-        radius: root.shapeRadius
-        color: root.panel
-        border.width: 1
-        border.color: root.outline
+        width: Math.min(440, parent.width - 48)
+        height: loginColumn.height
         opacity: 0
-        scale: 0.985
+        scale: 0.96
 
         Component.onCompleted: cardEntrance.start()
 
@@ -438,56 +478,45 @@ Rectangle {
                 property: "opacity"
                 from: 0
                 to: 1
-                duration: 260
+                duration: 200
                 easing.type: Easing.OutCubic
             }
             NumberAnimation {
                 target: loginCard
                 property: "scale"
-                from: 0.985
+                from: 0.96
                 to: 1
-                duration: 300
-                easing.type: Easing.OutQuart
+                duration: 500
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: root.spatialDefault
             }
         }
 
         Column {
-            anchors {
-                fill: parent
-                margins: 22
-            }
-            spacing: root.compactHeight ? 6 : 12
+            id: loginColumn
+            width: parent.width
+            spacing: root.compactHeight ? 8 : 12
 
             RoundedAvatar {
                 id: avatar
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: root.compactHeight ? 72 : 104
+                width: root.compactHeight ? 80 : 104
                 height: width
-                cornerRadius: root.compactHeight ? 25 : 34
-                frameWidth: root.compactHeight ? 4 : 5
+                frameWidth: root.compactHeight ? 6 : 7
+                ringWidth: 3
                 source: root.cachedAvatar
                 fallbackSource: root.selectedSystemAvatar
                 fallbackText: root.selectedUser.length > 0
                     ? root.selectedUser.charAt(0).toUpperCase() : "V"
-                accent: root.accent
-                foreground: root.foreground
-                surface: root.surfaceRaised
+                accent: errorText.text === "Incorrect password" ? root.danger : root.accent
+                foreground: root.accentSoftInk
+                surface: root.accentSoft
             }
 
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
-                spacing: 1
-
-                Image {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 34
-                    height: 34
-                    source: "assets/voidline.svg"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                    mipmap: true
-                }
+                spacing: 2
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -497,7 +526,7 @@ Rectangle {
                     text: root.selectedDisplayName || root.selectedUser
                     color: root.foreground
                     font.family: root.fontFamily
-                    font.pixelSize: 18
+                    font.pixelSize: 28
                     font.weight: Font.Bold
                 }
                 Text {
@@ -505,27 +534,45 @@ Rectangle {
                     text: "Sign in to Voidline"
                     color: root.muted
                     font.family: root.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: 13
                 }
+            }
+
+            Item {
+                width: parent.width
+                height: root.compactHeight ? 2 : 6
             }
 
             Rectangle {
                 id: passwordBox
                 width: parent.width
-                height: 54
-                radius: 17
+                height: 64
+                radius: height / 2
                 color: passwordInput.activeFocus
-                    ? root.surfaceRaised : root.surface
-                border.width: passwordInput.activeFocus ? 2 : 1
-                border.color: passwordInput.activeFocus
-                    ? root.accent : root.outline
+                    ? Qt.lighter(root.surfaceRaised, 1.12) : root.surfaceRaised
+                border.width: passwordInput.activeFocus || errorText.text === "Incorrect password" ? 2 : 0
+                border.color: errorText.text === "Incorrect password" ? root.danger : root.accent
+
+                transform: Translate { id: shakeOffset }
+                SequentialAnimation {
+                    id: shake
+                    NumberAnimation { target: shakeOffset; property: "x"; to: -10; duration: 50; easing.type: Easing.OutQuad }
+                    NumberAnimation { target: shakeOffset; property: "x"; to: 8; duration: 70; easing.type: Easing.InOutQuad }
+                    NumberAnimation { target: shakeOffset; property: "x"; to: -5; duration: 70; easing.type: Easing.InOutQuad }
+                    NumberAnimation {
+                        target: shakeOffset; property: "x"; to: 0; duration: 350
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialFast
+                    }
+                }
+
+                Behavior on color { ColorAnimation { duration: 150 } }
 
                 TextInput {
                     id: passwordInput
                     anchors {
                         fill: parent
-                        leftMargin: 17
-                        rightMargin: showPasswordButton.width + 14
+                        leftMargin: 24
+                        rightMargin: showPasswordButton.width + signInButton.width + 24
                     }
                     enabled: !root.loginBusy
                     echoMode: showPasswordButton.checked
@@ -533,9 +580,10 @@ Rectangle {
                     passwordCharacter: "●"
                     color: root.foreground
                     selectionColor: root.accent
-                    selectedTextColor: "#14201E"
+                    selectedTextColor: root.accentInk
                     font.family: root.fontFamily
-                    font.pixelSize: 14
+                    font.pixelSize: 16
+                    font.letterSpacing: echoMode === TextInput.Password ? 2 : 0
                     verticalAlignment: TextInput.AlignVCenter
                     clip: true
                     Keys.onReturnPressed: root.attemptLogin()
@@ -545,7 +593,8 @@ Rectangle {
                         anchors.fill: parent
                         text: root.loginBusy ? "Signing in…" : "Password"
                         color: root.muted
-                        font: passwordInput.font
+                        font.family: root.fontFamily
+                        font.pixelSize: 16
                         verticalAlignment: Text.AlignVCenter
                         visible: passwordInput.text.length === 0
                     }
@@ -555,132 +604,140 @@ Rectangle {
                     id: showPasswordButton
                     property bool checked: false
                     anchors {
-                        right: parent.right
-                        rightMargin: 7
+                        right: signInButton.left
+                        rightMargin: 4
                         verticalCenter: parent.verticalCenter
                     }
-                    width: 40
-                    height: 40
-                    cornerRadius: 13
+                    width: 44
+                    height: 44
                     label: ""
                     symbol: checked ? "visibility_off" : "visibility"
-                    accent: root.accent
+                    flat: true
+                    accent: root.muted
                     foreground: root.foreground
-                    muted: root.muted
-                    surface: "transparent"
-                    outline: "transparent"
                     enabled: !root.loginBusy
                     onClicked: checked = !checked
                 }
+
+                VoidButton {
+                    id: signInButton
+                    anchors {
+                        right: parent.right
+                        rightMargin: 8
+                        verticalCenter: parent.verticalCenter
+                    }
+                    width: 48
+                    height: 48
+                    label: ""
+                    symbol: root.loginBusy ? "progress_activity" : "arrow_forward"
+                    primary: true
+                    // Morphs to a rounded square while the session starts.
+                    cornerRadius: root.loginBusy ? 16 : height / 2
+                    enabled: !root.loginBusy
+                        && root.selectedUser.length > 0
+                        && passwordInput.text.length > 0
+                    accent: root.accent
+                    accentInk: root.accentInk
+                    foreground: root.foreground
+                    onClicked: root.attemptLogin()
+                }
             }
 
-            Row {
+            Item {
                 width: parent.width
-                height: 18
+                height: 20
 
                 Text {
-                    width: parent.width / 2
+                    anchors {
+                        left: parent.left
+                        leftMargin: 24
+                        verticalCenter: parent.verticalCenter
+                    }
                     text: keyboard.capsLock ? "Caps Lock is on" : ""
                     color: root.accent
                     font.family: root.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
                 }
                 Text {
                     id: errorText
+                    anchors {
+                        right: parent.right
+                        rightMargin: 24
+                        verticalCenter: parent.verticalCenter
+                    }
                     width: parent.width / 2
                     horizontalAlignment: Text.AlignRight
                     elide: Text.ElideRight
                     color: root.loginBusy ? root.muted : root.danger
                     font.family: root.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
                 }
             }
 
-            Row {
-                width: parent.width
-                height: 48
-                spacing: 8
+            Rectangle {
+                id: sessionButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: Math.min(parent.width, sessionRow.implicitWidth + 40)
+                height: 44
+                radius: sessionMouse.pressed ? 12 : height / 2
+                color: root.sessionMenuOpen ? root.accentSoft
+                    : (sessionMouse.containsMouse || sessionButton.activeFocus
+                        ? Qt.lighter(root.surface, 1.22) : root.surface)
+                activeFocusOnTab: true
 
-                Rectangle {
-                    id: sessionButton
-                    width: parent.width * 0.42
-                    height: parent.height
-                    radius: 15
-                    color: sessionMouse.containsMouse
-                        || sessionButton.activeFocus
-                        ? "#5272817C" : root.surface
-                    border.width: 1
-                    border.color: root.outline
-                    activeFocusOnTab: true
+                Behavior on radius {
+                    NumberAnimation { duration: 350; easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialFast }
+                }
+                Behavior on color { ColorAnimation { duration: 150 } }
 
-                    Row {
-                        anchors {
-                            fill: parent
-                            leftMargin: 13
-                            rightMargin: 11
-                        }
-                        spacing: 7
+                Row {
+                    id: sessionRow
+                    anchors.centerIn: parent
+                    spacing: 8
 
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "desktop_windows"
-                            color: root.accent
-                            font.family: "Material Symbols Rounded"
-                            font.pixelSize: 17
-                        }
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 53
-                            text: root.sessionName
-                            color: root.foreground
-                            elide: Text.ElideRight
-                            font.family: root.fontFamily
-                            font.pixelSize: 10
-                            font.weight: Font.DemiBold
-                        }
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: root.sessionMenuOpen
-                                ? "keyboard_arrow_down" : "keyboard_arrow_up"
-                            color: root.muted
-                            font.family: "Material Symbols Rounded"
-                            font.pixelSize: 17
-                        }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "desktop_windows"
+                        color: root.sessionMenuOpen ? root.accentSoftInk : root.accent
+                        font.family: "Material Symbols Rounded"
+                        font.pixelSize: 20
                     }
-
-                    MouseArea {
-                        id: sessionMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.sessionMenuOpen = !root.sessionMenuOpen
-                            sessionButton.forceActiveFocus()
-                        }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.min(implicitWidth, loginCard.width - 110)
+                        text: root.sessionName
+                        color: root.sessionMenuOpen ? root.accentSoftInk : root.foreground
+                        elide: Text.ElideRight
+                        font.family: root.fontFamily
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
                     }
-                    Keys.onSpacePressed:
-                        root.sessionMenuOpen = !root.sessionMenuOpen
-                    Keys.onReturnPressed:
-                        root.sessionMenuOpen = !root.sessionMenuOpen
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.sessionMenuOpen
+                            ? "keyboard_arrow_down" : "keyboard_arrow_up"
+                        color: root.sessionMenuOpen ? root.accentSoftInk : root.muted
+                        font.family: "Material Symbols Rounded"
+                        font.pixelSize: 20
+                    }
                 }
 
-                VoidButton {
-                    width: parent.width - sessionButton.width - parent.spacing
-                    height: parent.height
-                    label: root.loginBusy ? "Signing in…" : "Sign in"
-                    symbol: root.loginBusy ? "progress_activity" : "arrow_forward"
-                    primary: true
-                    enabled: !root.loginBusy
-                        && root.selectedUser.length > 0
-                        && passwordInput.text.length > 0
-                    cornerRadius: 15
-                    accent: root.accent
-                    foreground: root.foreground
-                    muted: root.muted
-                    surface: root.surface
-                    outline: root.outline
-                    onClicked: root.attemptLogin()
+                MouseArea {
+                    id: sessionMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root.sessionMenuOpen = !root.sessionMenuOpen
+                        sessionButton.forceActiveFocus()
+                    }
                 }
+                Keys.onSpacePressed:
+                    root.sessionMenuOpen = !root.sessionMenuOpen
+                Keys.onReturnPressed:
+                    root.sessionMenuOpen = !root.sessionMenuOpen
             }
         }
 
@@ -688,58 +745,70 @@ Rectangle {
             id: sessionMenu
             z: 8
             anchors {
-                left: parent.left
-                right: parent.right
+                horizontalCenter: parent.horizontalCenter
                 bottom: parent.bottom
-                leftMargin: 22
-                rightMargin: 22
-                bottomMargin: 78
+                bottomMargin: sessionButton.height + 8
             }
+            width: Math.min(parent.width, 320)
             height: root.sessionMenuOpen
-                ? Math.min(222, Math.max(50, sessionList.contentHeight + 12))
+                ? Math.min(240, Math.max(56, sessionList.contentHeight + 16))
                 : 0
             opacity: root.sessionMenuOpen ? 1 : 0
             visible: height > 0
-            radius: 18
-            color: "#FC25302F"
-            border.width: 1
-            border.color: root.outline
+            radius: 24
+            color: root.panel
             clip: true
 
             ListView {
                 id: sessionList
                 anchors {
                     fill: parent
-                    margins: 6
+                    margins: 8
                 }
                 model: sessionModel
                 currentIndex: root.sessionIndex
-                spacing: 3
+                spacing: 2
                 clip: true
 
                 delegate: Rectangle {
+                    readonly property bool isSelected: index === root.sessionIndex
                     width: sessionList.width
-                    height: 44
-                    radius: 13
-                    color: index === root.sessionIndex
+                    height: 48
+                    radius: isSelected ? height / 2 : 14
+                    color: isSelected
                         ? root.accentSoft
                         : (sessionItemMouse.containsMouse
-                            ? "#5272817C" : "transparent")
+                            ? root.surfaceRaised : "transparent")
+
+                    Behavior on radius {
+                        NumberAnimation { duration: 350; easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialFast }
+                    }
 
                     Text {
                         anchors {
                             fill: parent
-                            leftMargin: 13
-                            rightMargin: 13
+                            leftMargin: 18
+                            rightMargin: 44
                         }
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
                         text: name
-                        color: root.foreground
+                        color: parent.isSelected ? root.accentSoftInk : root.foreground
                         font.family: root.fontFamily
-                        font.pixelSize: 11
-                        font.weight: index === root.sessionIndex
-                            ? Font.Bold : Font.Medium
+                        font.pixelSize: 14
+                        font.weight: parent.isSelected ? Font.Bold : Font.Medium
+                    }
+                    Text {
+                        anchors {
+                            right: parent.right
+                            rightMargin: 16
+                            verticalCenter: parent.verticalCenter
+                        }
+                        visible: parent.isSelected
+                        text: "check"
+                        color: root.accentSoftInk
+                        font.family: "Material Symbols Rounded"
+                        font.pixelSize: 20
                     }
                     MouseArea {
                         id: sessionItemMouse
@@ -761,88 +830,80 @@ Rectangle {
             }
 
             Behavior on height {
-                NumberAnimation {
-                    duration: 160
-                    easing.type: Easing.OutCubic
-                }
+                NumberAnimation { duration: 350; easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialDefault }
             }
             Behavior on opacity {
-                NumberAnimation { duration: 120 }
+                NumberAnimation { duration: 150 }
             }
         }
     }
 
+    // Material 3 Expressive button group for power actions.
     Row {
+        id: powerRow
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
-            bottomMargin: 28
+            bottomMargin: root.compactHeight ? 20 : 32
         }
-        height: 42
-        spacing: 8
+        height: 48
+        spacing: 6
 
         VoidButton {
             visible: sddm.canSuspend
-            width: 116
+            width: 124
             height: parent.height
             label: "Suspend"
             symbol: "bedtime"
-            cornerRadius: 14
             accent: root.accent
             foreground: root.foreground
-            muted: root.muted
-            surface: "#C925302F"
-            outline: root.outline
+            surface: root.surface
             onClicked: sddm.suspend()
         }
         VoidButton {
             visible: sddm.canHibernate
-            width: 122
+            width: 134
             height: parent.height
             label: "Hibernate"
             symbol: "mode_standby"
-            cornerRadius: 14
             accent: root.accent
             foreground: root.foreground
-            muted: root.muted
-            surface: "#C925302F"
-            outline: root.outline
+            surface: root.surface
             onClicked: root.requestPower("hibernate", "hibernate")
         }
         VoidButton {
-            width: 110
+            width: 120
             height: parent.height
             label: "Restart"
             symbol: "restart_alt"
-            cornerRadius: 14
             accent: root.accent
             foreground: root.foreground
-            muted: root.muted
-            surface: "#C925302F"
-            outline: root.outline
+            surface: root.surface
             onClicked: root.requestPower("reboot", "restart")
         }
         VoidButton {
-            width: 124
+            width: 134
             height: parent.height
             label: "Power off"
             symbol: "power_settings_new"
             destructive: true
-            cornerRadius: 14
-            accent: root.accent
-            foreground: root.foreground
-            muted: root.muted
-            surface: "#C925302F"
-            outline: root.outline
+            danger: root.danger
+            dangerContainer: root.dangerContainer
+            dangerInk: root.dangerInk
             onClicked: root.requestPower("power", "power off")
         }
     }
 
+    // Material 3 dialog: scrim, 28px container, icon, headline, supporting
+    // text, and end-aligned actions.
     Rectangle {
-        z: 20
+        z: 40
         anchors.fill: parent
-        visible: root.confirmOpen
-        color: "#82060B0C"
+        visible: opacity > 0
+        opacity: root.confirmOpen ? 1 : 0
+        color: Qt.rgba(0, 0, 0, 0.56)
+
+        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
         MouseArea {
             anchors.fill: parent
@@ -851,68 +912,72 @@ Rectangle {
 
         Rectangle {
             anchors.centerIn: parent
-            width: Math.min(388, parent.width - 40)
-            height: 224
-            radius: root.shapeRadius
+            width: Math.min(360, parent.width - 40)
+            height: dialogColumn.implicitHeight + 48
+            radius: 28
             color: root.panel
-            border.width: 1
-            border.color: root.outline
+            scale: root.confirmOpen ? 1 : 0.9
+
+            Behavior on scale {
+                NumberAnimation { duration: 500; easing.type: Easing.BezierSpline; easing.bezierCurve: root.spatialDefault }
+            }
 
             Column {
+                id: dialogColumn
                 anchors {
-                    fill: parent
-                    margins: 22
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                    margins: 24
                 }
-                spacing: 12
+                spacing: 16
 
-                Rectangle {
+                Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: 52
-                    height: 52
-                    radius: 18
-                    color: "#40D56562"
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.pendingPowerAction === "reboot"
-                            ? "restart_alt"
-                            : (root.pendingPowerAction === "hibernate"
-                                ? "mode_standby" : "power_settings_new")
-                        color: root.danger
-                        font.family: "Material Symbols Rounded"
-                        font.pixelSize: 25
-                    }
+                    text: root.pendingPowerAction === "reboot"
+                        ? "restart_alt"
+                        : (root.pendingPowerAction === "hibernate"
+                            ? "mode_standby" : "power_settings_new")
+                    color: root.danger
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 28
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                     text: "Ready to " + root.pendingPowerLabel + "?"
                     color: root.foreground
                     font.family: root.fontFamily
-                    font.pixelSize: 17
+                    font.pixelSize: 24
                     font.weight: Font.Bold
                 }
                 Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                     text: "Any unsaved work may be lost."
                     color: root.muted
                     font.family: root.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: 14
+                }
+                Item {
+                    width: parent.width
+                    height: 8
                 }
                 Row {
-                    width: parent.width
+                    anchors.right: parent.right
                     height: 44
                     spacing: 8
 
                     VoidButton {
-                        width: (parent.width - parent.spacing) / 2
+                        width: 96
                         height: parent.height
                         label: "Cancel"
-                        cornerRadius: 14
+                        flat: true
                         accent: root.accent
                         foreground: root.foreground
-                        muted: root.muted
-                        surface: root.surface
-                        outline: root.outline
                         onClicked: {
                             root.confirmOpen = false
                             passwordInput.forceActiveFocus()
@@ -920,16 +985,13 @@ Rectangle {
                     }
                     VoidButton {
                         id: confirmButton
-                        width: (parent.width - parent.spacing) / 2
+                        width: 112
                         height: parent.height
                         label: "Continue"
                         destructive: true
-                        cornerRadius: 14
-                        accent: root.accent
-                        foreground: root.foreground
-                        muted: root.muted
-                        surface: "#40D56562"
-                        outline: "#80D56562"
+                        danger: root.danger
+                        dangerContainer: root.dangerContainer
+                        dangerInk: root.dangerInk
                         onClicked: root.runPowerAction()
                     }
                 }
@@ -944,6 +1006,7 @@ Rectangle {
             root.loginBusy = false
             passwordInput.text = ""
             errorText.text = "Incorrect password"
+            shake.restart()
             passwordInput.forceActiveFocus()
         }
 

@@ -11,12 +11,24 @@ Rectangle {
     property color foreground: "#F1F5F3"
     property color surface: "#3A8FB8AC"
     property int frameWidth: 4
-    property int cornerRadius: 30
+    // Circular by default, matching the Material 3 Expressive lock screen:
+    // an accent ring with a small gap around the image.
+    property int cornerRadius: width / 2
+    property int ringWidth: Math.max(2, Math.round(width / 36))
 
     radius: cornerRadius
-    color: surface
-    border.width: 1
+    color: "transparent"
+    border.width: ringWidth
     border.color: accent
+
+    Rectangle {
+        anchors {
+            fill: parent
+            margins: root.frameWidth
+        }
+        radius: Math.max(0, root.cornerRadius - root.frameWidth)
+        color: root.surface
+    }
 
     Item {
         id: imageFrame
