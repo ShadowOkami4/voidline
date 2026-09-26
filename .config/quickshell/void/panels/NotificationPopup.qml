@@ -60,10 +60,8 @@ PanelWindow {
         y: root.activeForScreen ? 0 : -height - 18
         opacity: root.activeForScreen ? 1 : 0
         scale: root.activeForScreen ? 1 : 0.97
-        radius: Theme.radiusExtraLarge
-        color: Theme.panel
-        border.width: 1
-        border.color: Theme.outlineSoft
+        radius: Metrics.radiusXL
+        color: Theme.surfaceContainerHigh
 
         Rectangle {
             id: visualAlertRing
@@ -95,8 +93,9 @@ PanelWindow {
 
         Behavior on y {
             NumberAnimation {
-                duration: root.activeForScreen ? Motion.enter : Motion.exit
-                easing.type: root.activeForScreen ? Motion.enterCurve : Motion.exitCurve
+                duration: root.activeForScreen ? Motion.springDefault : Motion.exit
+                easing.type: root.activeForScreen ? Easing.BezierSpline : Motion.exitCurve
+                easing.bezierCurve: Motion.spatialDefault
             }
         }
         Behavior on opacity {
@@ -127,7 +126,7 @@ PanelWindow {
                 Rectangle {
                     Layout.preferredWidth: 42
                     Layout.preferredHeight: 42
-                    radius: Theme.radiusMedium
+                    radius: width / 2
                     color: Theme.accentContainer
 
                     Image {
@@ -144,7 +143,8 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: "notifications"
                         size: 22
-                        color: Theme.accent
+                        fill: 1
+                        color: Theme.accentContainerInk
                         visible: !appIcon.visible
                     }
                 }
@@ -158,7 +158,7 @@ PanelWindow {
                             ? (root.notification.appName || "Notification") : ""
                         color: Theme.accent
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: 11
                         font.weight: Font.Bold
                         elide: Text.ElideRight
                     }
@@ -168,7 +168,7 @@ PanelWindow {
                             ? (root.notification.summary || "Notification") : ""
                         color: Theme.text
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 15
                         font.weight: Font.Bold
                         elide: Text.ElideRight
                     }
@@ -189,7 +189,7 @@ PanelWindow {
                 textFormat: Text.PlainText
                 color: Theme.textMuted
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: 12
                 wrapMode: Text.Wrap
                 maximumLineCount: 3
                 elide: Text.ElideRight
@@ -209,25 +209,36 @@ PanelWindow {
                     delegate: Rectangle {
                         required property int index
                         readonly property var actionData: root.notification.actions[index]
-                        Layout.preferredWidth: actionText.implicitWidth + 24
+                        // First action is the filled primary button, others tonal.
+                        readonly property bool primaryAction: index === 0
+                        Layout.preferredWidth: actionText.implicitWidth + 32
                         Layout.preferredHeight: 36
-                        radius: Theme.radiusMedium
-                        color: actionHover.hovered
-                            ? Theme.accentContainer : Theme.surfaceHigh
+                        radius: actionTap.pressed ? Metrics.pressedRadius : height / 2
+                        color: primaryAction
+                            ? (actionHover.hovered ? Theme.accentStrong : Theme.accent)
+                            : (actionHover.hovered ? Theme.surfaceHover : Theme.secondaryContainer)
                         Text {
                             id: actionText
                             anchors.centerIn: parent
                             text: actionData.text
-                            color: actionHover.hovered ? Theme.accent : Theme.text
+                            color: parent.primaryAction ? Theme.accentInk : Theme.secondaryContainerInk
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             font.weight: Font.Bold
                         }
-                        HoverHandler { id: actionHover }
+                        HoverHandler { id: actionHover; cursorShape: Qt.PointingHandCursor }
                         TapHandler {
+                            id: actionTap
                             onTapped: NotificationService.invokePopupAction(actionData)
                         }
-                        Behavior on color { ColorAnimation { duration: Motion.fast } }
+                        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+                        Behavior on radius {
+                            NumberAnimation {
+                                duration: Motion.springFast
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Motion.spatialFast
+                            }
+                        }
                     }
                 }
             }

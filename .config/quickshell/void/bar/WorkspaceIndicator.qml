@@ -23,16 +23,23 @@ Item {
                 required property int index
                 readonly property bool activeWorkspace: Hyprland.focusedWorkspace !== null
                     && Hyprland.focusedWorkspace.id === index + 1
-                Layout.preferredWidth: activeWorkspace ? 20 : 8
+                // M3 Expressive: the focused workspace stretches into a pill.
+                Layout.preferredWidth: activeWorkspace ? 24 : 8
                 Layout.preferredHeight: 8
                 radius: 4
-                color: activeWorkspace ? Theme.accent : Theme.textMuted
+                color: activeWorkspace ? Theme.accent
+                    : (workspaceHover.hovered ? Theme.text : Theme.outline)
+                HoverHandler { id: workspaceHover; cursorShape: Qt.PointingHandCursor }
                 TapHandler {
                     onTapped: Hyprland.dispatch('hl.dsp.focus({ workspace = "'
                         + (index + 1) + '" })')
                 }
                 Behavior on Layout.preferredWidth {
-                    NumberAnimation { duration: Motion.fast; easing.type: Motion.enterCurve }
+                    NumberAnimation {
+                    duration: Motion.springFast
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Motion.spatialFast
+                }
                 }
                 Behavior on color { ColorAnimation { duration: Motion.fast } }
             }
@@ -52,15 +59,21 @@ Item {
                 readonly property bool activeWorkspace: Hyprland.focusedWorkspace !== null
                     && Hyprland.focusedWorkspace.id === index + 1
                 Layout.preferredWidth: 8
-                Layout.preferredHeight: activeWorkspace ? 20 : 8
+                Layout.preferredHeight: activeWorkspace ? 24 : 8
                 radius: 4
-                color: activeWorkspace ? Theme.accent : Theme.textMuted
+                color: activeWorkspace ? Theme.accent
+                    : (verticalWorkspaceHover.hovered ? Theme.text : Theme.outline)
+                HoverHandler { id: verticalWorkspaceHover; cursorShape: Qt.PointingHandCursor }
                 TapHandler {
                     onTapped: Hyprland.dispatch('hl.dsp.focus({ workspace = "'
                         + (index + 1) + '" })')
                 }
                 Behavior on Layout.preferredHeight {
-                    NumberAnimation { duration: Motion.fast; easing.type: Motion.enterCurve }
+                    NumberAnimation {
+                    duration: Motion.springFast
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Motion.spatialFast
+                }
                 }
                 Behavior on color { ColorAnimation { duration: Motion.fast } }
             }

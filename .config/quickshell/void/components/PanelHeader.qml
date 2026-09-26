@@ -37,6 +37,8 @@ Item {
                 font.family: Theme.fontFamily
                 font.pixelSize: 28
                 font.weight: Font.Bold
+                // M3 Expressive emphasized headline: heavier and slightly wide.
+                font.variableAxes: ({ "wght": 720, "wdth": 108, "opsz": 32 })
                 elide: Text.ElideRight
             }
 

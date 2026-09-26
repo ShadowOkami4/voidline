@@ -27,12 +27,21 @@ Item {
         return "signal_wifi_off"
     }
 
+    // Pill-shaped status chip; tonal accent container while its panel is open.
     Rectangle {
         anchors.fill: parent
-        radius: Theme.cardRadius
-        color: hover.hovered || root.panelActive ? Theme.surfaceHover : "transparent"
+        radius: tap.pressed ? Metrics.radiusS : height / 2
+        color: root.panelActive ? Theme.accentContainer
+            : (hover.hovered ? Theme.surfaceHover : "transparent")
 
-        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+        Behavior on radius {
+            NumberAnimation {
+                duration: Motion.springFast
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Motion.spatialFast
+            }
+        }
     }
 
     RowLayout {
@@ -74,7 +83,7 @@ Item {
 
             Text {
                 text: PowerService.percentage + "%"
-                color: Theme.textMuted
+                color: root.panelActive ? Theme.accentContainerInk : Theme.textMuted
                 font.family: Theme.fontFamily
                 font.pixelSize: 12
                 font.weight: Font.Medium

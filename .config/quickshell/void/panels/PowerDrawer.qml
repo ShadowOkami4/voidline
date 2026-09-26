@@ -437,8 +437,6 @@ PanelWindow {
                             color: SystemActionService.keepAwakeActive
                                 ? Theme.accentContainer
                                 : (keepAwakeHover.hovered ? Theme.surfaceHover : Theme.surfaceHigh)
-                            border.width: SystemActionService.keepAwakeActive ? 1 : 0
-                            border.color: Theme.accent
                             scale: keepAwakeTap.pressed ? 0.985 : 1
                             opacity: root.revealValue(0.2)
                             transform: Translate {
@@ -454,7 +452,8 @@ PanelWindow {
                                 Rectangle {
                                     Layout.preferredWidth: 34
                                     Layout.preferredHeight: 34
-                                    radius: Theme.radiusSmall
+                                    radius: SystemActionService.keepAwakeActive
+                                        ? width / 2 : Metrics.radiusS
                                     color: SystemActionService.keepAwakeActive
                                         ? Theme.accent : Theme.surfaceLow
 
@@ -529,7 +528,7 @@ PanelWindow {
                                     Layout.preferredHeight: 58
                                     radius: Theme.radiusMedium
                                     color: listHover.hovered
-                                        ? (modelData.danger ? Theme.tertiaryContainer : Theme.surfaceHover)
+                                        ? (modelData.danger ? Theme.dangerContainer : Theme.surfaceHover)
                                         : Theme.surfaceLow
                                     scale: listTap.pressed ? 0.985 : 1
                                     opacity: root.revealValue(0.31 + index * 0.09)
@@ -546,15 +545,17 @@ PanelWindow {
                                         Rectangle {
                                             Layout.preferredWidth: 34
                                             Layout.preferredHeight: 34
-                                            radius: Theme.radiusSmall
+                                            radius: width / 2
                                             color: listAction.modelData.danger
-                                                ? Theme.tertiaryContainer : Theme.accentContainer
+                                                ? Theme.dangerContainer : Theme.accentContainer
 
                                             MaterialIcon {
                                                 anchors.centerIn: parent
                                                 text: listAction.modelData.icon
                                                 size: 20
-                                                color: listAction.modelData.danger ? Theme.danger : Theme.accent
+                                                fill: 1
+                                                color: listAction.modelData.danger
+                                                    ? Theme.dangerContainerInk : Theme.accentContainerInk
                                             }
                                         }
                                         ColumnLayout {
@@ -586,7 +587,9 @@ PanelWindow {
                                                 anchors.centerIn: parent
                                                 text: "chevron_right"
                                                 size: 19
-                                                color: listAction.modelData.danger ? Theme.danger : Theme.accent
+                                                fill: 1
+                                                color: listAction.modelData.danger
+                                                    ? Theme.dangerContainerInk : Theme.accentContainerInk
                                             }
                                         }
                                     }
@@ -638,20 +641,31 @@ PanelWindow {
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: 86
                             Layout.preferredHeight: 86
-                            radius: Theme.radiusLarge
+                            // Morphs from a rounded square into a circle as it appears.
+                            radius: root.pendingAction.length > 0 ? width / 2 : Metrics.radiusL
                             color: root.pendingAction === "poweroff"
-                                ? Theme.tertiaryContainer : Theme.accentContainer
+                                ? Theme.dangerContainer : Theme.accentContainer
                             scale: root.pendingAction.length > 0 ? 1 : 0.82
+                            Behavior on radius {
+                                NumberAnimation {
+                                    duration: Motion.springDefault
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Motion.spatialDefault
+                                }
+                            }
                             MaterialIcon {
                                 anchors.centerIn: parent
                                 text: root.actionIcon(root.pendingAction)
                                 size: 40
-                                color: root.pendingAction === "poweroff" ? Theme.danger : Theme.accent
+                                fill: 1
+                                color: root.pendingAction === "poweroff"
+                                    ? Theme.dangerContainerInk : Theme.accentContainerInk
                             }
                             Behavior on scale {
                                 NumberAnimation {
-                                    duration: Motion.selectionPulse
-                                    easing.type: Motion.expressiveCurve
+                                    duration: Motion.springDefault
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Motion.spatialDefault
                                 }
                             }
                         }
@@ -681,7 +695,7 @@ PanelWindow {
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                radius: Theme.radiusMedium
+                                radius: height / 2
                                 color: cancelHover.hovered ? Theme.surfaceHover : Theme.surfaceHigh
                                 Text {
                                     anchors.centerIn: parent
@@ -697,13 +711,14 @@ PanelWindow {
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                radius: Theme.radiusMedium
+                                // Filled confirm button: error colour for power off.
+                                radius: height / 2
                                 color: root.pendingAction === "poweroff"
-                                    ? Theme.tertiaryContainer : Theme.accentContainer
+                                    ? Theme.danger : Theme.accent
                                 Text {
                                     anchors.centerIn: parent
                                     text: root.actionTitle(root.pendingAction)
-                                    color: root.pendingAction === "poweroff" ? Theme.danger : Theme.accent
+                                    color: root.pendingAction === "poweroff" ? Theme.dangerInk : Theme.accentInk
                                     font.family: Theme.fontFamily
                                     font.pixelSize: 13
                                     font.weight: Font.Bold

@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Installer: re-running `install.sh` no longer appends duplicate Hyprland
+  integration lines (which made every shortcut fire twice); existing
+  duplicates are cleaned up. Refuses to run as root, accepts rustup, resolves
+  packages through provides, uses paru/yay for AUR packages, pins the cargo
+  target directory, swaps the packaged shell in atomically, and no longer
+  aborts when no systemd user session is reachable.
+- Material 3 Expressive redesign: seeded tonal colour scheme (fixes purple
+  containers when Magic Colors is off), M3E shape scale and spring motion,
+  shape-morphing switches, icon buttons, tiles and chips, segmented Settings
+  groups, connected button groups, and restyled bar, notifications, power
+  drawer, lock screen, and SDDM theme.
+
 ## 0.3.0dev — 2026-08-12
 
 - First public development snapshot of the rewritten Voidline shell.

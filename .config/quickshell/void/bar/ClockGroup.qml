@@ -19,7 +19,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: Theme.cardRadius
+        radius: root.vertical ? Metrics.radiusL : height / 2
         color: ShellState.isClockScreen(root.shellScreen) ? Theme.accentContainer
             : (hover.hovered ? Theme.surfaceHover : "transparent")
         Behavior on color { ColorAnimation { duration: Motion.fast } }
