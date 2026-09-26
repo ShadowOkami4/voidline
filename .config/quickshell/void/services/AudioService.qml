@@ -61,6 +61,9 @@ QtObject {
     property string profileMessage: ""
     property var pendingAudioCommand: []
     property bool profileMonitoring: false
+    // Safety net for profile switches: if the new profile leaves no usable
+    // output, the previous profile is restored automatically.
+    property var profileRevert: null
 
     property var tracker: PwObjectTracker {
         objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
@@ -205,7 +208,13 @@ QtObject {
                     label: profile.description || profile.name,
                     available: String(profile.available || "yes") !== "no",
                     priority: Number(profile.priority) || 0
-                })).filter(profile => profile.available)
+                })).filter(profile => profile.available
+                    // "Off" disables the card and pro-audio hides the normal
+                    // outputs; both silence a desktop. Keep them only when
+                    // they are already active so the state is visible.
+                    && ((profile.name !== "off" && !profile.name.startsWith("pro-audio"))
+                        || profile.name === (typeof card.active_profile === "string"
+                            ? card.active_profile : ((card.active_profile || {}).name || ""))))
                 profiles.sort((left, right) => right.priority - left.priority)
                 const active = typeof card.active_profile === "string"
                     ? card.active_profile
@@ -263,6 +272,8 @@ QtObject {
         if (!card || !card.profiles.some(item => item.name === profileName)
                 || audioApply.running)
             return
+        profileRevert = card.activeProfile && card.activeProfile !== profileName
+            ? { card: cardName, profile: card.activeProfile } : null
         audioCards = audioCards.map(item => item.name === cardName
             ? Object.assign({}, item, { activeProfile: profileName }) : item)
         profileChanging = true
@@ -270,6 +281,29 @@ QtObject {
         profileMessage = "Applying audio profile…"
         pendingAudioCommand = ["sh", Paths.shellRoot + "/scripts/audio-service.sh",
             "set-profile", cardName, profileName]
+        audioApply.running = true
+    }
+
+    function resetRouting() {
+        if (audioApply.running)
+            return
+        profileRevert = null
+        profileChanging = true
+        profileError = ""
+        profileMessage = I18n.tr("audio.resetting")
+        pendingAudioCommand = ["sh", Paths.shellRoot + "/scripts/audio-service.sh", "reset"]
+        audioApply.running = true
+    }
+
+    function verifyProfile() {
+        const revert = profileRevert
+        profileRevert = null
+        if (!revert || outputReady)
+            return
+        profileError = I18n.tr("audio.profileReverted")
+        profileChanging = true
+        pendingAudioCommand = ["sh", Paths.shellRoot + "/scripts/audio-service.sh",
+            "set-profile", revert.card, revert.profile]
         audioApply.running = true
     }
 
@@ -325,6 +359,8 @@ QtObject {
             if (exitCode === 0) {
                 root.profileMessage = "Audio routing updated"
                 profileRefresh.restart()
+                if (root.profileRevert)
+                    profileVerify.restart()
             } else {
                 const detail = audioApplyError.text.trim()
                 root.profileError = detail.length > 0
@@ -334,6 +370,11 @@ QtObject {
                 profileRefresh.restart()
             }
         }
+    }
+
+    property var profileVerify: Timer {
+        interval: 2500
+        onTriggered: root.verifyProfile()
     }
 
     property var profileRefresh: Timer {

@@ -379,6 +379,10 @@
     }
   },
   "audio": {
+    "resetRouting": "Przywróć domyślny dźwięk",
+    "resetRoutingHint": "Użyj najlepszego profilu każdej karty dźwiękowej i pozwól systemowi ponownie wybrać wyjście",
+    "resetting": "Przywracanie domyślnego dźwięku…",
+    "profileReverted": "Ten profil nie miał wyjścia audio, więc przywrócono poprzedni",
     "volume": "Głośność",
     "volumeHint": "PipeWire ogranicza wszystkie suwaki do 100%",
     "outputVolume": "Głośność wyjścia",

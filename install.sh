@@ -533,6 +533,24 @@ if systemctl --user show-environment >/dev/null 2>&1; then
     if [[ $with_lyra -eq 0 ]]; then
         systemctl --user stop voidline-ai.service 2>/dev/null || true
     fi
+    # Audio: make PipeWire the running sound server. When pacman replaces
+    # PulseAudio with pipewire-pulse, the old daemon keeps running and holds
+    # the audio socket, so sound stays broken until it is stopped and the
+    # PipeWire services are started.
+    if package_installed pipewire-pulse \
+            && ! systemctl --user is-active --quiet pipewire-pulse.socket \
+            && ! systemctl --user is-active --quiet pipewire-pulse.service; then
+        note 'Switching the sound server to PipeWire'
+        systemctl --user disable --now pulseaudio.socket pulseaudio.service >/dev/null 2>&1 || true
+        pkill -u "$(id -u)" -x pulseaudio >/dev/null 2>&1 || true
+        if systemctl --user enable --now pipewire.socket pipewire-pulse.socket wireplumber.service \
+                >/dev/null 2>&1; then
+            systemctl --user restart pipewire.service pipewire-pulse.service wireplumber.service \
+                >/dev/null 2>&1 || true
+        else
+            warn 'Could not start PipeWire now; log out and back in to finish switching audio.'
+        fi
+    fi
     # Idle locking for the bundled hypridle.conf.
     if [[ $hyprland_config == full || $hyprland_config == update ]] \
             && systemctl --user list-unit-files hypridle.service >/dev/null 2>&1; then

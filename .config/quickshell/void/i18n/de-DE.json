@@ -375,6 +375,10 @@
     }
   },
   "audio": {
+    "resetRouting": "Standard-Audio wiederherstellen",
+    "resetRoutingHint": "Für jede Soundkarte das beste Profil verwenden und die Ausgabe automatisch wählen lassen",
+    "resetting": "Standard-Audio wird wiederhergestellt …",
+    "profileReverted": "Dieses Profil hatte keine Audioausgabe, daher wurde das vorherige wiederhergestellt",
     "volume": "Lautstärke",
     "volumeHint": "PipeWire begrenzt alle Regler auf 100 %",
     "outputVolume": "Ausgabelautstärke",

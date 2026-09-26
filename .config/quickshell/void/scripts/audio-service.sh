@@ -50,8 +50,31 @@ set_port() {
     pactl "set-${kind}-port" "$node" "$port"
 }
 
+# Recovery: put every card back on its highest-priority usable profile
+# (never "off" or pro-audio) and clear any remembered default devices so
+# WirePlumber picks the best output again.
+reset_routing() {
+    require_tools || exit 69
+    pactl -f json list cards |
+        jq -r '
+            .[] | .name as $card
+            | ((.profiles // []) | if type == "array" then . else to_entries | map(.value + {name:.key}) end)
+            | map(select((.available // "yes") != "no" and .name != "off"
+                and (.name | startswith("pro-audio") | not)))
+            | sort_by(-(.priority // 0)) | first
+            | select(. != null) | [$card, .name] | @tsv
+        ' |
+        while IFS="$(printf '\t')" read -r card profile; do
+            pactl set-card-profile "$card" "$profile" || true
+        done
+    if command -v wpctl >/dev/null 2>&1; then
+        wpctl clear-default >/dev/null 2>&1 || true
+    fi
+}
+
 case "$action" in
     snapshot) snapshot ;;
+    reset) reset_routing ;;
     set-profile) set_profile "${2:-}" "${3:-}" ;;
     set-port) set_port "${2:-}" "${3:-}" "${4:-}" ;;
     *) exit 2 ;;

@@ -89,6 +89,15 @@ SettingsMasonry {
             value: I18n.tr("audio.centered")
             enabled: false
         }
+        SettingsAction {
+            width: parent.width
+            icon: "settings_backup_restore"
+            title: I18n.tr("audio.resetRouting")
+            subtitle: AudioService.profileError.length > 0 ? AudioService.profileError
+                : I18n.tr("audio.resetRoutingHint")
+            enabled: !AudioService.profileChanging
+            onClicked: AudioService.resetRouting()
+        }
         Repeater {
             model: AudioService.audioCards
             SettingsChoice {

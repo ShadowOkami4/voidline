@@ -375,6 +375,10 @@
     }
   },
   "audio": {
+    "resetRouting": "Restore default audio",
+    "resetRoutingHint": "Use each sound card's best profile and let the system pick the output again",
+    "resetting": "Restoring default audio…",
+    "profileReverted": "That profile had no audio output, so the previous one was restored",
     "volume": "Volume",
     "volumeHint": "PipeWire keeps all controls capped at 100%",
     "outputVolume": "Output volume",
