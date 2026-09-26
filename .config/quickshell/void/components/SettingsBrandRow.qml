@@ -20,7 +20,7 @@ Rectangle {
         anchors { fill: parent; margins: Metrics.space2XS }
         radius: Metrics.stateRadius
         color: root.interactive && hover.hovered
-            ? Theme.groupSurfaceRaised : "transparent"
+            ? Theme.withAlpha(Theme.text, 0.06) : "transparent"
         scale: tap.pressed ? 0.992 : 1
         Behavior on color { ColorAnimation { duration: Motion.fast } }
         Behavior on scale { NumberAnimation { duration: Motion.instant } }
@@ -36,9 +36,9 @@ Rectangle {
 
         Rectangle {
             Layout.preferredWidth: 58
-            Layout.preferredHeight: Metrics.controlS
-            radius: Metrics.iconContainerRadius
-            color: Theme.groupSurfaceRaised
+            Layout.preferredHeight: Math.round(40 * Metrics.scale)
+            radius: width / 2
+            color: Theme.surfaceContainerHighest
 
             Image {
                 anchors { fill: parent; margins: Metrics.spaceXS }

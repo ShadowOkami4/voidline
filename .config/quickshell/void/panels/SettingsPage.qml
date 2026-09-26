@@ -70,14 +70,91 @@ FocusScope {
         return { title: I18n.tr("settings.title"), subtitle: I18n.tr("settings.subtitle"), icon: "settings", tone: 0 }
     }
 
-    function toneContainer(tone) {
-        return tone === 1 ? Theme.secondaryContainer
-            : (tone === 2 ? Theme.tertiaryContainer : Theme.accentContainer)
+    // Every category owns a hue, like Pixel Settings, so destinations are
+    // recognisable at a glance while staying inside the tonal system.
+    readonly property var categoryHues: ({
+        connections: 0.58, audio: 0.07, devices: 0.36, notifications: 0.95,
+        display: 0.52, appearance: 0.76, lock: 0.12, security: 0.3,
+        accessibility: 0.64, updates: 0.44, assistant: 0.84, system: 0.2,
+        developer: 0.0
+    })
+
+    function categoryHue(id) {
+        const hue = categoryHues[id]
+        return hue === undefined ? Theme.seed.hslHue : hue
     }
 
-    function toneColor(tone) {
-        return tone === 1 ? Theme.secondary
-            : (tone === 2 ? Theme.tertiary : Theme.accent)
+    function categoryContainer(id) {
+        return Qt.hsla(categoryHue(id), 0.42, Theme.darkMode ? 0.3 : 0.86, 1)
+    }
+
+    function categoryInk(id) {
+        return Qt.hsla(categoryHue(id), 0.6, Theme.darkMode ? 0.86 : 0.24, 1)
+    }
+
+    function heroInfo(id) {
+        const hero = key => I18n.tr("settings.hero." + key)
+        const fallback = category()
+        switch (id) {
+        case "connections":
+            if (ConnectivityService.ethernetConnected)
+                return { icon: "lan", title: hero("wired"), subtitle: ConnectivityService.activeNetworkLabel || "", active: true }
+            if (ConnectivityService.wifiConnected)
+                return { icon: "wifi", title: ConnectivityService.wifiSsid || fallback.title,
+                    subtitle: ConnectivityService.activeNetworkLabel || "", active: true }
+            return { icon: ConnectivityService.wifiEnabled ? "wifi_find" : "wifi_off",
+                title: ConnectivityService.wifiEnabled ? hero("notConnected") : hero("wifiOff"),
+                subtitle: fallback.subtitle, active: false }
+        case "audio":
+            return { icon: AudioService.outputMuted ? "volume_off" : "volume_up",
+                title: AudioService.outputLabel || fallback.title,
+                subtitle: AudioService.outputMuted ? hero("muted")
+                    : I18n.tr("settings.hero.volume", { value: Math.round(Number(AudioService.outputVolume || 0) * 100) }),
+                active: !AudioService.outputMuted }
+        case "devices": {
+            const count = Number(ConnectivityService.connectedBluetoothDevices || 0)
+            return { icon: ConnectivityService.bluetoothEnabled ? "bluetooth_connected" : "bluetooth_disabled",
+                title: !ConnectivityService.bluetoothEnabled ? hero("bluetoothOff")
+                    : (count > 0 ? I18n.tr("settings.hero.devicesConnected", { count: count }) : hero("noDevices")),
+                subtitle: fallback.subtitle, active: ConnectivityService.bluetoothEnabled && count > 0 }
+        }
+        case "notifications":
+            return { icon: NotificationService.doNotDisturb ? "do_not_disturb_on" : "notifications_active",
+                title: NotificationService.doNotDisturb ? hero("dndOn")
+                    : I18n.tr("settings.hero.notificationsCount", { count: NotificationService.count || 0 }),
+                subtitle: fallback.subtitle, active: !NotificationService.doNotDisturb }
+        case "display":
+            return { icon: "desktop_windows",
+                title: I18n.tr("settings.hero.displays", { count: Math.max(1, (SystemSettingsService.monitors || []).length) }),
+                subtitle: fallback.subtitle, active: true }
+        case "appearance":
+            return { icon: Theme.darkMode ? "dark_mode" : "light_mode",
+                title: Appearance.colorMode === "auto" ? hero("autoTheme")
+                    : (Appearance.colorMode === "light" ? hero("lightTheme") : hero("darkTheme")),
+                subtitle: Appearance.magicColors ? hero("wallpaperColors") : hero("accentColor"),
+                active: true }
+        case "security":
+            return { icon: SecurityService.firewallEnabled ? "shield_lock" : "shield",
+                title: SecurityService.firewallEnabled ? hero("firewallOn") : hero("firewallOff"),
+                subtitle: fallback.subtitle, active: SecurityService.firewallEnabled }
+        case "updates":
+            return { icon: UpdateService.count > 0 ? "system_update" : "verified",
+                title: UpdateService.count > 0
+                    ? I18n.tr("settings.hero.updatesAvailable", { count: UpdateService.count }) : hero("upToDate"),
+                subtitle: fallback.subtitle, active: UpdateService.count > 0 }
+        case "assistant":
+            return { icon: "neurology",
+                title: AssistantService.assistantEnabled ? hero("assistantOn") : hero("assistantOff"),
+                subtitle: fallback.subtitle, active: AssistantService.assistantEnabled }
+        case "system":
+            return { icon: "computer",
+                title: SettingsService.hostName || fallback.title,
+                subtitle: [SettingsService.osName, SettingsService.voidlineVersion
+                    ? "Voidline " + SettingsService.voidlineVersion : ""].filter(Boolean).join(" · "),
+                active: true }
+        default:
+            return { icon: fallback.icon, title: fallback.title, subtitle: fallback.subtitle, active: false }
+        }
     }
 
     function closeOrBack() {
@@ -136,6 +213,14 @@ FocusScope {
         event.accepted = true
     }
 
+    // Android 16 style Settings: a navigation pane with a large title, pill
+    // search, and coloured category icons; a rounded detail pane with a large
+    // title and a status hero card above the category's grouped settings.
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.surfaceContainerLow
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -150,42 +235,32 @@ FocusScope {
             ColumnLayout {
                 anchors {
                     fill: parent
-                    leftMargin: root.wideNavigation ? 20 : 26
-                    rightMargin: root.wideNavigation ? 18 : 26
-                    topMargin: 20
+                    leftMargin: root.wideNavigation ? 20 : 28
+                    rightMargin: root.wideNavigation ? 16 : 28
+                    topMargin: 24
                     bottomMargin: 18
                 }
-                spacing: 12
+                spacing: Metrics.spaceL
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 58
-                    spacing: 10
+                    spacing: Metrics.spaceS
 
-                    ColumnLayout {
+                    Text {
                         Layout.fillWidth: true
-                        spacing: -2
-
-                        Text {
-                            text: I18n.tr("settings.title")
-                            color: Theme.text
-                            font.family: Theme.fontFamily
-                            font.pixelSize: root.wideNavigation
-                                ? Metrics.appTextHeader : Math.round(Metrics.appTextHeader * 1.12)
-                            font.weight: Font.DemiBold
-                            font.variableAxes: { "wght": 680, "wdth": 95, "opsz": 34, "GRAD": 18 }
-                        }
-                        Text {
-                            text: I18n.tr("settings.subtitle")
-                            color: Theme.textMuted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Metrics.appTextCaption
-                            font.weight: Font.Medium
-                        }
+                        Layout.leftMargin: Metrics.spaceS
+                        text: I18n.tr("settings.title")
+                        color: Theme.text
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Math.round(40 * Metrics.scale)
+                        font.weight: Font.DemiBold
+                        font.variableAxes: ({ "wght": 600, "wdth": 105, "opsz": 40 })
+                        elide: Text.ElideRight
                     }
 
                     IconButton {
                         icon: "close"
+                        size: Math.round(44 * Metrics.scale)
                         accessibleName: I18n.tr("common.close")
                         onClicked: root.back()
                     }
@@ -194,6 +269,8 @@ FocusScope {
                 SettingsSearchField {
                     Layout.fillWidth: true
                     placeholder: I18n.tr("settings.search")
+                    showAvatar: true
+                    onAvatarClicked: ShellState.openSettings("system")
                     onTextChanged: root.searchText = text
                     onAccepted: {
                         for (let group = 0; group < root.navigationGroups.length; ++group) {
@@ -217,7 +294,7 @@ FocusScope {
                     Column {
                         id: navigationContent
                         width: parent.width
-                        spacing: 14
+                        spacing: Metrics.spaceL
 
                         Repeater {
                             model: root.navigationGroups
@@ -228,149 +305,112 @@ FocusScope {
                                 readonly property var items: root.visibleCategories(modelData.id)
                                 width: navigationContent.width
                                 visible: items.length > 0
-                                spacing: 7
+                                spacing: Metrics.segmentGap
 
-                                Text {
-                                    width: parent.width
-                                    leftPadding: 8
-                                    text: navigationGroup.modelData.title
-                                    color: Theme.textMuted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Metrics.appTextCaption
-                                    font.weight: Font.DemiBold
-                                }
+                                Repeater {
+                                    model: navigationGroup.items
 
-                                // Material 3 Expressive segmented navigation:
-                                // each destination is its own segment and the
-                                // selected one morphs into a filled pill.
-                                Item {
-                                    width: parent.width
-                                    height: navigationRows.implicitHeight
+                                    Rectangle {
+                                        id: categoryButton
+                                        required property int index
+                                        required property var modelData
+                                        readonly property bool selected: root.section === modelData.id
+                                        readonly property bool first: index === 0
+                                        readonly property bool last: index === navigationGroup.items.length - 1
+                                        readonly property real outer: Metrics.cardRadius
+                                        readonly property real inner: Metrics.segmentInnerRadius
 
-                                    Column {
-                                        id: navigationRows
-                                        anchors {
-                                            left: parent.left
-                                            right: parent.right
-                                            top: parent.top
-                                        }
-                                        spacing: Metrics.segmentGap
+                                        width: navigationGroup.width
+                                        height: Math.round(72 * Metrics.scale)
+                                        topLeftRadius: selected ? height / 2 : (first ? outer : inner)
+                                        topRightRadius: topLeftRadius
+                                        bottomLeftRadius: selected ? height / 2 : (last ? outer : inner)
+                                        bottomRightRadius: bottomLeftRadius
+                                        color: selected ? Theme.accentContainer
+                                            : (categoryHover.hovered ? Theme.surfaceContainerHighest
+                                                : Theme.surfaceContainerHigh)
+                                        scale: categoryTap.pressed ? 0.985 : 1
 
-                                        Repeater {
-                                            model: navigationGroup.items
-
-                                            Item {
-                                                id: categoryItem
-                                                required property int index
-                                                required property var modelData
-                                                width: navigationRows.width
-                                                height: 58
-
-                                                Rectangle {
-                                                    id: categoryButton
-                                                    readonly property bool selected:
-                                                        root.section === categoryItem.modelData.id
-                                                    readonly property bool first: categoryItem.index === 0
-                                                    readonly property bool last: categoryItem.index
-                                                        === navigationGroup.items.length - 1
-                                                    readonly property real outer: Metrics.cardRadius
-                                                    readonly property real inner: Metrics.segmentInnerRadius
-                                                    anchors.fill: parent
-                                                    topLeftRadius: selected ? height / 2 : (first ? outer : inner)
-                                                    topRightRadius: topLeftRadius
-                                                    bottomLeftRadius: selected ? height / 2 : (last ? outer : inner)
-                                                    bottomRightRadius: bottomLeftRadius
-                                                    color: selected
-                                                        ? Theme.accentContainer
-                                                        : (categoryHover.hovered
-                                                            ? Theme.groupSurfaceRaised : Theme.groupSurface)
-                                                    scale: categoryTap.pressed ? 0.985 : 1
-
-                                                    Behavior on topLeftRadius {
-                                                        NumberAnimation {
-                                                            duration: Motion.springFast
-                                                            easing.type: Easing.BezierSpline
-                                                            easing.bezierCurve: Motion.spatialFast
-                                                        }
-                                                    }
-                                                    Behavior on bottomLeftRadius {
-                                                        NumberAnimation {
-                                                            duration: Motion.springFast
-                                                            easing.type: Easing.BezierSpline
-                                                            easing.bezierCurve: Motion.spatialFast
-                                                        }
-                                                    }
-
-                                                    RowLayout {
-                                                        anchors {
-                                                            fill: parent
-                                                            leftMargin: 9
-                                                            rightMargin: 11
-                                                        }
-                                                        spacing: 10
-
-                                                        Rectangle {
-                                                            Layout.preferredWidth: 36
-                                                            Layout.preferredHeight: 36
-                                                            radius: width / 2
-                                                            color: root.toneContainer(categoryItem.modelData.tone)
-
-                                                            MaterialIcon {
-                                                                anchors.centerIn: parent
-                                                                text: categoryItem.modelData.icon
-                                                                size: 19
-                                                                fill: categoryButton.selected ? 1 : 0
-                                                                color: root.toneColor(categoryItem.modelData.tone)
-                                                            }
-                                                        }
-
-                                                        ColumnLayout {
-                                                            Layout.fillWidth: true
-                                                            spacing: -1
-
-                                                            Text {
-                                                                Layout.fillWidth: true
-                                                                text: categoryItem.modelData.title
-                                                                color: categoryButton.selected
-                                                                    ? Theme.accentContainerInk : Theme.text
-                                                                font.family: Theme.fontFamily
-                                                                font.pixelSize: Metrics.appTextBody
-                                                                font.weight: root.section === categoryItem.modelData.id
-                                                                    ? Font.DemiBold : Font.Medium
-                                                                elide: Text.ElideRight
-                                                            }
-                                                            Text {
-                                                                Layout.fillWidth: true
-                                                                text: categoryItem.modelData.subtitle
-                                                                color: Theme.textMuted
-                                                                font.family: Theme.fontFamily
-                                                                font.pixelSize: Metrics.appTextCaption
-                                                                elide: Text.ElideRight
-                                                            }
-                                                        }
-
-                                                        MaterialIcon {
-                                                            text: "chevron_right"
-                                                            size: 17
-                                                            color: root.section === categoryItem.modelData.id
-                                                                ? Theme.accent : Theme.textMuted
-                                                        }
-                                                    }
-
-                                                    HoverHandler { id: categoryHover }
-                                                    TapHandler {
-                                                        id: categoryTap
-                                                        onTapped: ShellState.openSettings(categoryItem.modelData.id)
-                                                    }
-                                                    Behavior on color {
-                                                        ColorAnimation { duration: Motion.fast }
-                                                    }
-                                                    Behavior on scale {
-                                                        NumberAnimation { duration: Motion.instant }
-                                                    }
-                                                }
-
+                                        Behavior on topLeftRadius {
+                                            NumberAnimation {
+                                                duration: Motion.springFast
+                                                easing.type: Easing.BezierSpline
+                                                easing.bezierCurve: Motion.spatialFast
                                             }
+                                        }
+                                        Behavior on bottomLeftRadius {
+                                            NumberAnimation {
+                                                duration: Motion.springFast
+                                                easing.type: Easing.BezierSpline
+                                                easing.bezierCurve: Motion.spatialFast
+                                            }
+                                        }
+                                        Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+                                        Behavior on scale {
+                                            NumberAnimation {
+                                                duration: Motion.springFast
+                                                easing.type: Easing.BezierSpline
+                                                easing.bezierCurve: Motion.spatialFast
+                                            }
+                                        }
+
+                                        RowLayout {
+                                            anchors {
+                                                fill: parent
+                                                leftMargin: Metrics.spaceM
+                                                rightMargin: Metrics.spaceL
+                                            }
+                                            spacing: Metrics.spaceM
+
+                                            Rectangle {
+                                                Layout.preferredWidth: Math.round(40 * Metrics.scale)
+                                                Layout.preferredHeight: Layout.preferredWidth
+                                                radius: width / 2
+                                                color: root.categoryContainer(categoryButton.modelData.id)
+
+                                                MaterialIcon {
+                                                    anchors.centerIn: parent
+                                                    text: categoryButton.modelData.icon
+                                                    size: Math.round(21 * Metrics.scale)
+                                                    fill: 1
+                                                    color: root.categoryInk(categoryButton.modelData.id)
+                                                }
+                                            }
+
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                spacing: 1
+
+                                                Text {
+                                                    Layout.fillWidth: true
+                                                    text: categoryButton.modelData.title
+                                                    color: categoryButton.selected
+                                                        ? Theme.accentContainerInk : Theme.text
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: Metrics.appTextTitle
+                                                    font.weight: categoryButton.selected ? Font.DemiBold : Font.Medium
+                                                    elide: Text.ElideRight
+                                                }
+                                                Text {
+                                                    Layout.fillWidth: true
+                                                    text: categoryButton.modelData.subtitle
+                                                    color: categoryButton.selected
+                                                        ? Theme.accentContainerInk : Theme.textMuted
+                                                    opacity: categoryButton.selected ? 0.8 : 1
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: Metrics.appTextSupporting
+                                                    elide: Text.ElideRight
+                                                }
+                                            }
+                                        }
+
+                                        HoverHandler {
+                                            id: categoryHover
+                                            cursorShape: Qt.PointingHandCursor
+                                        }
+                                        TapHandler {
+                                            id: categoryTap
+                                            onTapped: ShellState.openSettings(categoryButton.modelData.id)
                                         }
                                     }
                                 }
@@ -386,108 +426,67 @@ FocusScope {
                             text: I18n.tr("settings.noResults", { query: root.searchText })
                             color: Theme.textMuted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Metrics.appTextBody
                             wrapMode: Text.Wrap
                         }
                     }
                 }
             }
-
-            Rectangle {
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: parent.right
-                    topMargin: 20
-                    bottomMargin: 20
-                }
-                width: 1
-                visible: root.wideNavigation
-                color: Theme.divider
-            }
         }
 
-        Item {
+        Rectangle {
             id: detailPane
             visible: root.wideNavigation || root.section !== "home"
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.topMargin: root.wideNavigation ? Metrics.spaceM : 0
+            Layout.bottomMargin: root.wideNavigation ? Metrics.spaceM : 0
+            Layout.rightMargin: root.wideNavigation ? Metrics.spaceM : 0
+            radius: root.wideNavigation ? Metrics.radiusXL : 0
+            color: Theme.surfaceContainer
 
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 0
 
-                Item {
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Metrics.settingsHeaderHeight
+                    Layout.leftMargin: root.wideNavigation ? 32 : 20
+                    Layout.rightMargin: 20
+                    Layout.topMargin: 24
+                    Layout.bottomMargin: Metrics.spaceL
+                    spacing: Metrics.spaceM
 
-                    RowLayout {
-                        anchors {
-                            fill: parent
-                            leftMargin: root.wideNavigation ? 28 : 22
-                            rightMargin: 24
-                            topMargin: 16
-                            bottomMargin: 10
-                        }
-                        spacing: 13
+                    IconButton {
+                        visible: !root.wideNavigation
+                        icon: "arrow_back"
+                        size: Math.round(44 * Metrics.scale)
+                        accessibleName: I18n.tr("common.back")
+                        onClicked: ShellState.settingsSection = "home"
+                    }
 
-                        IconButton {
-                            visible: !root.wideNavigation
-                            icon: "arrow_back"
-                            accessibleName: I18n.tr("common.back")
-                            onClicked: ShellState.settingsSection = "home"
-                        }
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.category().title
+                        color: Theme.text
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Math.round(34 * Metrics.scale)
+                        font.weight: Font.DemiBold
+                        font.variableAxes: ({ "wght": 600, "wdth": 105, "opsz": 34 })
+                        elide: Text.ElideRight
+                    }
 
-                        Rectangle {
-                            Layout.preferredWidth: 48
-                            Layout.preferredHeight: 48
-                            radius: Metrics.radiusM
-                            color: root.toneContainer(root.category().tone)
-
-                            MaterialIcon {
-                                anchors.centerIn: parent
-                                text: root.category().icon
-                                size: 24
-                                color: root.toneColor(root.category().tone)
-                            }
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: -2
-
-                            Text {
-                                Layout.fillWidth: true
-                                text: root.category().title
-                                color: Theme.text
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Metrics.appTextHeader
-                                font.weight: Font.DemiBold
-                                font.variableAxes: { "wght": 680, "wdth": 95, "opsz": 34, "GRAD": 20 }
-                                elide: Text.ElideRight
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                text: root.category().subtitle
-                                color: Theme.textMuted
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Metrics.appTextSupporting
-                                font.weight: Font.Medium
-                                elide: Text.ElideRight
-                            }
-                        }
-
-                        IconButton {
-                            icon: SettingsService.loading || SystemSettingsService.loading
-                                ? "progress_activity" : "refresh"
-                            accessibleName: I18n.tr("settings.refresh")
-                            onClicked: {
-                                SettingsService.refresh()
-                                SystemSettingsService.refresh()
-                                if (root.section === "devices")
-                                    SystemSettingsService.refreshDevices()
-                                ConnectivityService.refreshWifi()
-                            }
+                    IconButton {
+                        icon: SettingsService.loading || SystemSettingsService.loading
+                            ? "progress_activity" : "refresh"
+                        size: Math.round(44 * Metrics.scale)
+                        accessibleName: I18n.tr("settings.refresh")
+                        onClicked: {
+                            SettingsService.refresh()
+                            SystemSettingsService.refresh()
+                            if (root.section === "devices")
+                                SystemSettingsService.refreshDevices()
+                            ConnectivityService.refreshWifi()
                         }
                     }
                 }
@@ -496,9 +495,8 @@ FocusScope {
                     id: detailFlick
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.leftMargin: root.wideNavigation ? 28 : 22
-                    Layout.rightMargin: root.wideNavigation ? 28 : 22
-                    Layout.bottomMargin: 22
+                    Layout.leftMargin: root.wideNavigation ? 28 : 18
+                    Layout.rightMargin: root.wideNavigation ? 28 : 18
                     contentWidth: width
                     contentHeight: pageFrame.height
                     clip: true
@@ -507,29 +505,99 @@ FocusScope {
                     Item {
                         id: pageFrame
                         width: detailFlick.width
-                        height: Math.max(detailFlick.height, pageLoader.height + 16)
+                        height: Math.max(detailFlick.height, pageColumn.height + 28)
 
-                        Loader {
-                            id: pageLoader
-                            property real revealOffset: 0
-                            // Settings is a normal app window but its content
-                            // is still expensive (wallpaper previews, monitor
-                            // models, device lists). Destroy the current page
-                            // when the window closes instead of keeping a
-                            // hidden GeneralSettings object graph alive for the
-                            // entire desktop session.
-                            active: root.active && root.section !== "home"
+                        Column {
+                            id: pageColumn
                             anchors.horizontalCenter: parent.horizontalCenter
                             width: Math.min(parent.width, Metrics.settingsContentMax)
-                            height: item ? item.implicitHeight : 0
-                            transform: Translate { x: pageLoader.revealOffset }
-                            sourceComponent: root.section === "connections" ? connectionsPage
-                                : (root.section === "audio" ? audioPage
-                                    : (root.section === "devices" ? devicesPage
-                                        : (root.section === "display" ? displayPage
-                                            : (root.section === "appearance" ? appearancePage
-                                                : (root.section === "assistant" ? assistantPage
-                                                    : generalPage)))))
+                            spacing: Metrics.settingsSectionGap
+
+                            // Hero: the category's live status at a glance.
+                            Rectangle {
+                                id: hero
+                                readonly property var info: root.heroInfo(root.section)
+                                width: parent.width
+                                height: Math.round(120 * Metrics.scale)
+                                radius: Metrics.radiusXL
+                                color: info.active ? Theme.accentContainer : Theme.surfaceContainerHigh
+                                visible: root.section !== "home"
+
+                                Behavior on color { ColorAnimation { duration: Motion.effectsFastDuration } }
+
+                                RowLayout {
+                                    anchors {
+                                        fill: parent
+                                        leftMargin: Metrics.spaceL
+                                        rightMargin: Metrics.spaceXL
+                                    }
+                                    spacing: Metrics.spaceL
+
+                                    Rectangle {
+                                        Layout.preferredWidth: Math.round(80 * Metrics.scale)
+                                        Layout.preferredHeight: Layout.preferredWidth
+                                        radius: width / 2
+                                        color: hero.info.active ? Theme.accent
+                                            : root.categoryContainer(root.section)
+
+                                        MaterialIcon {
+                                            anchors.centerIn: parent
+                                            text: hero.info.icon
+                                            size: Math.round(38 * Metrics.scale)
+                                            fill: 1
+                                            color: hero.info.active ? Theme.accentInk
+                                                : root.categoryInk(root.section)
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 2
+
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: hero.info.title
+                                            color: hero.info.active ? Theme.accentContainerInk : Theme.text
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Math.round(24 * Metrics.scale)
+                                            font.weight: Font.Bold
+                                            elide: Text.ElideRight
+                                        }
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: hero.info.subtitle
+                                            visible: text.length > 0
+                                            color: hero.info.active ? Theme.accentContainerInk : Theme.textMuted
+                                            opacity: hero.info.active ? 0.82 : 1
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Metrics.appTextBody
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
+                            }
+
+                            Loader {
+                                id: pageLoader
+                                property real revealOffset: 0
+                                // Settings is a normal app window but its content
+                                // is still expensive (wallpaper previews, monitor
+                                // models, device lists). Destroy the current page
+                                // when the window closes instead of keeping a
+                                // hidden GeneralSettings object graph alive for the
+                                // entire desktop session.
+                                active: root.active && root.section !== "home"
+                                width: parent.width
+                                height: item ? item.implicitHeight : 0
+                                transform: Translate { x: pageLoader.revealOffset }
+                                sourceComponent: root.section === "connections" ? connectionsPage
+                                    : (root.section === "audio" ? audioPage
+                                        : (root.section === "devices" ? devicesPage
+                                            : (root.section === "display" ? displayPage
+                                                : (root.section === "appearance" ? appearancePage
+                                                    : (root.section === "assistant" ? assistantPage
+                                                        : generalPage)))))
+                            }
                         }
                     }
                 }

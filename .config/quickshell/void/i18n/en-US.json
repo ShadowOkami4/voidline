@@ -30,6 +30,31 @@
     }
   },
   "settings": {
+    "hero": {
+      "notConnected": "Not connected",
+      "wired": "Wired connection",
+      "wifiOff": "Wi-Fi is off",
+      "volume": "{value}% volume",
+      "muted": "Muted",
+      "bluetoothOff": "Bluetooth is off",
+      "devicesConnected": "{count} connected",
+      "noDevices": "No devices connected",
+      "displays": "Displays: {count}",
+      "dndOn": "Do Not Disturb is on",
+      "notificationsCount": "Notifications: {count}",
+      "upToDate": "Everything is up to date",
+      "updatesAvailable": "Updates available: {count}",
+      "firewallOn": "Firewall is on",
+      "firewallOff": "Firewall is off",
+      "darkTheme": "Dark theme",
+      "lightTheme": "Light theme",
+      "autoTheme": "Automatic theme",
+      "wallpaperColors": "Colours from your wallpaper",
+      "accentColor": "Custom accent colour",
+      "assistantOn": "Lyra is on",
+      "assistantOff": "Lyra is off",
+      "account": "Your account"
+    },
     "windowTitle": "Voidline Settings",
     "groups": { "connected": "Connections", "personal": "Personal", "system": "System" },
     "about": {

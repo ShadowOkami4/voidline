@@ -65,9 +65,9 @@ Rectangle {
             }
 
             Rectangle {
-                Layout.preferredWidth: Metrics.controlS
-                Layout.preferredHeight: Metrics.controlS
-                radius: Metrics.iconContainerRadius
+                Layout.preferredWidth: Math.round(40 * Metrics.scale)
+                Layout.preferredHeight: Math.round(40 * Metrics.scale)
+                radius: width / 2
                 color: root.previewColor(root.value)
                 border.width: Metrics.border
                 border.color: Theme.outlineSoft
@@ -83,9 +83,9 @@ Rectangle {
                 model: root.presets
                 Rectangle {
                     required property var modelData
-                    Layout.preferredWidth: Metrics.controlS
-                    Layout.preferredHeight: Metrics.controlS
-                    radius: Metrics.iconContainerRadius
+                    Layout.preferredWidth: Math.round(40 * Metrics.scale)
+                    Layout.preferredHeight: Math.round(40 * Metrics.scale)
+                    radius: width / 2
                     color: root.previewColor(modelData)
                     border.width: String(modelData).toLowerCase()
                         === root.value.toLowerCase() ? Metrics.focusBorder : Metrics.border

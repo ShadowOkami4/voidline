@@ -38,9 +38,9 @@ Rectangle {
             Layout.fillWidth: true
             spacing: Metrics.spaceM
             Rectangle {
-                Layout.preferredWidth: Metrics.controlS
-                Layout.preferredHeight: Metrics.controlS
-                radius: Metrics.iconContainerRadius
+                Layout.preferredWidth: Math.round(40 * Metrics.scale)
+                Layout.preferredHeight: Math.round(40 * Metrics.scale)
+                radius: width / 2
                 color: field.activeFocus ? Theme.accentContainer
                     : Theme.groupSurfaceRaised
                 MaterialIcon {

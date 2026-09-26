@@ -13,10 +13,8 @@ Rectangle {
     property color containerColor: Theme.accentContainer
 
     implicitHeight: Math.round(104 * Metrics.scale)
-    radius: Metrics.tileRadius
-    color: Theme.groupSurfaceRaised
-    border.width: Metrics.border
-    border.color: Theme.outlineSoft
+    radius: Metrics.radiusL
+    color: Theme.surfaceContainerHigh
 
     RowLayout {
         anchors.fill: parent
@@ -26,7 +24,7 @@ Rectangle {
         Rectangle {
             Layout.preferredWidth: Metrics.controlL
             Layout.preferredHeight: Metrics.controlL
-            radius: Metrics.iconContainerRadius
+            radius: width / 2
             color: root.containerColor
 
             MaterialIcon {

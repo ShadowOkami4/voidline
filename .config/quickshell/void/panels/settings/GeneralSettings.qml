@@ -817,7 +817,7 @@ SettingsMasonry {
                 Rectangle {
                     Layout.preferredWidth: Math.round(132 * Metrics.scale)
                     Layout.preferredHeight: Math.round(132 * Metrics.scale)
-                    radius: Metrics.radiusXL
+                    radius: width / 2
                     color: Theme.accentContainer
                     border.width: Metrics.focusBorder
                     border.color: Theme.accent
@@ -825,7 +825,7 @@ SettingsMasonry {
                     RoundedImage {
                         anchors.fill: parent
                         anchors.margins: Metrics.spaceS
-                        radius: Metrics.radiusL
+                        radius: width / 2
                         source: root.pendingAvatarSource.length > 0
                             ? "file://" + root.pendingAvatarSource
                             : ProfileImageService.avatarSource
@@ -957,6 +957,7 @@ SettingsMasonry {
     }
 
     SettingsSection {
+        plain: true
         visible: root.section === "system"
         fullWidth: true
         title: I18n.tr("settings.about.title")
@@ -966,8 +967,8 @@ SettingsMasonry {
         GridLayout {
             width: parent.width
             columns: root.twoColumns ? 2 : 1
-            columnSpacing: Metrics.settingsPageGap
-            rowSpacing: Metrics.settingsPageGap
+            columnSpacing: Metrics.spaceS
+            rowSpacing: Metrics.spaceS
 
             Repeater {
                 model: [

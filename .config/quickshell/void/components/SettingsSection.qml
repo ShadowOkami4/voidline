@@ -11,55 +11,45 @@ Column {
     property color iconContainerColor: Theme.accentContainer
     property color iconColor: Theme.accent
     property bool fullWidth: false
+    // Plain sections skip the segmented row backgrounds, for content that
+    // brings its own cards (for example the About tile grid).
+    property bool plain: false
     default property alias contentData: bodyColumn.data
 
     width: parent && parent.isSettingsMasonry
         ? parent.itemWidth(fullWidth) : (parent ? parent.width : 0)
     spacing: Metrics.sectionHeaderGap
 
-    RowLayout {
+    // Android 16 section label: accent-coloured title with an optional
+    // one-line explanation. Icons are kept only for callers that pass one.
+    Column {
         width: parent.width
-        height: root.subtitle.length > 0
-            ? Metrics.sectionHeaderHeight : Metrics.controlS
-        spacing: Metrics.spaceS
+        visible: root.title.length > 0
+        leftPadding: Metrics.spaceL
+        rightPadding: Metrics.spaceL
+        topPadding: Metrics.spaceS
+        bottomPadding: 2
+        spacing: 2
 
-        Rectangle {
-            visible: root.icon.length > 0
-            Layout.preferredWidth: Metrics.controlS
-            Layout.preferredHeight: Metrics.controlS
-            radius: Metrics.iconContainerRadius
-            color: root.iconContainerColor
-
-            MaterialIcon {
-                anchors.centerIn: parent
-                text: root.icon
-                size: Metrics.iconM
-                color: root.iconColor
-            }
+        Text {
+            width: parent.width - parent.leftPadding - parent.rightPadding
+            text: root.title
+            color: Theme.accent
+            font.family: Theme.fontFamily
+            font.pixelSize: Metrics.appTextBody
+            font.weight: Font.DemiBold
+            elide: Text.ElideRight
         }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 0
-            Text {
-                Layout.fillWidth: true
-                text: root.title
-                color: Theme.text
-                font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextTitle
-                font.weight: Font.DemiBold
-                font.variableAxes: { "wght": 650, "wdth": 98, "opsz": 16 }
-            }
-            Text {
-                Layout.fillWidth: true
-                visible: root.subtitle.length > 0
-                text: root.subtitle
-                color: Theme.textMuted
-                font.family: Theme.fontFamily
-                font.pixelSize: Metrics.appTextCaption
-                wrapMode: Text.WordWrap
-                maximumLineCount: 2
-            }
+        Text {
+            width: parent.width - parent.leftPadding - parent.rightPadding
+            visible: root.subtitle.length > 0
+            text: root.subtitle
+            color: Theme.textMuted
+            font.family: Theme.fontFamily
+            font.pixelSize: Metrics.appTextSupporting
+            wrapMode: Text.WordWrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
         }
     }
 
@@ -98,12 +88,12 @@ Column {
                 readonly property int outer: Metrics.cardRadius
                 readonly property int inner: Metrics.segmentInnerRadius
 
-                visible: body.rowShown(row)
+                visible: !root.plain && body.rowShown(row)
                 x: 0
                 y: row ? row.y : 0
                 width: body.width
                 height: row ? row.height : 0
-                color: Theme.groupSurface
+                color: Theme.surfaceContainerHigh
                 topLeftRadius: first ? outer : inner
                 topRightRadius: first ? outer : inner
                 bottomLeftRadius: last ? outer : inner

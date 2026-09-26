@@ -1,20 +1,24 @@
 import QtQuick
 import QtQuick.Layouts
 import "../core"
+import "../services"
 
 FocusScope {
     id: root
 
     property alias text: input.text
     property string placeholder: I18n.tr("settings.search")
+    // Shows the user's avatar at the end of the field (Android 16 style).
+    property bool showAvatar: false
     signal accepted(string text)
+    signal avatarClicked
 
-    implicitHeight: 54
+    implicitHeight: Math.round(56 * Metrics.scale)
 
     Rectangle {
         anchors.fill: parent
-        radius: Theme.pillRadius
-        color: input.activeFocus ? Theme.groupSurfaceRaised : Theme.groupSurface
+        radius: height / 2
+        color: input.activeFocus ? Theme.surfaceBright : Theme.surfaceContainerHighest
         border.width: input.activeFocus ? 2 : 0
         border.color: Theme.accent
 
@@ -25,14 +29,14 @@ FocusScope {
     RowLayout {
         anchors {
             fill: parent
-            leftMargin: 17
-            rightMargin: 12
+            leftMargin: Metrics.spaceL
+            rightMargin: root.showAvatar ? Metrics.spaceS : Metrics.spaceM
         }
         spacing: 11
 
         MaterialIcon {
             text: "search"
-            size: 21
+            size: 22
             color: input.activeFocus ? Theme.accent : Theme.textMuted
         }
 
@@ -43,7 +47,7 @@ FocusScope {
             selectionColor: Theme.accentContainer
             selectedTextColor: Theme.text
             font.family: Theme.fontFamily
-            font.pixelSize: 13
+            font.pixelSize: Metrics.appTextTitle
             clip: true
             onAccepted: root.accepted(text)
 
@@ -61,6 +65,21 @@ FocusScope {
             icon: "close"
             accessibleName: I18n.tr("common.clearSearch")
             onClicked: input.text = ""
+        }
+
+        RoundedImage {
+            visible: root.showAvatar
+            Layout.preferredWidth: Math.round(40 * Metrics.scale)
+            Layout.preferredHeight: Layout.preferredWidth
+            radius: width / 2
+            source: ProfileImageService.avatarSource
+            fallbackIcon: "person"
+            fallbackColor: Theme.accentContainer
+            fallbackIconSize: Math.round(width * 0.55)
+            fallbackIconColor: Theme.accentContainerInk
+
+            TapHandler { onTapped: root.avatarClicked() }
+            HoverHandler { cursorShape: Qt.PointingHandCursor }
         }
     }
 

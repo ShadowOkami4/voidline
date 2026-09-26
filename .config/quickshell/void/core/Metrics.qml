@@ -67,9 +67,9 @@ QtObject {
     readonly property int tileHeight: Math.round(68 * scale)
     readonly property int heroTileHeight: Math.round(78 * scale)
     readonly property int sliderHeight: Math.round(76 * scale)
-    readonly property int settingRowHeight: Math.round(62 * scale)
-    readonly property int settingRowCompact: Math.round(56 * scale)
-    readonly property int settingRowComfortable: Math.round(66 * scale)
+    readonly property int settingRowHeight: Math.round(66 * scale)
+    readonly property int settingRowCompact: Math.round(60 * scale)
+    readonly property int settingRowComfortable: Math.round(72 * scale)
     readonly property int sectionHeaderHeight: Math.round(44 * scale)
     readonly property int panelHeaderHeight: Math.round(62 * scale)
     readonly property int inputHeight: Math.round(48 * scale)
@@ -88,9 +88,9 @@ QtObject {
 
     // Application-sized typography. Shell panels deliberately remain denser,
     // while Settings and Lyra use these tokens to stay readable on a desktop.
-    readonly property int appTextCaption: Math.round(11 * scale)
-    readonly property int appTextSupporting: Math.round(12 * scale)
-    readonly property int appTextBody: Math.round(14 * scale)
+    readonly property int appTextCaption: Math.round(12 * scale)
+    readonly property int appTextSupporting: Math.round(13 * scale)
+    readonly property int appTextBody: Math.round(15 * scale)
     readonly property int appTextTitle: Math.round(16 * scale)
     readonly property int appTextHeader: Math.round(30 * scale)
 
@@ -99,7 +99,7 @@ QtObject {
 
     // Shared Settings content grid. Pages may opt into a single-column layout,
     // but they must not invent their own desktop breakpoints or content caps.
-    readonly property int settingsNarrow: Math.round(720 * scale)
+    readonly property int settingsNarrow: Math.round(820 * scale)
     readonly property int settingsTwoColumn: Math.round(980 * scale)
     readonly property int settingsContentMax: Math.round(1680 * scale)
     readonly property int settingsColumnMin: Math.round(460 * scale)
@@ -121,7 +121,7 @@ QtObject {
     readonly property int launcherCollapsedWidth: Math.round(132 * scale)
     readonly property int launcherFileHeaderHeight: Math.round(194 * scale)
     readonly property int edgeTriggerHeight: Math.round(210 * scale)
-    readonly property int settingsSidebar: Math.round(270 * scale)
+    readonly property int settingsSidebar: Math.round(360 * scale)
     readonly property int contextMenuWidth: Math.round(304 * scale)
 
     readonly property int concaveRadius: Math.round(20 * scale)

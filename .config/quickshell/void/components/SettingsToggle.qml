@@ -10,8 +10,8 @@ Rectangle {
     property string subtitle: ""
     property bool checked: false
     property bool enabled: true
-    property color iconContainerColor: checked ? Theme.accentContainer : Theme.groupSurfaceRaised
-    property color iconContentColor: checked ? Theme.accent : Theme.textMuted
+    property color iconContainerColor: checked ? Theme.accentContainer : Theme.surfaceContainerHighest
+    property color iconContentColor: checked ? Theme.accentContainerInk : Theme.text
     signal toggled(bool checked)
 
     implicitHeight: subtitle.length > 0
@@ -23,13 +23,10 @@ Rectangle {
 
     Rectangle {
         id: hoverSurface
-        anchors {
-            fill: parent
-            margins: 4
-        }
-        radius: Metrics.stateRadius
+        anchors.fill: parent
+        radius: Metrics.segmentInnerRadius
         color: hover.hovered && root.enabled
-            ? Theme.groupSurfaceRaised : "transparent"
+            ? Theme.withAlpha(Theme.text, 0.06) : "transparent"
         border.width: Appearance.focusIndicators && hover.hovered
             && root.enabled ? 2 : 0
         border.color: Theme.secondary
@@ -45,9 +42,9 @@ Rectangle {
         spacing: Metrics.spaceM
 
         Rectangle {
-            Layout.preferredWidth: Metrics.controlS
-            Layout.preferredHeight: Metrics.controlS
-            radius: Metrics.iconContainerRadius
+            Layout.preferredWidth: Math.round(40 * Metrics.scale)
+            Layout.preferredHeight: Math.round(40 * Metrics.scale)
+            radius: width / 2
             color: root.iconContainerColor
 
             MaterialIcon {

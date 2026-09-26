@@ -12,8 +12,8 @@ Rectangle {
     property bool active: false
     property bool enabled: true
     property bool interactive: true
-    property color iconContainerColor: active ? Theme.accent : Theme.groupSurfaceRaised
-    property color iconContentColor: active ? Theme.accentInk : Theme.accent
+    property color iconContainerColor: active ? Theme.accent : Theme.surfaceContainerHighest
+    property color iconContentColor: active ? Theme.accentInk : Theme.text
     signal clicked
 
     implicitHeight: subtitle.length > 0
@@ -28,14 +28,11 @@ Rectangle {
     scale: tap.pressed && interactive ? 0.992 : 1
 
     Rectangle {
-        anchors {
-            fill: parent
-            margins: 4
-        }
-        radius: Metrics.stateRadius
+        anchors.fill: parent
+        radius: Metrics.segmentInnerRadius
         color: root.active ? Theme.accentContainer
             : (hover.hovered && root.enabled && root.interactive
-                ? Theme.groupSurfaceRaised : "transparent")
+                ? Theme.withAlpha(Theme.text, 0.06) : "transparent")
         border.width: root.active && Appearance.highContrast ? 2
             : (Appearance.focusIndicators && hover.hovered && root.enabled ? 2 : 0)
         border.color: root.active ? Theme.accent : Theme.secondary
@@ -52,9 +49,9 @@ Rectangle {
         spacing: Metrics.spaceM
 
         Rectangle {
-            Layout.preferredWidth: Metrics.controlS
-            Layout.preferredHeight: Metrics.controlS
-            radius: Metrics.iconContainerRadius
+            Layout.preferredWidth: Math.round(40 * Metrics.scale)
+            Layout.preferredHeight: Math.round(40 * Metrics.scale)
+            radius: width / 2
             color: root.iconContainerColor
 
             MaterialIcon {

@@ -32,6 +32,31 @@
     }
   },
   "settings": {
+    "hero": {
+      "notConnected": "Brak połączenia",
+      "wired": "Połączenie przewodowe",
+      "wifiOff": "Wi-Fi jest wyłączone",
+      "volume": "Głośność {value}%",
+      "muted": "Wyciszono",
+      "bluetoothOff": "Bluetooth jest wyłączony",
+      "devicesConnected": "Połączone: {count}",
+      "noDevices": "Brak połączonych urządzeń",
+      "displays": "Ekrany: {count}",
+      "dndOn": "Tryb Nie przeszkadzać jest włączony",
+      "notificationsCount": "Powiadomienia: {count}",
+      "upToDate": "Wszystko jest aktualne",
+      "updatesAvailable": "Dostępne aktualizacje: {count}",
+      "firewallOn": "Zapora jest włączona",
+      "firewallOff": "Zapora jest wyłączona",
+      "darkTheme": "Motyw ciemny",
+      "lightTheme": "Motyw jasny",
+      "autoTheme": "Motyw automatyczny",
+      "wallpaperColors": "Kolory z tapety",
+      "accentColor": "Własny kolor akcentu",
+      "assistantOn": "Lyra jest włączona",
+      "assistantOff": "Lyra jest wyłączona",
+      "account": "Twoje konto"
+    },
     "windowTitle": "Ustawienia Voidline",
     "groups": { "connected": "Połączenia", "personal": "Osobiste", "system": "System" },
     "about": {
