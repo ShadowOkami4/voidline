@@ -14,6 +14,8 @@ SettingsMasonry {
     property string section: "notifications"
     property int versionTaps: 0
     property string message: ""
+    // Lock screen: advanced clock typography stays folded away by default.
+    property bool lockClockAdvanced: false
     property string pendingAvatarSource: ""
     property real avatarZoom: 1
     property real avatarOffsetX: 0
@@ -101,11 +103,11 @@ SettingsMasonry {
         }
     }
 
+    // ---------------- Lock screen ----------------
     SettingsSection {
         visible: root.section === "lock"
         fullWidth: true
-        title: "Lock screen"
-        subtitle: "Design the clock, then drag it into a safe position"
+        title: "Preview"
         icon: "lock"
 
         Rectangle {
@@ -117,8 +119,9 @@ SettingsMasonry {
             readonly property real safeBottom: height - previewAuthBottom
                 - previewAuthHeight - safeMargin
             readonly property real safeHeight: Math.max(1, safeBottom - safeMargin)
-            width: parent.width
-            height: Math.max(280, Math.min(420, width * 0.625))
+            x: Metrics.spaceXL
+            width: parent.width - Metrics.spaceXL * 2
+            height: Math.max(260, Math.min(380, width * 0.56))
             radius: Theme.radiusLarge
             color: Theme.surfaceLow
             clip: true
@@ -236,9 +239,8 @@ SettingsMasonry {
 
         ClockStylePicker {
             width: parent.width
-            title: "Lock-screen clock design"
-            subtitle: "Pixel, digital, analog, stacked, and playful designs"
-            maxColumns: 3
+            title: "Clock style"
+            maxColumns: 4
             options: ["pixel", "digital-large", "digital-compact", "stacked",
                 "horizontal", "minimal", "analog", "playful"]
             optionLabels: ["Pixel", "Large digital", "Digital with date", "Stacked",
@@ -248,8 +250,51 @@ SettingsMasonry {
         }
         SettingsChoice {
             width: parent.width
+            title: "Color"
+            options: ["wallpaper", "custom", "gradient"]
+            optionLabels: ["Wallpaper", "Custom", "Two-tone"]
+            value: Appearance.lockClockColorMode
+            onSelected: value => Appearance.setLockClockColorMode(value)
+        }
+        SettingsField {
+            width: parent.width
+            visible: Appearance.lockClockColorMode !== "wallpaper"
+            icon: "palette"
+            title: "Primary color"
+            subtitle: "Hex color such as #FFFFFF"
+            value: Appearance.lockClockColor1
+            onAccepted: value => Appearance.setLockClockColors(
+                value, Appearance.lockClockColor2)
+        }
+        SettingsField {
+            width: parent.width
+            visible: Appearance.lockClockColorMode === "gradient"
+            icon: "gradient"
+            title: "Secondary color"
+            subtitle: "Used for the date, weather, and analog minute hand"
+            value: Appearance.lockClockColor2
+            onAccepted: value => Appearance.setLockClockColors(
+                Appearance.lockClockColor1, value)
+        }
+        SettingsChoice {
+            width: parent.width
+            title: "Date"
+            options: ["above", "below", "side", "hidden"]
+            optionLabels: ["Above", "Below", "Beside", "Hidden"]
+            value: Appearance.lockDatePlacement
+            onSelected: value => Appearance.setLockDatePlacement(value)
+        }
+        SettingsAction {
+            width: parent.width
+            icon: root.lockClockAdvanced ? "expand_less" : "tune"
+            title: root.lockClockAdvanced ? "Fewer clock options" : "Customize clock"
+            subtitle: root.lockClockAdvanced ? "" : "Font, weight, size, and spacing"
+            onClicked: root.lockClockAdvanced = !root.lockClockAdvanced
+        }
+        SettingsChoice {
+            width: parent.width
+            visible: root.lockClockAdvanced
             title: "Clock font"
-            subtitle: "Choose a typeface independently from the shell interface"
             options: ["Roboto Flex", "Noto Sans", "sans-serif", "serif",
                 "monospace", "Comic Sans MS"]
             optionLabels: ["Roboto Flex", "Noto Sans", "System Sans",
@@ -259,6 +304,7 @@ SettingsMasonry {
         }
         SettingsSlider {
             width: parent.width
+            visible: root.lockClockAdvanced
             title: "Font weight"
             icon: "format_bold"
             from: 100; to: 900; step: 50
@@ -267,6 +313,7 @@ SettingsMasonry {
         }
         SettingsSlider {
             width: parent.width
+            visible: root.lockClockAdvanced
             title: "Clock size"
             icon: "format_size"
             from: 65; to: 160; step: 5
@@ -276,25 +323,42 @@ SettingsMasonry {
         }
         SettingsSlider {
             width: parent.width
+            visible: root.lockClockAdvanced
             title: "Character spacing"
             icon: "format_letter_spacing"
             from: -6; to: 12; step: 0.5
             value: Appearance.lockClockSpacing
             onChanged: value => Appearance.setLockClockSpacing(value)
         }
-        SettingsChoice {
+        SettingsAction {
             width: parent.width
-            title: "Date placement"
-            subtitle: "Place the date around the selected clock design"
-            options: ["above", "below", "side", "hidden"]
-            optionLabels: ["Above", "Below", "Beside", "Hidden"]
-            value: Appearance.lockDatePlacement
-            onSelected: value => Appearance.setLockDatePlacement(value)
+            visible: root.lockClockAdvanced
+            icon: "restart_alt"
+            title: "Reset clock design"
+            subtitle: "Restore the default style, colors, and position"
+            value: "Reset"
+            onClicked: Appearance.resetLockClock()
+        }
+    }
+
+    SettingsSection {
+        visible: root.section === "lock"
+        title: "Weather"
+        icon: "partly_cloudy_day"
+
+        SettingsField {
+            width: parent.width
+            icon: "location_on"
+            title: "Location"
+            subtitle: "Only this manually entered location is sent to Open-Meteo"
+            value: Appearance.weatherLocation
+            placeholder: "For example, Berlin"
+            onAccepted: value => WeatherService.setLocation(value)
         }
         SettingsToggle {
             width: parent.width
             icon: "partly_cloudy_day"
-            title: "Weather"
+            title: "Show weather"
             subtitle: Appearance.weatherLocation.length > 0
                 ? Appearance.weatherLocation : "Choose a weather location first"
             checked: Appearance.lockShowWeather
@@ -333,86 +397,99 @@ SettingsMasonry {
             checked: Appearance.lockShowWeatherForecast
             onToggled: value => Appearance.setLockWeatherPart("forecast", value)
         }
-        SettingsField {
-            width: parent.width
-            icon: "location_on"
-            title: "Weather location"
-            subtitle: "Only this manually entered location is sent to Open-Meteo"
-            value: Appearance.weatherLocation
-            placeholder: "For example, Berlin"
-            onAccepted: value => WeatherService.setLocation(value)
-        }
-        SettingsChoice {
-            width: parent.width
-            title: "Clock color"
-            subtitle: "Use wallpaper colors, a custom color, or a two-tone design"
-            options: ["wallpaper", "custom", "gradient"]
-            optionLabels: ["Wallpaper", "Custom", "Two-tone"]
-            value: Appearance.lockClockColorMode
-            onSelected: value => Appearance.setLockClockColorMode(value)
-        }
-        SettingsField {
-            width: parent.width
-            visible: Appearance.lockClockColorMode !== "wallpaper"
-            icon: "palette"
-            title: "Primary color"
-            subtitle: "Hex color such as #FFFFFF"
-            value: Appearance.lockClockColor1
-            onAccepted: value => Appearance.setLockClockColors(
-                value, Appearance.lockClockColor2)
-        }
-        SettingsField {
-            width: parent.width
-            visible: Appearance.lockClockColorMode === "gradient"
-            icon: "gradient"
-            title: "Secondary color"
-            subtitle: "Used for the date, weather, and analog minute hand"
-            value: Appearance.lockClockColor2
-            onAccepted: value => Appearance.setLockClockColors(
-                Appearance.lockClockColor1, value)
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "restart_alt"
-            title: "Reset clock design"
-            subtitle: "Restore the default style, colors, and position"
-            value: "Reset"
-            onClicked: Appearance.resetLockClock()
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "wallpaper"
-            title: "Login background cache"
-            subtitle: "The current wallpaper is exported for SDDM without running Quickshell"
-            value: WallpaperService.sddmCacheReady ? "Ready" : "Pending"
-            interactive: false
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "lock"
-            title: "Lock now"
-            subtitle: "Test the native Voidline lock screen"
-            value: "Lock"
-            onClicked: LockService.lock()
-        }
     }
 
     SettingsSection {
-        visible: root.section === "security"
-        title: "Session security"
-        subtitle: "Locking, authentication, and active sessions"
-        icon: "security"
+        visible: root.section === "lock"
+        title: "Screen lock"
+        icon: "lock_clock"
 
         SettingsChoice {
             width: parent.width
-            title: "Automatic screen lock"
-            subtitle: "Lock the session after it has been idle"
+            title: "Lock after inactivity"
+            maxColumns: 5
             options: ["60", "300", "600", "900", "1800"]
             optionLabels: ["1 min", "5 min", "10 min", "15 min", "30 min"]
             value: String(SecurityService.lockTimeout)
             enabled: !SecurityService.changing
             onSelected: value => SecurityService.setLockTimeout(Number(value))
         }
+        SettingsAction {
+            width: parent.width
+            icon: "lock"
+            title: "Lock now"
+            value: "Lock"
+            onClicked: LockService.lock()
+        }
+        SettingsAction {
+            width: parent.width
+            // Only worth mentioning while the SDDM copy is out of date.
+            visible: !WallpaperService.sddmCacheReady
+            icon: "wallpaper"
+            title: "Login background"
+            subtitle: "Waiting to export the wallpaper for the login screen"
+            value: "Pending"
+            interactive: false
+        }
+    }
+
+    // ---------------- Security & privacy ----------------
+    SettingsSection {
+        visible: root.section === "security"
+        title: "Device protection"
+        icon: "shield"
+
+        SettingsToggle {
+            width: parent.width
+            icon: "local_fire_department"
+            title: "Firewall"
+            subtitle: SecurityService.firewallAvailable
+                ? SecurityService.firewallBackend + " · " + SecurityService.firewallStatus
+                : "No supported firewall service was detected"
+            checked: SecurityService.firewallEnabled
+            enabled: SecurityService.firewallAvailable && !SecurityService.changing
+            onToggled: SecurityService.requestFirewallToggle()
+        }
+        SettingsAction {
+            width: parent.width
+            visible: SecurityService.firewallConfirmation
+            icon: "warning"
+            title: SecurityService.firewallEnabled ? "Turn off firewall?" : "Turn on firewall?"
+            subtitle: "This changes network filtering for the whole computer and requires authentication"
+            value: "Confirm"
+            onClicked: SecurityService.confirmFirewallToggle()
+        }
+        SettingsAction {
+            width: parent.width
+            icon: "verified"
+            title: "Secure Boot"
+            subtitle: "Firmware verification state"
+            value: SecurityService.secureBootStatus
+            interactive: false
+        }
+        SettingsAction {
+            width: parent.width
+            icon: "encrypted"
+            title: "Disk encryption"
+            subtitle: SecurityService.rootDevice
+            value: SecurityService.encryptionStatus
+            interactive: false
+        }
+        SettingsAction {
+            width: parent.width
+            visible: SecurityService.error.length > 0
+            icon: "error"
+            title: "Security setting failed"
+            subtitle: SecurityService.error
+            enabled: false
+        }
+    }
+
+    SettingsSection {
+        visible: root.section === "security"
+        title: "Sign-in and sessions"
+        icon: "verified_user"
+
         SettingsAction {
             width: parent.width
             icon: "verified_user"
@@ -442,64 +519,38 @@ SettingsMasonry {
     }
 
     SettingsSection {
-        visible: root.section === "security"
-        title: "Device protection"
-        subtitle: "Security features detected from the running Linux system"
-        icon: "shield"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
+        visible: root.section === "accessibility"
+        title: "Screen reader and keyboard"
+        icon: "record_voice_over"
 
-        SettingsToggle {
+        SettingsAction {
             width: parent.width
-            icon: "local_fire_department"
-            title: "Firewall"
-            subtitle: SecurityService.firewallAvailable
-                ? SecurityService.firewallBackend + " · " + SecurityService.firewallStatus
-                : "No supported firewall service was detected"
-            checked: SecurityService.firewallEnabled
-            enabled: SecurityService.firewallAvailable && !SecurityService.changing
-            onToggled: SecurityService.requestFirewallToggle()
+            icon: "record_voice_over"
+            title: "Screen reader"
+            subtitle: AccessibilityService.available("orca")
+                ? "Start Orca screen reader" : "Install Orca to enable screen reading"
+            value: "Open"
+            enabled: AccessibilityService.available("orca")
+            onClicked: AccessibilityService.launchReader()
         }
         SettingsAction {
             width: parent.width
-            icon: "verified"
-            title: "Secure Boot"
-            subtitle: "Firmware verification state"
-            value: SecurityService.secureBootStatus
-            interactive: false
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "encrypted"
-            title: "Disk encryption"
-            subtitle: SecurityService.rootDevice
-            value: SecurityService.encryptionStatus
-            interactive: false
-        }
-        SettingsAction {
-            width: parent.width
-            visible: SecurityService.firewallConfirmation
-            icon: "warning"
-            title: SecurityService.firewallEnabled ? "Turn off firewall?" : "Turn on firewall?"
-            subtitle: "This changes network filtering for the whole computer and requires authentication"
-            value: "Confirm"
-            onClicked: SecurityService.confirmFirewallToggle()
-        }
-        SettingsAction {
-            width: parent.width
-            visible: SecurityService.error.length > 0
-            icon: "error"
-            title: "Security setting failed"
-            subtitle: SecurityService.error
-            enabled: false
+            icon: "keyboard_alt"
+            title: "On-screen keyboard"
+            subtitle: AccessibilityService.available("wvkbd-mobintl")
+                || AccessibilityService.available("onboard")
+                ? "Open the installed virtual keyboard" : "Install wvkbd-mobintl or Onboard"
+            value: "Open"
+            enabled: AccessibilityService.available("wvkbd-mobintl")
+                || AccessibilityService.available("onboard")
+            onClicked: AccessibilityService.launchKeyboard()
         }
     }
 
     SettingsSection {
         visible: root.section === "accessibility"
-        title: "Vision and motion"
-        subtitle: "Make the shell easier to read and follow"
-        icon: "accessibility_new"
+        title: "Display and text"
+        icon: "text_increase"
 
         SettingsSlider {
             width: parent.width
@@ -513,29 +564,11 @@ SettingsMasonry {
         }
         SettingsToggle {
             width: parent.width
-            icon: "motion_photos_off"
-            title: "Reduce motion"
-            subtitle: "Replace shell transitions with immediate state changes"
-            checked: Appearance.reduceMotion
-            onToggled: value => Appearance.setReduceMotion(value)
-        }
-        SettingsToggle {
-            width: parent.width
             icon: "contrast"
             title: "Higher contrast"
             subtitle: "Strengthen borders and surface separation"
             checked: Appearance.highContrast
             onToggled: value => Appearance.setHighContrast(value)
-        }
-        SettingsChoice {
-            width: parent.width
-            title: "Animation duration"
-            subtitle: "Slow transitions down without changing their shape"
-            options: ["0.75", "1", "1.5", "2"]
-            optionLabels: ["Faster", "Standard", "Longer", "Longest"]
-            value: String(Appearance.animationDurationScale)
-            enabled: !Appearance.reduceMotion
-            onSelected: value => Appearance.setAnimationDurationScale(Number(value))
         }
         SettingsToggle {
             width: parent.width
@@ -553,23 +586,37 @@ SettingsMasonry {
             checked: Appearance.focusIndicators
             onToggled: value => Appearance.setFocusIndicators(value)
         }
+    }
+
+    SettingsSection {
+        visible: root.section === "accessibility"
+        title: "Motion"
+        icon: "animation"
+
         SettingsToggle {
             width: parent.width
-            icon: "flash_on"
-            title: "Visual notification alerts"
-            subtitle: "Use visible cues alongside notification sounds"
-            checked: Appearance.visualAlerts
-            onToggled: value => Appearance.setVisualAlerts(value)
+            icon: "motion_photos_off"
+            title: "Reduce motion"
+            subtitle: "Replace shell transitions with immediate state changes"
+            checked: Appearance.reduceMotion
+            onToggled: value => Appearance.setReduceMotion(value)
+        }
+        SettingsChoice {
+            width: parent.width
+            title: "Animation duration"
+            subtitle: "Slow transitions down without changing their shape"
+            options: ["0.75", "1", "1.5", "2"]
+            optionLabels: ["Faster", "Standard", "Longer", "Longest"]
+            value: String(Appearance.animationDurationScale)
+            visible: !Appearance.reduceMotion
+            onSelected: value => Appearance.setAnimationDurationScale(Number(value))
         }
     }
 
     SettingsSection {
         visible: root.section === "accessibility"
-        title: "Keyboard and pointer assistance"
-        subtitle: "Uses the desktop accessibility services installed on this system"
+        title: "Keyboard"
         icon: "keyboard"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
 
         SettingsToggle {
             width: parent.width
@@ -598,6 +645,13 @@ SettingsMasonry {
             enabled: AccessibilityService.available("org.gnome.desktop.a11y.keyboard")
             onToggled: value => AccessibilityService.setFeature("bounce", value)
         }
+    }
+
+    SettingsSection {
+        visible: root.section === "accessibility"
+        title: "Pointer and clicks"
+        icon: "mouse"
+
         SettingsToggle {
             width: parent.width
             icon: "touch_app"
@@ -620,72 +674,154 @@ SettingsMasonry {
 
     SettingsSection {
         visible: root.section === "accessibility"
-        title: "Assistive services"
-        subtitle: "Optional tools appear only when installed"
-        icon: "record_voice_over"
-        iconContainerColor: Theme.tertiaryContainer
-        iconColor: Theme.tertiary
+        title: "Hearing"
+        icon: "hearing"
 
-        SettingsAction {
+        SettingsToggle {
             width: parent.width
-            icon: "keyboard_alt"
-            title: "On-screen keyboard"
-            subtitle: AccessibilityService.available("wvkbd-mobintl")
-                || AccessibilityService.available("onboard")
-                ? "Open the installed virtual keyboard" : "Install wvkbd-mobintl or Onboard"
-            value: "Open"
-            enabled: AccessibilityService.available("wvkbd-mobintl")
-                || AccessibilityService.available("onboard")
-            onClicked: AccessibilityService.launchKeyboard()
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "record_voice_over"
-            title: "Screen reader"
-            subtitle: AccessibilityService.available("orca")
-                ? "Start Orca screen reader" : "Install Orca to enable screen reading"
-            value: "Open"
-            enabled: AccessibilityService.available("orca")
-            onClicked: AccessibilityService.launchReader()
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "hearing"
-            title: "Mono audio"
-            subtitle: "Unavailable until the current PipeWire graph exposes a safe remap profile"
-            value: "Unsupported"
-            enabled: false
+            icon: "flash_on"
+            title: "Visual notification alerts"
+            subtitle: "Use visible cues alongside notification sounds"
+            checked: Appearance.visualAlerts
+            onToggled: value => Appearance.setVisualAlerts(value)
         }
     }
 
+    // Pixel "System update" layout: one status headline with a single
+    // primary action; details follow below.
     SettingsSection {
         visible: root.section === "updates"
-        title: "Arch Linux updates"
-        subtitle: "Repository and AUR updates are always reviewed first"
-        icon: "system_update"
+        fullWidth: true
 
-        SettingsAction {
+        Item {
+            id: updateHero
+            readonly property int count: UpdateService.officialPackages.length
+            readonly property bool busy: UpdateService.checking || UpdateService.installing
             width: parent.width
-            icon: UpdateService.checking ? "progress_activity" : "refresh"
-            title: UpdateService.checking ? "Checking for updates" : "Refresh package information"
-            subtitle: "Uses checkupdates without partially upgrading the system"
-            value: UpdateService.stage
-            enabled: !UpdateService.checking && !UpdateService.installing
-            onClicked: UpdateService.check()
+            height: updateActions.y + updateActions.height + Metrics.spaceS
+
+            Rectangle {
+                id: updateBadge
+                x: Metrics.spaceXL
+                y: Metrics.spaceL
+                width: Math.round(72 * Metrics.scale)
+                height: width
+                // Morphs from a circle to a rounded square while working.
+                radius: updateHero.busy ? Metrics.radiusL : width / 2
+                color: updateHero.count > 0 ? Theme.accentContainer : Theme.surfaceContainerHigh
+                Behavior on radius {
+                    NumberAnimation {
+                        duration: Motion.springDefault
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Motion.spatialDefault
+                    }
+                }
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    text: updateHero.busy ? "progress_activity"
+                        : (updateHero.count > 0 ? "system_update" : "verified")
+                    fill: 1
+                    size: Math.round(36 * Metrics.scale)
+                    color: updateHero.count > 0 ? Theme.accentContainerInk : Theme.accent
+                }
+            }
+
+            Column {
+                id: updateText
+                anchors {
+                    left: parent.left
+                    leftMargin: Metrics.spaceXL
+                    right: parent.right
+                    rightMargin: Metrics.spaceXL
+                    top: updateBadge.bottom
+                    topMargin: Metrics.spaceL
+                }
+                spacing: Metrics.spaceXS
+
+                Text {
+                    width: parent.width
+                    text: UpdateService.installing ? "Installing updates"
+                        : (UpdateService.checking ? "Checking for updates"
+                            : (updateHero.count > 0
+                                ? updateHero.count + " updates available"
+                                : "Your system is up to date"))
+                    color: Theme.text
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Math.round(26 * Metrics.scale)
+                    elide: Text.ElideRight
+                }
+                Text {
+                    width: parent.width
+                    visible: text.length > 0
+                    text: UpdateService.installing
+                        ? Math.round(UpdateService.progress) + "% · " + UpdateService.stage
+                        : UpdateService.stage
+                    color: Theme.textMuted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Metrics.appTextBody
+                    elide: Text.ElideRight
+                }
+            }
+
+            Row {
+                id: updateActions
+                anchors {
+                    right: parent.right
+                    rightMargin: Metrics.spaceXL
+                }
+                y: updateText.y + updateText.height + Metrics.spaceL
+                spacing: Metrics.spaceS
+
+                Rectangle {
+                    width: checkLabel.implicitWidth + Metrics.spaceXL * 2
+                    height: Math.round(44 * Metrics.scale)
+                    radius: checkTap.pressed ? Metrics.radiusM : height / 2
+                    color: checkHover.hovered ? Theme.surfaceHover : "transparent"
+                    border.width: Metrics.border
+                    border.color: Theme.outline
+                    opacity: updateHero.busy ? 0.4 : 1
+                    Text {
+                        id: checkLabel
+                        anchors.centerIn: parent
+                        text: "Check again"
+                        color: Theme.accent
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Metrics.appTextBody
+                        font.weight: Font.DemiBold
+                    }
+                    HoverHandler { id: checkHover; cursorShape: Qt.PointingHandCursor }
+                    TapHandler {
+                        id: checkTap
+                        enabled: !updateHero.busy
+                        onTapped: UpdateService.check()
+                    }
+                }
+                Rectangle {
+                    visible: updateHero.count > 0
+                    width: installLabel.implicitWidth + Metrics.spaceXL * 2
+                    height: Math.round(44 * Metrics.scale)
+                    radius: installTap.pressed ? Metrics.radiusM : height / 2
+                    color: installHover.hovered ? Theme.accentStrong : Theme.accent
+                    opacity: updateHero.busy ? 0.4 : 1
+                    Text {
+                        id: installLabel
+                        anchors.centerIn: parent
+                        text: "Install now"
+                        color: Theme.accentInk
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Metrics.appTextBody
+                        font.weight: Font.DemiBold
+                    }
+                    HoverHandler { id: installHover; cursorShape: Qt.PointingHandCursor }
+                    TapHandler {
+                        id: installTap
+                        enabled: !updateHero.busy
+                        onTapped: UpdateService.requestInstall()
+                    }
+                }
+            }
         }
-        SettingsAction {
-            width: parent.width
-            icon: "inventory_2"
-            title: "Install official updates"
-            subtitle: UpdateService.officialPackages.length
-                + " repository packages will be upgraded together"
-            value: UpdateService.installing
-                ? Math.round(UpdateService.progress) + "%" : "Review"
-            enabled: UpdateService.officialPackages.length > 0
-                && !UpdateService.installing && !UpdateService.checking
-            active: UpdateService.confirmationPending
-            onClicked: UpdateService.requestInstall()
-        }
+
         SettingsAction {
             width: parent.width
             visible: UpdateService.confirmationPending
@@ -726,7 +862,7 @@ SettingsMasonry {
     }
 
     SettingsSection {
-        visible: root.section === "updates"
+        visible: root.section === "updates" && UpdateService.packages.length > 0
         title: "Available packages"
         subtitle: UpdateService.officialPackages.length + " official · "
             + UpdateService.aurPackages.length + " AUR"
@@ -745,14 +881,6 @@ SettingsMasonry {
                 value: modelData.source === "aur" ? "AUR" : "Official"
                 interactive: false
             }
-        }
-        SettingsAction {
-            width: parent.width
-            visible: UpdateService.packages.length === 0 && !UpdateService.checking
-            icon: "check_circle"
-            title: "No updates available"
-            subtitle: "Refresh to check the current package databases"
-            enabled: false
         }
         SettingsAction {
             width: parent.width
@@ -790,8 +918,7 @@ SettingsMasonry {
     SettingsSection {
         visible: root.section === "system"
         fullWidth: true
-        title: I18n.tr("settings.about.profilePicture")
-        subtitle: I18n.tr("settings.about.profilePictureHint")
+        // The device header needs no section label.
         icon: "account_circle"
         iconContainerColor: Theme.secondaryContainer
         iconColor: Theme.secondary
@@ -1049,27 +1176,29 @@ SettingsMasonry {
         }
     }
 
+    // ---------------- Language & region ----------------
     SettingsSection {
-        visible: root.section === "system"
+        visible: root.section === "language"
         title: I18n.tr("settings.language.title")
-        subtitle: I18n.tr("settings.language.subtitle")
         icon: "language"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
 
-        SettingsChoice {
-            width: parent.width
-            title: I18n.tr("settings.language.title")
-            subtitle: I18n.tr("settings.language.subtitle")
-            options: ["auto", "en-US", "de-DE", "pl-PL"]
-            optionLabels: [
-                I18n.tr("settings.language.automatic"),
-                I18n.tr("settings.language.english"),
-                I18n.tr("settings.language.german"),
-                I18n.tr("settings.language.polish")
+        Repeater {
+            model: [
+                { id: "auto", label: I18n.tr("settings.language.automatic") },
+                { id: "en-US", label: I18n.tr("settings.language.english") },
+                { id: "de-DE", label: I18n.tr("settings.language.german") },
+                { id: "pl-PL", label: I18n.tr("settings.language.polish") }
             ]
-            value: Appearance.language
-            onSelected: value => Appearance.setLanguage(value)
+
+            SettingsAction {
+                required property var modelData
+                width: parent.width
+                icon: Appearance.language === modelData.id
+                    ? "radio_button_checked" : "radio_button_unchecked"
+                title: modelData.label
+                active: Appearance.language === modelData.id
+                onClicked: Appearance.setLanguage(modelData.id)
+            }
         }
     }
 

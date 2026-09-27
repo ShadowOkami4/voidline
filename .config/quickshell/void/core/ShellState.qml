@@ -189,9 +189,9 @@ QtObject {
     }
 
     function normalizedSettingsSection(section) {
-        const sections = ["home", "connections", "audio", "devices", "notifications",
-            "display", "appearance", "lock", "security", "accessibility",
-            "assistant", "updates", "system", "developer"]
+        const sections = ["home", "connections", "devices", "display", "audio", "input",
+            "appearance", "desktop", "windows", "lock", "notifications", "security",
+            "accessibility", "language", "assistant", "updates", "system", "developer"]
         if (section === "developer" && !Appearance.developerMode)
             return "system"
         return sections.indexOf(section) >= 0 ? section : "connections"

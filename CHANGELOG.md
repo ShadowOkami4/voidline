@@ -28,6 +28,17 @@
   (Settings > Appearance > Auto-hide taskbar).
 - Quick Settings: Do Not Disturb and Dark theme moved to the small icon
   tiles; only Internet, Bluetooth, Sound, and Power keep large tiles.
+- Settings reorganised from scratch into four groups: Connectivity (Network
+  & internet, Connected devices), Device (Display, Sound, new Mouse &
+  keyboard), Personalize (Wallpaper & style, new Bar & desktop, new Windows &
+  effects, Lock screen, Notifications), and System (Security & privacy,
+  Accessibility, new Language & region, Software updates, About). Appearance
+  was split into three pages; auto-lock moved to Lock screen; language moved
+  out of About; advanced lock-clock typography is folded behind "Customize
+  clock"; colour pickers collapse into list rows; Accessibility is grouped by
+  need; Software updates has a status header with one primary action; the
+  missing window-blur switch was added. `voidlinectl settings open` accepts
+  input, desktop, windows, and language.
 - Settings decluttered: section explanations are no longer drawn, duplicate
   toggles under the main switch are gone, sliders and button groups line up
   with the list text column, and About uses flat rows.

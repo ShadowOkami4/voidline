@@ -8,6 +8,8 @@ SettingsMasonry {
     width: parent ? parent.width : 0
     spacing: 18
 
+    // "devices" lists hardware; "input" is the Mouse & keyboard page.
+    property string page: "devices"
     property string selectedKind: ""
     property var selectedDevice: null
 
@@ -110,22 +112,24 @@ SettingsMasonry {
         }
     }
 
+    // Devices and Mouse & keyboard share one page instance.
+    onPageChanged: closeCategory()
+
     function closeCategory() {
         selectedKind = ""
         selectedDevice = null
     }
 
+    // Pixel-style overview: pairing destinations first, then only the
+    // device types that currently have something connected.
     SettingsSection {
-        visible: root.selectedKind.length === 0
+        visible: root.page === "devices" && root.selectedKind.length === 0
         fullWidth: true
-        title: "Connected devices"
-        subtitle: root.totalDeviceCount + " endpoints discovered from the running Linux session"
-        icon: "devices_other"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
+        title: "Pair new devices"
+        icon: "add_link"
 
         Repeater {
-            model: root.categories
+            model: root.categories.filter(item => item.kind === "bluetooth" || item.kind === "printscan")
 
             SettingsAction {
                 required property var modelData
@@ -133,13 +137,42 @@ SettingsMasonry {
                 icon: modelData.icon
                 title: modelData.title
                 subtitle: root.categoryAvailable(modelData)
-                    ? modelData.description
-                    : "Required discovery service is not installed"
-                value: root.categoryAvailable(modelData)
-                    ? String(root.count(modelData.kind)) : "Unsupported"
+                    ? modelData.description : "Required service is not installed"
                 enabled: root.categoryAvailable(modelData)
+                value: root.count(modelData.kind) > 0 ? String(root.count(modelData.kind)) : ""
                 onClicked: root.openCategory(modelData.kind)
             }
+        }
+    }
+
+    SettingsSection {
+        visible: root.page === "devices" && root.selectedKind.length === 0
+        fullWidth: true
+        title: "Connected now"
+        icon: "devices_other"
+
+        Repeater {
+            model: root.categories.filter(item => item.kind !== "bluetooth" && item.kind !== "printscan")
+
+            SettingsAction {
+                required property var modelData
+                visible: root.categoryAvailable(modelData) && root.count(modelData.kind) > 0
+                width: parent.width
+                icon: modelData.icon
+                title: modelData.title
+                subtitle: root.count(modelData.kind) === 1
+                    ? "1 " + modelData.singular.toLowerCase()
+                    : root.count(modelData.kind) + " " + modelData.title.toLowerCase()
+                onClicked: root.openCategory(modelData.kind)
+            }
+        }
+        SettingsAction {
+            width: parent.width
+            visible: root.totalDeviceCount === 0
+            icon: "search"
+            title: "No devices detected"
+            subtitle: "Plug in or pair a device and it appears here"
+            enabled: false
         }
     }
 
@@ -485,73 +518,73 @@ SettingsMasonry {
         }
     }
 
+    // ---------------- Mouse & keyboard ----------------
     SettingsSection {
-        visible: root.selectedKind.length === 0
-        title: "Mouse and touchpad"
-        subtitle: root.count("mouse") + " pointer devices managed by Hyprland"
+        visible: root.page === "input"
+        title: "Mouse"
         icon: "mouse"
-        iconContainerColor: Theme.tertiaryContainer
-        iconColor: Theme.tertiary
 
         SettingsSlider {
             width: parent.width
             title: "Pointer speed"
-            subtitle: "Adjust acceleration from precise to fast"
             icon: "speed"
             from: -1; to: 1; step: 0.05
             value: SystemSettingsService.pointerSpeed
             onChanged: value => SystemSettingsService.updateValue(
                 "pointerSpeed", value, "input:sensitivity")
         }
+    }
+
+    SettingsSection {
+        visible: root.page === "input"
+        title: "Touchpad"
+        icon: "touchpad_mouse"
+
+        SettingsToggle {
+            width: parent.width
+            icon: "touch_app"
+            title: "Tap to click"
+            checked: SystemSettingsService.tapToClick
+            onToggled: value => SystemSettingsService.updateValue(
+                "tapToClick", value, "input:touchpad:tap-to-click")
+        }
         SettingsToggle {
             width: parent.width
             icon: "swap_vert"
             title: "Natural scrolling"
-            subtitle: "Move content in the same direction as your fingers"
+            subtitle: "Content follows your fingers"
             checked: SystemSettingsService.naturalScroll
             onToggled: value => SystemSettingsService.updateValue(
                 "naturalScroll", value, "input:touchpad:natural_scroll")
         }
         SettingsToggle {
             width: parent.width
-            icon: "touch_app"
-            title: "Tap to click"
-            subtitle: "A light touch on the pad performs a click"
-            checked: SystemSettingsService.tapToClick
+            icon: "swipe"
+            title: "Swipe between workspaces"
+            checked: SystemSettingsService.workspaceGestures
             onToggled: value => SystemSettingsService.updateValue(
-                "tapToClick", value, "input:touchpad:tap-to-click")
+                "workspaceGestures", value, "gestures:workspace_swipe")
         }
         SettingsChoice {
             width: parent.width
-            title: "Scroll method"
-            subtitle: "Choose how the touchpad produces scroll events"
+            title: "Scrolling"
             options: ["2fg", "edge", "on_button_down"]
             optionLabels: ["Two fingers", "Edge", "Button + move"]
             value: SystemSettingsService.scrollMethod
             onSelected: value => SystemSettingsService.updateValue(
                 "scrollMethod", value, "input:scroll_method")
         }
-        SettingsToggle {
-            width: parent.width
-            icon: "swipe"
-            title: "Workspace gestures"
-            subtitle: "Swipe across the touchpad to move between workspaces"
-            checked: SystemSettingsService.workspaceGestures
-            onToggled: value => SystemSettingsService.updateValue(
-                "workspaceGestures", value, "gestures:workspace_swipe")
-        }
     }
 
     SettingsSection {
-        visible: root.selectedKind.length === 0
+        visible: root.page === "input"
         title: "Keyboard"
-        subtitle: root.count("keyboard") + " keyboards detected"
         icon: "keyboard"
 
         SettingsField {
             width: parent.width
-            title: "Keyboard layout"
-            subtitle: "Comma-separated XKB layout names, for example de,us"
+            title: "Layouts"
+            subtitle: "XKB layout names, comma-separated (for example de,us)"
             icon: "language"
             value: SystemSettingsService.keyboardLayout
             onAccepted: value => SystemSettingsService.updateValue(
@@ -559,76 +592,21 @@ SettingsMasonry {
         }
         SettingsSlider {
             width: parent.width
-            title: "Repeat rate"
-            subtitle: "Characters generated per second while holding a key"
-            icon: "keyboard"
-            from: 5; to: 60
-            value: SystemSettingsService.repeatRate; suffix: " /s"
-            onChanged: value => SystemSettingsService.updateValue(
-                "repeatRate", value, "input:repeat_rate")
-        }
-        SettingsSlider {
-            width: parent.width
             title: "Repeat delay"
-            subtitle: "Delay before a held key starts repeating"
             icon: "timer"
             from: 150; to: 1200; step: 50
             value: SystemSettingsService.repeatDelay; suffix: " ms"
             onChanged: value => SystemSettingsService.updateValue(
                 "repeatDelay", value, "input:repeat_delay")
         }
-    }
-
-    SettingsSection {
-        visible: root.selectedKind.length === 0
-        title: "Mapping"
-        subtitle: "Absolute device mapping depends on compositor device support"
-        icon: "screenshot_monitor"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
-
-        SettingsAction {
+        SettingsSlider {
             width: parent.width
-            icon: "draw"
-            title: "Tablet mapping"
-            subtitle: root.count("tablet") > 0
-                ? "Device mapping is not exposed by the current Hyprland backend"
-                : "Connect a drawing tablet to configure mapping"
-            enabled: false
-            value: "Unsupported"
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "touch_app"
-            title: "Touchscreen mapping"
-            subtitle: root.count("touchscreen") > 0
-                ? "Device mapping is not exposed by the current Hyprland backend"
-                : "Connect a touchscreen to configure mapping"
-            enabled: false
-            value: "Unsupported"
-        }
-    }
-
-    SettingsSection {
-        visible: root.selectedKind.length === 0
-        fullWidth: true
-        title: "Device details"
-        subtitle: "All currently discovered endpoints"
-        icon: "list"
-
-        Repeater {
-            model: root.categories
-
-            SettingsAction {
-                required property var modelData
-                visible: root.count(modelData.kind) > 0
-                width: parent.width
-                icon: modelData.icon
-                title: modelData.title
-                subtitle: root.count(modelData.kind) + " detected"
-                value: "View"
-                onClicked: root.openCategory(modelData.kind)
-            }
+            title: "Repeat rate"
+            icon: "keyboard"
+            from: 5; to: 60
+            value: SystemSettingsService.repeatRate; suffix: " /s"
+            onChanged: value => SystemSettingsService.updateValue(
+                "repeatRate", value, "input:repeat_rate")
         }
     }
 }

@@ -6,7 +6,7 @@ Rectangle {
     id: root
 
     property string title: "Clock design"
-    property string subtitle: "Preview a design before applying it"
+    property string subtitle: ""
     property var options: []
     property var optionLabels: []
     property string value: ""
@@ -18,15 +18,20 @@ Rectangle {
     readonly property int rows: Math.max(1,
         Math.ceil(options.length / columns))
 
-    implicitHeight: 70 + rows * 150 + Math.max(0, rows - 1) * Metrics.spaceS
+    readonly property int tileHeight: Math.round(116 * Metrics.scale)
+    implicitHeight: Metrics.spaceXL * 2 + Metrics.appTextTitle + Metrics.labelControlGap
+        + (subtitle.length > 0 ? Metrics.appTextSupporting + 4 : 0)
+        + rows * tileHeight + Math.max(0, rows - 1) * Metrics.spaceS
     color: "transparent"
 
     ColumnLayout {
         anchors {
             fill: parent
-            margins: 14
+            margins: Metrics.spaceXL
+            // Line up with the text column of icon rows.
+            leftMargin: Metrics.spaceXL + Math.round(40 * Metrics.scale) + Metrics.spaceM
         }
-        spacing: 9
+        spacing: Metrics.labelControlGap
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -37,8 +42,8 @@ Rectangle {
                 text: root.title
                 color: Theme.text
                 font.family: Theme.fontFamily
-                font.pixelSize: 13
-                font.weight: Font.DemiBold
+                font.pixelSize: Metrics.appTextTitle
+                font.weight: Font.Normal
             }
             Text {
                 Layout.fillWidth: true
@@ -46,7 +51,7 @@ Rectangle {
                 text: root.subtitle
                 color: Theme.textMuted
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Metrics.appTextSupporting
                 elide: Text.ElideRight
             }
         }
@@ -54,8 +59,8 @@ Rectangle {
         GridLayout {
             Layout.fillWidth: true
             columns: root.columns
-            columnSpacing: 8
-            rowSpacing: 8
+            columnSpacing: Metrics.spaceS
+            rowSpacing: Metrics.spaceS
 
             Repeater {
                 model: root.options
@@ -68,8 +73,9 @@ Rectangle {
                         String(modelData) === root.value
 
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 142
-                    radius: Metrics.cardRadius
+                    Layout.preferredHeight: root.tileHeight
+                    // The selected design morphs to a tighter shape.
+                    radius: selectedPreview ? Metrics.radiusM : Metrics.radiusXL
                     color: selectedPreview
                         ? Theme.accentContainer : Theme.groupSurfaceRaised
                     border.width: selectedPreview ? 2 : 0

@@ -10,18 +10,145 @@ SettingsMasonry {
     width: parent ? parent.width : 0
     spacing: 18
 
+    // One file serves three Settings pages: "appearance" (wallpaper and
+    // style), "desktop" (bar and clock), and "windows" (borders and effects).
+    property string page: "appearance"
+
+    // ---------------- Wallpaper & style ----------------
     SettingsSection {
+        visible: root.page === "appearance"
         fullWidth: true
-        title: "Wallpaper and color"
-        subtitle: "A quiet tonal palette can follow the current background"
+        title: "Wallpaper"
+        icon: "wallpaper"
+
+        // Current wallpaper with the shell's live palette underneath.
+        Item {
+            width: parent.width
+            height: Math.round(196 * Metrics.scale)
+
+            RoundedImage {
+                id: currentWallpaper
+                x: Metrics.spaceXL
+                width: Math.round(height * 16 / 10)
+                height: parent.height - Metrics.spaceS
+                radius: Metrics.radiusXL
+                source: WallpaperService.currentPath.length > 0
+                    ? "file://" + WallpaperService.currentPath : ""
+                fallbackIcon: "wallpaper"
+            }
+
+            ColumnLayout {
+                anchors {
+                    left: currentWallpaper.right
+                    leftMargin: Metrics.spaceXL
+                    right: parent.right
+                    rightMargin: Metrics.spaceXL
+                    verticalCenter: currentWallpaper.verticalCenter
+                }
+                spacing: Metrics.spaceS
+
+                Text {
+                    Layout.fillWidth: true
+                    text: WallpaperService.currentPath.length > 0
+                        ? WallpaperService.currentPath.split("/").pop() : "No wallpaper"
+                    color: Theme.text
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Metrics.appTextTitle
+                    elide: Text.ElideMiddle
+                }
+                Row {
+                    spacing: Metrics.spaceXS
+                    Repeater {
+                        model: [Theme.accent, Theme.secondary, Theme.tertiary, Theme.accentContainer]
+                        Rectangle {
+                            required property color modelData
+                            width: Math.round(28 * Metrics.scale)
+                            height: width
+                            radius: width / 2
+                            color: modelData
+                        }
+                    }
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: WallpaperService.wallpapers.length + " wallpapers in the library"
+                    color: Theme.textMuted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Metrics.appTextSupporting
+                }
+            }
+        }
+
+        GridView {
+            id: wallpaperGrid
+            property int columns: width >= 1000 ? 5 : (width >= 640 ? 4 : 3)
+            x: Metrics.spaceXL - Metrics.spaceXS
+            width: parent.width - (Metrics.spaceXL - Metrics.spaceXS) * 2
+            height: Math.ceil(WallpaperService.wallpapers.length / columns) * cellHeight
+            model: WallpaperService.wallpapers
+            cellWidth: width / columns
+            cellHeight: Math.round(cellWidth * 10 / 16)
+            interactive: false
+
+            delegate: Item {
+                id: wallpaperCell
+                required property var modelData
+                readonly property bool current: WallpaperService.currentPath === modelData.path
+                width: GridView.view.cellWidth
+                height: GridView.view.cellHeight
+
+                RoundedImage {
+                    anchors { fill: parent; margins: Metrics.spaceXS }
+                    source: "file://" + wallpaperCell.modelData.path
+                    // Selected wallpaper morphs to a tighter shape.
+                    radius: wallpaperCell.current ? Metrics.radiusM : Metrics.radiusL
+                    fallbackIcon: "broken_image"
+                }
+                Rectangle {
+                    anchors { fill: parent; margins: Metrics.spaceXS }
+                    radius: wallpaperCell.current ? Metrics.radiusM : Metrics.radiusL
+                    color: "transparent"
+                    border.width: wallpaperCell.current ? 3 : 0
+                    border.color: Theme.accent
+                }
+                Rectangle {
+                    visible: wallpaperCell.current
+                    anchors { right: parent.right; bottom: parent.bottom; margins: Metrics.spaceM }
+                    width: Math.round(26 * Metrics.scale)
+                    height: width
+                    radius: width / 2
+                    color: Theme.accent
+                    MaterialIcon {
+                        anchors.centerIn: parent
+                        text: "check"
+                        fill: 1
+                        size: Math.round(18 * Metrics.scale)
+                        color: Theme.accentInk
+                    }
+                }
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
+                TapHandler {
+                    onTapped: WallpaperService.applyWallpaper(wallpaperCell.modelData.path)
+                }
+            }
+        }
+
+        SettingsAction {
+            width: parent.width
+            icon: WallpaperService.loading ? "progress_activity" : "refresh"
+            title: "Reload wallpaper library"
+            onClicked: WallpaperService.refresh()
+        }
+    }
+
+    SettingsSection {
+        visible: root.page === "appearance"
+        title: "Colors"
         icon: "palette"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
 
         SettingsChoice {
             width: parent.width
             title: "Theme"
-            subtitle: "Choose the base brightness used by every shell surface"
             options: ["light", "dark", "auto"]
             optionLabels: ["Light", "Dark", "Automatic"]
             value: Appearance.colorMode
@@ -30,8 +157,8 @@ SettingsMasonry {
         SettingsToggle {
             width: parent.width
             icon: "auto_awesome"
-            title: "Dynamic wallpaper colors"
-            subtitle: "Derive balanced surfaces, text, borders and highlights from the wallpaper"
+            title: "Colors from wallpaper"
+            subtitle: "Build the palette from the current wallpaper"
             checked: Appearance.magicColors
             onToggled: value => Appearance.setMagicColors(value)
         }
@@ -41,117 +168,21 @@ SettingsMasonry {
             // Only relevant when the palette is not taken from the wallpaper.
             visible: !Appearance.magicColors
             title: "Accent color"
-            subtitle: Appearance.magicColors
-                ? "Used when dynamic colors are turned off"
-                : "Current manual accent"
             options: ["#8FB8AC", "#9CAEDB", "#C3A5C9", "#D0AD87", "#A9BE82"]
             optionLabels: ["Sage", "Sky", "Orchid", "Sand", "Leaf"]
             value: Appearance.accentColor
             onSelected: value => Appearance.setAccentColor(value)
         }
-        SettingsAction {
-            width: parent.width
-            icon: WallpaperService.loading ? "progress_activity" : "wallpaper"
-            title: "Wallpaper library"
-            subtitle: WallpaperService.currentPath.length > 0
-                ? WallpaperService.currentPath : "Choose a background"
-            value: WallpaperService.wallpapers.length + " images"
-            onClicked: WallpaperService.refresh()
-        }
-        GridView {
-            property int columns: width >= 1080 ? 4 : (width >= 660 ? 3 : 2)
-            width: parent.width
-            height: Math.min(300,
-                Math.ceil(WallpaperService.wallpapers.length / columns) * 142)
-            model: WallpaperService.wallpapers
-            cellWidth: width / columns
-            cellHeight: 142
-            interactive: false
-            clip: true
-
-            delegate: Item {
-                id: wallpaperCell
-                required property var modelData
-                width: GridView.view.cellWidth
-                height: GridView.view.cellHeight
-
-                Rectangle {
-                    anchors { fill: parent; margins: 4 }
-                    radius: Theme.radiusLarge
-                    color: Theme.surfaceLow
-                    border.width: WallpaperService.currentPath === wallpaperCell.modelData.path ? 2 : 1
-                    border.color: WallpaperService.currentPath === wallpaperCell.modelData.path
-                        ? Theme.accent : Theme.outlineSoft
-                    clip: true
-
-                    RoundedImage {
-                        anchors { fill: parent; margins: 6 }
-                        source: "file://" + wallpaperCell.modelData.path
-                        radius: Theme.radiusMedium
-                        fallbackIcon: "broken_image"
-                    }
-                    Rectangle {
-                        anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 6 }
-                        height: 30
-                        radius: Theme.radiusSmall
-                        color: Qt.rgba(Theme.background.r, Theme.background.g, Theme.background.b, 0.82)
-                        RowLayout {
-                            anchors { fill: parent; leftMargin: 9; rightMargin: 8 }
-                            Text {
-                                Layout.fillWidth: true
-                                text: wallpaperCell.modelData.title
-                                color: Theme.text
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 9
-                                font.weight: Font.DemiBold
-                                elide: Text.ElideRight
-                            }
-                            MaterialIcon {
-                                text: WallpaperService.currentPath === wallpaperCell.modelData.path
-                                    ? "check_circle" : "wallpaper"
-                                size: 16
-                                color: Theme.accent
-                            }
-                        }
-                    }
-                    TapHandler {
-                        onTapped: WallpaperService.applyWallpaper(wallpaperCell.modelData.path)
-                    }
-                }
-            }
-        }
     }
 
     SettingsSection {
-        title: "Interface"
-        subtitle: "Keep controls compact without sacrificing readability"
-        icon: "tune"
+        visible: root.page === "appearance"
+        title: "Fonts and icons"
+        icon: "font_download"
 
-        SettingsSlider {
-            width: parent.width
-            title: "UI scale"
-            subtitle: "Scales shell chrome and layout density"
-            icon: "zoom_in"
-            from: 0.8
-            to: 1.4
-            step: 0.05
-            value: Appearance.uiScale
-            suffix: "×"
-            onChanged: value => Appearance.setUiScale(value)
-        }
-        SettingsChoice {
-            width: parent.width
-            title: "Density"
-            subtitle: "Adjust spacing independently from the scale"
-            options: ["compact", "comfortable", "spacious"]
-            optionLabels: ["Compact", "Comfortable", "Spacious"]
-            value: Appearance.uiDensity
-            onSelected: value => Appearance.setUiDensity(value)
-        }
         SettingsChoice {
             width: parent.width
             title: "Interface font"
-            subtitle: "Roboto Flex preserves the intended variable typography"
             options: ["Roboto Flex", "Inter", "Noto Sans"]
             optionLabels: ["Roboto Flex", "Inter", "Noto Sans"]
             value: Appearance.interfaceFont
@@ -159,8 +190,7 @@ SettingsMasonry {
         }
         SettingsChoice {
             width: parent.width
-            title: "Base icon theme"
-            subtitle: "Voidline folders and fallback apps are layered over this theme"
+            title: "Icon theme"
             options: ["Papirus-Dark", "Papirus", "Adwaita"]
             optionLabels: ["Papirus Dark", "Papirus", "Adwaita"]
             value: Appearance.iconTheme
@@ -171,8 +201,7 @@ SettingsMasonry {
         }
         SettingsChoice {
             width: parent.width
-            title: "Cursor theme"
-            subtitle: "The selected theme is applied to the desktop session"
+            title: "Cursor"
             options: ["Bibata-Modern-Classic", "Bibata-Modern-Ice", "Adwaita"]
             optionLabels: ["Bibata", "Bibata Ice", "Adwaita"]
             value: Appearance.cursorTheme
@@ -184,25 +213,51 @@ SettingsMasonry {
     }
 
     SettingsSection {
-        title: "Bar and panels"
-        subtitle: "Bar style, position, and what lives in the bar"
+        visible: root.page === "appearance"
+        title: "Size"
+        icon: "format_size"
+
+        SettingsSlider {
+            width: parent.width
+            title: "Interface size"
+            icon: "zoom_in"
+            from: 0.8
+            to: 1.4
+            step: 0.05
+            value: Appearance.uiScale
+            suffix: "×"
+            onChanged: value => Appearance.setUiScale(value)
+        }
+        SettingsChoice {
+            width: parent.width
+            title: "Spacing"
+            options: ["compact", "comfortable", "spacious"]
+            optionLabels: ["Compact", "Comfortable", "Spacious"]
+            value: Appearance.uiDensity
+            onSelected: value => Appearance.setUiDensity(value)
+        }
+    }
+
+    // ---------------- Bar & desktop ----------------
+    SettingsSection {
+        visible: root.page === "desktop"
+        fullWidth: true
+        title: "Bar"
         icon: "dock_to_bottom"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
 
         ShellLayoutPreview {
-            width: parent.width
+            x: Metrics.spaceXL
+            width: parent.width - Metrics.spaceXL * 2
             barPosition: Appearance.requestedBarPosition
             clockStyle: Appearance.clockStyle
             workspacePlacement: Appearance.workspacePlacement
             musicPlacement: Appearance.musicPlacement
         }
-
         SettingsChoice {
             width: parent.width
-            title: "Bar style"
-            subtitle: Appearance.barStyle === "frame"
-                ? "Connected bar with a screen frame; panels attach to it"
+            title: "Style"
+            subtitle: Appearance.pendingBarStyle === "frame"
+                ? "Panels attach to the bar and screen frame"
                 : "Panels open as floating cards"
             options: Appearance.barStyles
             optionLabels: ["Frame", "Pills", "Floating", "Minimal", "Taskbar"]
@@ -210,58 +265,69 @@ SettingsMasonry {
             value: Appearance.pendingBarStyle
             onSelected: value => Appearance.setBarStyle(value)
         }
-        SettingsToggle {
-            width: parent.width
-            visible: Appearance.pendingBarStyle === "taskbar"
-            icon: "vertical_align_bottom"
-            title: "Auto-hide taskbar"
-            subtitle: "Slide the taskbar away until the pointer touches the bottom edge"
-            checked: Appearance.taskbarAutoHide
-            onToggled: value => Appearance.setTaskbarAutoHide(value)
-        }
         SettingsChoice {
             width: parent.width
             // The taskbar always sits at the bottom, so the edge choice is hidden.
             visible: Appearance.pendingBarStyle !== "taskbar"
-            title: "Bar position"
-            subtitle: Appearance.barTransitioning ? "Moving the bar…"
-                : "Optimized layouts are used on every edge"
+            title: "Position"
+            subtitle: Appearance.barTransitioning ? "Moving the bar…" : ""
             options: ["top", "bottom", "left", "right"]
             optionLabels: ["Top", "Bottom", "Left", "Right"]
             value: Appearance.requestedBarPosition
             onSelected: value => Appearance.setBarPosition(value)
         }
+        SettingsToggle {
+            width: parent.width
+            visible: Appearance.pendingBarStyle === "taskbar"
+            icon: "vertical_align_bottom"
+            title: "Auto-hide taskbar"
+            subtitle: "Show it when the pointer touches the bottom edge"
+            checked: Appearance.taskbarAutoHide
+            onToggled: value => Appearance.setTaskbarAutoHide(value)
+        }
+    }
+
+    SettingsSection {
+        visible: root.page === "desktop"
+        title: "In the bar"
+        icon: "view_week"
+
         SettingsChoice {
             width: parent.width
-            title: "Workspace indicator"
-            subtitle: "Choose which bar group owns workspace navigation"
+            title: "Workspaces"
             options: ["clock", "center", "action"]
-            optionLabels: ["Clock", "Center", "Actions"]
+            optionLabels: ["Next to clock", "Center", "Next to status"]
             value: Appearance.workspacePlacement
             onSelected: value => Appearance.setWorkspacePlacement(value)
         }
         SettingsChoice {
             width: parent.width
-            title: "Music widget"
-            subtitle: "Place playback controls where they stay useful"
+            title: "Media controls"
             options: ["bar", "clock", "action", "hidden"]
-            optionLabels: ["Bar", "Clock", "Actions", "Hidden"]
+            optionLabels: ["Bar", "Clock", "Quick Settings", "Off"]
             value: Appearance.musicPlacement
             onSelected: value => Appearance.setMusicPlacement(value)
         }
+    }
+
+    SettingsSection {
+        visible: root.page === "desktop"
+        fullWidth: true
+        title: "Clock"
+        icon: "schedule"
+
         ClockStylePicker {
             width: parent.width
-            title: "Clock design"
-            subtitle: "Preview the date and time hierarchy before applying it"
+            title: "Clock style"
+            maxColumns: 4
             options: ["split", "compact", "stacked", "minimal"]
-            optionLabels: ["Clock with date", "Compact digital", "Stacked", "Minimal"]
+            optionLabels: ["Clock with date", "Compact", "Stacked", "Minimal"]
             value: Appearance.clockStyle
             onSelected: value => Appearance.setClockStyle(value)
         }
         SettingsChoice {
             width: parent.width
             title: "Clock font"
-            subtitle: "Clock typography can differ from the interface"
             options: ["Roboto Flex", "Inter", "monospace"]
             optionLabels: ["Roboto", "Inter", "Mono"]
             value: Appearance.clockFont
@@ -269,33 +335,68 @@ SettingsMasonry {
         }
     }
 
+    // ---------------- Windows & effects ----------------
     SettingsSection {
-        title: "Windows"
-        subtitle: "Hyprland appearance changes are applied immediately"
+        visible: root.page === "windows"
+        title: "Layout"
         icon: "select_window"
 
         SettingsSlider {
             width: parent.width
-            title: "Border size"; subtitle: "Width around tiled and floating windows"
-            icon: "border_style"; from: 0; to: 16
-            value: SystemSettingsService.borderSize; suffix: " px"
+            title: "Corner rounding"; icon: "rounded_corner"
+            from: 0; to: 36; value: SystemSettingsService.windowRounding; suffix: " px"
+            onChanged: value => SystemSettingsService.updateValue(
+                "windowRounding", value, "decoration:rounding")
+        }
+        SettingsSlider {
+            width: parent.width
+            title: "Gaps between windows"; icon: "space_bar"
+            from: 0; to: 32; value: SystemSettingsService.innerGaps; suffix: " px"
+            onChanged: value => SystemSettingsService.updateValue(
+                "innerGaps", value, "general:gaps_in")
+        }
+        SettingsSlider {
+            width: parent.width
+            title: "Gaps to screen edge"; icon: "padding"
+            from: 0; to: 48; value: SystemSettingsService.outerGaps; suffix: " px"
+            onChanged: value => SystemSettingsService.updateValue(
+                "outerGaps", value, "general:gaps_out")
+        }
+    }
+
+    SettingsSection {
+        visible: root.page === "windows"
+        title: "Borders"
+        icon: "border_style"
+
+        SettingsSlider {
+            width: parent.width
+            title: "Border width"; icon: "border_style"
+            from: 0; to: 16; value: SystemSettingsService.borderSize; suffix: " px"
             onChanged: value => SystemSettingsService.updateValue(
                 "borderSize", value, "general:border_size")
         }
         SettingsColor {
             width: parent.width
-            title: "Active border color"; subtitle: "Primary gradient color"
+            title: "Focused window"
             value: SystemSettingsService.activeBorderColor
             onChanged: value => SystemSettingsService.setActiveBorder(
                 value, SystemSettingsService.activeBorderColor2,
                 SystemSettingsService.activeBorderAngle,
                 SystemSettingsService.activeBorderGradient)
         }
+        SettingsColor {
+            width: parent.width
+            title: "Other windows"
+            value: SystemSettingsService.inactiveBorderColor
+            onChanged: value => SystemSettingsService.updateValue(
+                "inactiveBorderColor", value, "general:col.inactive_border")
+        }
         SettingsToggle {
             width: parent.width
             icon: "gradient"
             title: "Gradient border"
-            subtitle: "Blend a second color around the active window"
+            subtitle: "Blend a second color around the focused window"
             checked: SystemSettingsService.activeBorderGradient
             onToggled: value => SystemSettingsService.setActiveBorder(
                 SystemSettingsService.activeBorderColor,
@@ -306,7 +407,6 @@ SettingsMasonry {
             width: parent.width
             visible: SystemSettingsService.activeBorderGradient
             title: "Gradient end color"
-            subtitle: "Secondary active-window border color"
             value: SystemSettingsService.activeBorderColor2
             onChanged: value => SystemSettingsService.setActiveBorder(
                 SystemSettingsService.activeBorderColor, value,
@@ -315,9 +415,7 @@ SettingsMasonry {
         SettingsSlider {
             width: parent.width
             visible: SystemSettingsService.activeBorderGradient
-            title: "Gradient angle"
-            subtitle: "Direction of the active-window color blend"
-            icon: "rotate_right"
+            title: "Gradient angle"; icon: "rotate_right"
             from: 0; to: 360; step: 5
             value: SystemSettingsService.activeBorderAngle
             suffix: "°"
@@ -325,137 +423,124 @@ SettingsMasonry {
                 SystemSettingsService.activeBorderColor,
                 SystemSettingsService.activeBorderColor2, value, true)
         }
-        SettingsColor {
-            width: parent.width
-            title: "Inactive border color"; subtitle: "Hyprland rgba() color"
-            value: SystemSettingsService.inactiveBorderColor
-            onChanged: value => SystemSettingsService.updateValue(
-                "inactiveBorderColor", value, "general:col.inactive_border")
-        }
+    }
+
+    SettingsSection {
+        visible: root.page === "windows"
+        title: "Transparency"
+        icon: "opacity"
+
         SettingsSlider {
             width: parent.width
-            title: "Active window opacity"; icon: "opacity"
+            title: "Focused window"; icon: "opacity"
             from: 60; to: 100; value: SystemSettingsService.activeOpacity * 100; suffix: "%"
             onChanged: value => SystemSettingsService.updateValue(
                 "activeOpacity", value / 100, "decoration:active_opacity")
         }
         SettingsSlider {
             width: parent.width
-            title: "Inactive window opacity"; icon: "opacity"
+            title: "Other windows"; icon: "opacity"
             from: 50; to: 100; value: SystemSettingsService.inactiveOpacity * 100; suffix: "%"
             onChanged: value => SystemSettingsService.updateValue(
                 "inactiveOpacity", value / 100, "decoration:inactive_opacity")
         }
-        SettingsSlider {
-            width: parent.width
-            title: "Window rounding"; icon: "rounded_corner"
-            from: 0; to: 36; value: SystemSettingsService.windowRounding; suffix: " px"
-            onChanged: value => SystemSettingsService.updateValue(
-                "windowRounding", value, "decoration:rounding")
-        }
-        SettingsSlider {
-            width: parent.width
-            title: "Window gaps"; subtitle: "Space between neighboring windows"
-            icon: "space_bar"; from: 0; to: 32
-            value: SystemSettingsService.innerGaps; suffix: " px"
-            onChanged: value => SystemSettingsService.updateValue(
-                "innerGaps", value, "general:gaps_in")
-        }
-        SettingsSlider {
-            width: parent.width
-            title: "Workspace outer gaps"; icon: "padding"
-            from: 0; to: 48; value: SystemSettingsService.outerGaps; suffix: " px"
-            onChanged: value => SystemSettingsService.updateValue(
-                "outerGaps", value, "general:gaps_out")
-        }
     }
 
     SettingsSection {
-        title: "Shadows and blur"
-        subtitle: "Tune depth without editing compositor configuration"
-        icon: "blur_medium"
-        iconContainerColor: Theme.tertiaryContainer
-        iconColor: Theme.tertiary
+        visible: root.page === "windows"
+        title: "Shadows"
+        icon: "shadow"
 
         SettingsToggle {
             width: parent.width
-            icon: "filter_hdr"; title: "Window shadows"
-            subtitle: "Draw soft depth behind windows"
+            icon: "shadow"; title: "Window shadows"
             checked: SystemSettingsService.shadowsEnabled
             onToggled: value => SystemSettingsService.updateValue(
                 "shadowsEnabled", value, "decoration:shadow:enabled")
         }
         SettingsSlider {
             width: parent.width
-            title: "Shadow size"; icon: "shadow"
+            visible: SystemSettingsService.shadowsEnabled
+            title: "Size"; icon: "blur_circular"
             from: 0; to: 64; value: SystemSettingsService.shadowSize; suffix: " px"
-            enabled: SystemSettingsService.shadowsEnabled
             onChanged: value => SystemSettingsService.updateValue(
                 "shadowSize", value, "decoration:shadow:range")
         }
         SettingsSlider {
             width: parent.width
-            title: "Shadow strength"; icon: "contrast"
+            visible: SystemSettingsService.shadowsEnabled
+            title: "Strength"; icon: "contrast"
             from: 1; to: 4; value: SystemSettingsService.shadowStrength
-            enabled: SystemSettingsService.shadowsEnabled
             onChanged: value => SystemSettingsService.updateValue(
                 "shadowStrength", value, "decoration:shadow:render_power")
         }
         SettingsSlider {
             width: parent.width
-            title: "Shadow range"; subtitle: "Scale the shadow footprint"
-            icon: "expand"; from: 0.4; to: 1.5; step: 0.05
+            visible: SystemSettingsService.shadowsEnabled
+            title: "Spread"; icon: "expand"
+            from: 0.4; to: 1.5; step: 0.05
             value: SystemSettingsService.shadowRange; suffix: "×"
-            enabled: SystemSettingsService.shadowsEnabled
             onChanged: value => SystemSettingsService.updateValue(
                 "shadowRange", value, "decoration:shadow:scale")
         }
         SettingsColor {
             width: parent.width
-            title: "Shadow color"; subtitle: "Hyprland rgba() color"
+            visible: SystemSettingsService.shadowsEnabled
+            title: "Shadow color"
             value: SystemSettingsService.shadowColor
-            enabled: SystemSettingsService.shadowsEnabled
             onChanged: value => SystemSettingsService.updateValue(
                 "shadowColor", value, "decoration:shadow:color")
         }
+    }
+
+    SettingsSection {
+        visible: root.page === "windows"
+        title: "Blur"
+        icon: "blur_on"
+
+        SettingsToggle {
+            width: parent.width
+            icon: "blur_on"; title: "Background blur"
+            subtitle: "Blur what is behind transparent windows"
+            checked: SystemSettingsService.blurEnabled
+            onToggled: value => SystemSettingsService.updateValue(
+                "blurEnabled", value, "decoration:blur:enabled")
+        }
         SettingsSlider {
             width: parent.width
-            title: "Blur strength"; icon: "blur_on"
+            visible: SystemSettingsService.blurEnabled
+            title: "Strength"; icon: "blur_medium"
             from: 1; to: 24; value: SystemSettingsService.blurStrength
-            enabled: SystemSettingsService.blurEnabled
             onChanged: value => SystemSettingsService.updateValue(
                 "blurStrength", value, "decoration:blur:size")
         }
         SettingsSlider {
             width: parent.width
-            title: "Blur passes"; icon: "layers"
+            visible: SystemSettingsService.blurEnabled
+            title: "Quality"; icon: "layers"
             from: 1; to: 6; value: SystemSettingsService.blurPasses
-            enabled: SystemSettingsService.blurEnabled
             onChanged: value => SystemSettingsService.updateValue(
                 "blurPasses", value, "decoration:blur:passes")
         }
         SettingsToggle {
             width: parent.width
-            icon: "dialogs"; title: "Blur popups"
-            subtitle: "Include menus and transient surfaces"
+            visible: SystemSettingsService.blurEnabled
+            icon: "dialogs"; title: "Blur menus and popups"
             checked: SystemSettingsService.blurPopups
-            enabled: SystemSettingsService.blurEnabled
             onToggled: value => SystemSettingsService.updateValue(
                 "blurPopups", value, "decoration:blur:popups")
         }
     }
 
     SettingsSection {
+        visible: root.page === "windows"
         title: "Animations"
-        subtitle: "One preset keeps compositor motion internally consistent"
         icon: "animation"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
 
         SettingsChoice {
             width: parent.width
-            title: "Animation preset"
-            subtitle: "Changes apply immediately; Reduce motion still overrides shell transitions"
+            title: "Window animations"
+            subtitle: "Reduce motion in Accessibility still shortens shell transitions"
             options: ["off", "calm", "balanced", "expressive"]
             optionLabels: ["Off", "Calm", "Balanced", "Expressive"]
             value: SystemSettingsService.animationPreset

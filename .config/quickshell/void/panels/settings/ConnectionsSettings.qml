@@ -334,54 +334,6 @@ SettingsMasonry {
 
     SettingsSection {
         visible: !ConnectivityService.networkDetailsOpen
-        fullWidth: true
-        title: I18n.tr("network.title")
-        subtitle: ConnectivityService.activeNetworkLabel
-        icon: ConnectivityService.ethernetConnected ? "lan"
-            : (ConnectivityService.wifiConnected ? "wifi" : "wifi_off")
-
-        SettingsAction {
-            width: parent.width
-            icon: "lan"
-            title: I18n.tr("network.ethernet")
-            subtitle: ConnectivityService.ethernetAvailable
-                ? ConnectivityService.ethernetInterface : I18n.tr("network.noWired")
-            value: ConnectivityService.ethernetConnected
-                ? I18n.tr("common.connected") : I18n.tr("common.disconnected")
-            active: ConnectivityService.ethernetConnected
-            enabled: ConnectivityService.ethernetAvailable
-            onClicked: ConnectivityService.openNetworkDetails(
-                "", "ethernet", true, ConnectivityService.ethernetInterface)
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "wifi_tethering"
-            title: I18n.tr("actionCenter.hotspot")
-            subtitle: SystemActionService.hotspotAvailable
-                ? (SystemActionService.hotspotActive
-                    ? I18n.tr("network.connectedTo", { network: SystemActionService.hotspotSsid })
-                    : I18n.tr("network.shareConnection"))
-                : I18n.tr("network.backendUnavailable")
-            value: SystemActionService.hotspotActive
-                ? I18n.tr("network.active") : I18n.tr("common.off")
-            active: SystemActionService.hotspotActive
-            enabled: SystemActionService.hotspotAvailable
-                && (SystemActionService.hotspotActive
-                    || SystemActionService.hotspotProfileReady)
-                && !SystemActionService.hotspotChanging
-            onClicked: {
-                if (SystemActionService.hotspotActive)
-                    SystemActionService.stopHotspot()
-                else
-                    SystemActionService.startHotspot(SystemActionService.hotspotSsid,
-                        SystemActionService.hotspotPassword,
-                        SystemActionService.hotspotBand)
-            }
-        }
-    }
-
-    SettingsSection {
-        visible: !ConnectivityService.networkDetailsOpen
             && root.settingsPromptOpen
         fullWidth: true
         title: ConnectivityService.wifiPromptHidden
@@ -491,35 +443,49 @@ SettingsMasonry {
 
     SettingsSection {
         visible: !ConnectivityService.networkDetailsOpen
-        title: I18n.tr("bluetooth.title")
-        subtitle: I18n.plural("bluetooth.connectedCount",
-            ConnectivityService.connectedBluetoothDevices)
-        icon: "bluetooth"
-        iconContainerColor: Theme.secondaryContainer
-        iconColor: Theme.secondary
+        fullWidth: true
+        title: I18n.tr("network.title")
+        subtitle: ConnectivityService.activeNetworkLabel
+        icon: ConnectivityService.ethernetConnected ? "lan"
+            : (ConnectivityService.wifiConnected ? "wifi" : "wifi_off")
 
-        SettingsToggle {
+        SettingsAction {
             width: parent.width
-            icon: "bluetooth"
-            title: I18n.tr("bluetooth.title")
-            subtitle: ConnectivityService.bluetoothAvailable
-                ? I18n.tr("bluetooth.full.discoverHint")
-                : I18n.tr("bluetooth.full.noAdapter")
-            checked: ConnectivityService.bluetoothEnabled
-            enabled: ConnectivityService.bluetoothAvailable
-                && !ConnectivityService.bluetoothChanging
-            onToggled: value => {
-                if (value !== ConnectivityService.bluetoothEnabled)
-                    ConnectivityService.toggleBluetooth()
-            }
+            icon: "lan"
+            title: I18n.tr("network.ethernet")
+            subtitle: ConnectivityService.ethernetAvailable
+                ? ConnectivityService.ethernetInterface : I18n.tr("network.noWired")
+            value: ConnectivityService.ethernetConnected
+                ? I18n.tr("common.connected") : I18n.tr("common.disconnected")
+            active: ConnectivityService.ethernetConnected
+            enabled: ConnectivityService.ethernetAvailable
+            onClicked: ConnectivityService.openNetworkDetails(
+                "", "ethernet", true, ConnectivityService.ethernetInterface)
         }
         SettingsAction {
             width: parent.width
-            icon: "devices"
-            title: I18n.tr("bluetooth.moreSettings")
-            subtitle: I18n.tr("bluetooth.moreSettingsHint")
-            enabled: ConnectivityService.bluetoothAvailable
-            onClicked: ShellState.openDeviceSettings("bluetooth")
+            icon: "wifi_tethering"
+            title: I18n.tr("actionCenter.hotspot")
+            subtitle: SystemActionService.hotspotAvailable
+                ? (SystemActionService.hotspotActive
+                    ? I18n.tr("network.connectedTo", { network: SystemActionService.hotspotSsid })
+                    : I18n.tr("network.shareConnection"))
+                : I18n.tr("network.backendUnavailable")
+            value: SystemActionService.hotspotActive
+                ? I18n.tr("network.active") : I18n.tr("common.off")
+            active: SystemActionService.hotspotActive
+            enabled: SystemActionService.hotspotAvailable
+                && (SystemActionService.hotspotActive
+                    || SystemActionService.hotspotProfileReady)
+                && !SystemActionService.hotspotChanging
+            onClicked: {
+                if (SystemActionService.hotspotActive)
+                    SystemActionService.stopHotspot()
+                else
+                    SystemActionService.startHotspot(SystemActionService.hotspotSsid,
+                        SystemActionService.hotspotPassword,
+                        SystemActionService.hotspotBand)
+            }
         }
     }
 
@@ -557,14 +523,6 @@ SettingsMasonry {
             subtitle: I18n.tr("network.proxyNone")
             value: I18n.tr("network.automatic")
             visible: false
-        }
-        SettingsAction {
-            width: parent.width
-            icon: "bookmark"
-            title: I18n.tr("network.savedNetworks")
-            subtitle: I18n.tr("network.knownProfiles")
-            value: String(ConnectivityService.wifiSavedNetworks.length)
-            interactive: false
         }
         SettingsAction {
             width: parent.width

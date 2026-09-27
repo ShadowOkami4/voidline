@@ -18,9 +18,24 @@ Rectangle {
     readonly property bool inputValid:
         /^rgba?\([0-9a-fA-F]{6}([0-9a-fA-F]{2})?\)$/.test(editor.text.trim())
 
-    implicitHeight: 112
+    // Collapsed it is a normal list row with the colour as its icon; the
+    // swatches and hex field only appear once the row is opened.
+    property bool expanded: false
+    readonly property int textIndent: Metrics.spaceXL + Math.round(40 * Metrics.scale) + Metrics.spaceM
+    readonly property int rowHeight: Metrics.settingRowHeight
+
+    implicitHeight: rowHeight + (expanded ? Metrics.minimumHitSize + Metrics.spaceL : 0)
     color: "transparent"
     opacity: enabled ? 1 : 0.46
+    clip: true
+
+    Behavior on implicitHeight {
+        NumberAnimation {
+            duration: Motion.springFast
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Motion.spatialFast
+        }
+    }
 
     function previewColor(source) {
         const match = String(source || "").match(
@@ -33,50 +48,73 @@ Rectangle {
             editor.text = value
     }
 
-    ColumnLayout {
-        anchors { fill: parent; margins: Metrics.spaceXL }
-        spacing: Metrics.labelControlGap
+    Rectangle {
+        anchors { fill: headerRow; leftMargin: Metrics.spaceS; rightMargin: Metrics.spaceS }
+        radius: Metrics.radiusL
+        color: headerHover.hovered && root.enabled ? Theme.withAlpha(Theme.text, 0.06) : "transparent"
+    }
 
-        RowLayout {
+    RowLayout {
+        id: headerRow
+        x: 0
+        width: parent.width
+        height: root.rowHeight
+        spacing: Metrics.spaceM
+
+        Item { Layout.preferredWidth: Metrics.spaceXL - Metrics.spaceM }
+        Rectangle {
+            Layout.preferredWidth: Math.round(40 * Metrics.scale)
+            Layout.preferredHeight: Math.round(40 * Metrics.scale)
+            radius: width / 2
+            color: root.previewColor(root.value)
+            border.width: Metrics.border
+            border.color: Theme.outlineSoft
+        }
+        ColumnLayout {
             Layout.fillWidth: true
-            spacing: Metrics.spaceS
-
-            ColumnLayout {
+            spacing: Metrics.titleSubtitleGap
+            Text {
                 Layout.fillWidth: true
-                spacing: Metrics.titleSubtitleGap
-                Text {
-                    Layout.fillWidth: true
-                    text: root.title
-                    color: Theme.text
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Metrics.textTitle
-                    font.weight: Font.DemiBold
-                    elide: Text.ElideRight
-                }
-                Text {
-                    Layout.fillWidth: true
-                    visible: root.subtitle.length > 0
-                    text: root.subtitle
-                    color: Theme.textMuted
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Metrics.textCaption
-                    elide: Text.ElideRight
-                }
+                text: root.title
+                color: Theme.text
+                font.family: Theme.fontFamily
+                font.pixelSize: Metrics.appTextTitle
+                elide: Text.ElideRight
             }
-
-            Rectangle {
-                Layout.preferredWidth: Math.round(40 * Metrics.scale)
-                Layout.preferredHeight: Math.round(40 * Metrics.scale)
-                radius: width / 2
-                color: root.previewColor(root.value)
-                border.width: Metrics.border
-                border.color: Theme.outlineSoft
+            Text {
+                Layout.fillWidth: true
+                text: root.subtitle.length > 0 ? root.subtitle : root.value
+                color: Theme.textMuted
+                font.family: Theme.fontFamily
+                font.pixelSize: Metrics.appTextBody
+                elide: Text.ElideRight
             }
         }
+        MaterialIcon {
+            text: root.expanded ? "expand_less" : "expand_more"
+            size: Math.round(24 * Metrics.scale)
+            color: Theme.textMuted
+        }
+        Item { Layout.preferredWidth: Metrics.spaceXL - Metrics.spaceM }
+
+        HoverHandler { id: headerHover; enabled: root.enabled; cursorShape: Qt.PointingHandCursor }
+        TapHandler {
+            enabled: root.enabled
+            onTapped: root.expanded = !root.expanded
+        }
+    }
+
+    Item {
+        x: root.textIndent
+        y: root.rowHeight
+        width: parent.width - root.textIndent - Metrics.spaceXL
+        height: Metrics.minimumHitSize
+        visible: root.expanded
+        opacity: root.expanded ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: Motion.effectsFastDuration } }
 
         RowLayout {
-            Layout.fillWidth: true
-            Layout.preferredHeight: Metrics.minimumHitSize
+            anchors.fill: parent
             spacing: Metrics.spaceXS
 
             Repeater {

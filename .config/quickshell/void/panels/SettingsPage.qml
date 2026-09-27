@@ -14,22 +14,30 @@ FocusScope {
     readonly property bool wideNavigation: width >= Metrics.settingsNarrow
     readonly property bool navigationVisible: wideNavigation || section === "home"
     property string searchText: ""
+    // Settings information architecture (Pixel-style): connectivity first,
+    // then the hardware on this computer, then how it looks and behaves, then
+    // system-level pages. "About" always stays last.
     readonly property var navigationGroups: [
         { id: "connected", title: I18n.tr("settings.groups.connected") },
+        { id: "device", title: I18n.tr("settings.groups.device") },
         { id: "personal", title: I18n.tr("settings.groups.personal") },
         { id: "system", title: I18n.tr("settings.groups.system") }
     ]
     readonly property var categories: {
         const items = [
             { id: "connections", group: "connected", title: I18n.tr("settings.categories.connections.0"), subtitle: I18n.tr("settings.categories.connections.1"), icon: "wifi", tone: 0 },
-            { id: "audio", group: "connected", title: I18n.tr("settings.categories.audio.0"), subtitle: I18n.tr("settings.categories.audio.1"), icon: "volume_up", tone: 2 },
             { id: "devices", group: "connected", title: I18n.tr("settings.categories.devices.0"), subtitle: I18n.tr("settings.categories.devices.1"), icon: "devices_other", tone: 1 },
-            { id: "notifications", group: "personal", title: I18n.tr("settings.categories.notifications.0"), subtitle: I18n.tr("settings.categories.notifications.1"), icon: "notifications", tone: 2 },
-            { id: "display", group: "personal", title: I18n.tr("settings.categories.display.0"), subtitle: I18n.tr("settings.categories.display.1"), icon: "desktop_windows", tone: 0 },
+            { id: "display", group: "device", title: I18n.tr("settings.categories.display.0"), subtitle: I18n.tr("settings.categories.display.1"), icon: "brightness_6", tone: 0 },
+            { id: "audio", group: "device", title: I18n.tr("settings.categories.audio.0"), subtitle: I18n.tr("settings.categories.audio.1"), icon: "volume_up", tone: 2 },
+            { id: "input", group: "device", title: I18n.tr("settings.categories.input.0"), subtitle: I18n.tr("settings.categories.input.1"), icon: "mouse", tone: 1 },
             { id: "appearance", group: "personal", title: I18n.tr("settings.categories.appearance.0"), subtitle: I18n.tr("settings.categories.appearance.1"), icon: "palette", tone: 1 },
+            { id: "desktop", group: "personal", title: I18n.tr("settings.categories.desktop.0"), subtitle: I18n.tr("settings.categories.desktop.1"), icon: "dock_to_bottom", tone: 0 },
+            { id: "windows", group: "personal", title: I18n.tr("settings.categories.windows.0"), subtitle: I18n.tr("settings.categories.windows.1"), icon: "select_window", tone: 2 },
             { id: "lock", group: "personal", title: I18n.tr("settings.categories.lock.0"), subtitle: I18n.tr("settings.categories.lock.1"), icon: "lock", tone: 0 },
-            { id: "security", group: "personal", title: I18n.tr("settings.categories.security.0"), subtitle: I18n.tr("settings.categories.security.1"), icon: "security", tone: 2 },
-            { id: "accessibility", group: "personal", title: I18n.tr("settings.categories.accessibility.0"), subtitle: I18n.tr("settings.categories.accessibility.1"), icon: "accessibility_new", tone: 1 },
+            { id: "notifications", group: "personal", title: I18n.tr("settings.categories.notifications.0"), subtitle: I18n.tr("settings.categories.notifications.1"), icon: "notifications", tone: 2 },
+            { id: "security", group: "system", title: I18n.tr("settings.categories.security.0"), subtitle: I18n.tr("settings.categories.security.1"), icon: "security", tone: 2 },
+            { id: "accessibility", group: "system", title: I18n.tr("settings.categories.accessibility.0"), subtitle: I18n.tr("settings.categories.accessibility.1"), icon: "accessibility_new", tone: 1 },
+            { id: "language", group: "system", title: I18n.tr("settings.categories.language.0"), subtitle: I18n.tr("settings.categories.language.1"), icon: "language", tone: 0 },
             { id: "updates", group: "system", title: I18n.tr("settings.categories.updates.0"), subtitle: I18n.tr("settings.categories.updates.1"), icon: "system_update", tone: 2 },
             { id: "system", group: "system", title: I18n.tr("settings.categories.system.0"), subtitle: I18n.tr("settings.categories.system.1"), icon: "info", tone: 0 }
         ]
@@ -73,9 +81,10 @@ FocusScope {
     // Every category owns a hue, like Pixel Settings, so destinations are
     // recognisable at a glance while staying inside the tonal system.
     readonly property var categoryHues: ({
-        connections: 0.58, audio: 0.07, devices: 0.36, notifications: 0.95,
-        display: 0.52, appearance: 0.76, lock: 0.12, security: 0.3,
-        accessibility: 0.64, updates: 0.44, assistant: 0.84, system: 0.2,
+        connections: 0.58, devices: 0.36, display: 0.52, audio: 0.07,
+        input: 0.9, appearance: 0.76, desktop: 0.47, windows: 0.66,
+        lock: 0.12, notifications: 0.95, security: 0.3, accessibility: 0.64,
+        language: 0.55, updates: 0.44, assistant: 0.84, system: 0.2,
         developer: 0.0
     })
 
@@ -123,6 +132,21 @@ FocusScope {
             AssistantService.setAssistantEnabled(checked)
     }
 
+    function pageComponent(id) {
+        switch (id) {
+        case "connections": return connectionsPage
+        case "audio": return audioPage
+        case "devices":
+        case "input": return devicesPage
+        case "display": return displayPage
+        case "appearance":
+        case "desktop":
+        case "windows": return appearancePage
+        case "assistant": return assistantPage
+        default: return generalPage
+        }
+    }
+
     function closeOrBack() {
         if (!wideNavigation && section !== "home")
             ShellState.settingsSection = "home"
@@ -152,6 +176,7 @@ FocusScope {
 
     onSectionChanged: {
         detailFlick.contentY = 0
+        SystemSettingsService.setDevicesActive(active && section === "devices")
         ConnectivityService.setWifiPageActive(active && section === "connections")
         ConnectivityService.setBluetoothPageActive(active && (section === "connections"
             || section === "devices"))
@@ -506,13 +531,7 @@ FocusScope {
                                 width: parent.width
                                 height: item ? item.implicitHeight : 0
                                 transform: Translate { x: pageLoader.revealOffset }
-                                sourceComponent: root.section === "connections" ? connectionsPage
-                                    : (root.section === "audio" ? audioPage
-                                        : (root.section === "devices" ? devicesPage
-                                            : (root.section === "display" ? displayPage
-                                                : (root.section === "appearance" ? appearancePage
-                                                    : (root.section === "assistant" ? assistantPage
-                                                        : generalPage)))))
+                                sourceComponent: root.pageComponent(root.section)
                             }
                         }
                     }
@@ -549,9 +568,15 @@ FocusScope {
         ConnectionsSettings { shellScreen: root.shellScreen }
     }
     Component { id: audioPage; AudioSettings {} }
-    Component { id: devicesPage; DevicesSettings {} }
+    Component {
+        id: devicesPage
+        DevicesSettings { page: root.section }
+    }
     Component { id: displayPage; DisplaySettings {} }
-    Component { id: appearancePage; AppearanceSettings {} }
+    Component {
+        id: appearancePage
+        AppearanceSettings { page: root.section }
+    }
     Component { id: assistantPage; LyraSettings {} }
     Component {
         id: generalPage

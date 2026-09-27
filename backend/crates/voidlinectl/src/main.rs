@@ -222,7 +222,7 @@ value_enum_map!(MediaArg => MediaCommand { PlayPause, Play, Pause, Next, Previou
 value_enum_map!(PowerModeArg => PowerMode { Saver, Balanced, Performance });
 value_enum_map!(SessionArg => SessionAction { Suspend, Logout, Reboot, Poweroff });
 value_enum_map!(InformationArg => InformationTopic { System, Network, Bluetooth, Battery, Storage, Audio, Displays, Tray, Lyra });
-value_enum_map!(SettingsPageArg => SettingsPage { Home, Connections, Audio, Devices, Notifications, Display, Appearance, Lock, Security, Accessibility, Assistant, Updates, System, Developer });
+value_enum_map!(SettingsPageArg => SettingsPage { Home, Connections, Audio, Devices, Input, Notifications, Display, Appearance, Desktop, Windows, Lock, Security, Accessibility, Language, Assistant, Updates, System, Developer });
 value_enum_map!(ModuleArg => StateModule { Shell, Appearance, Network, Bluetooth, Audio, Displays, Devices, Notifications, Tray, Power, Updates, Lyra });
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
