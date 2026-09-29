@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `tools/preview`: cross-platform design preview (PySide6) that renders the
+  real shell QML and SDDM theme with stub Quickshell modules and sample data,
+  reloading on every save; works on Windows without Quickshell.
 - Installer: re-running `install.sh` no longer appends duplicate Hyprland
   integration lines (which made every shortcut fire twice); existing
   duplicates are cleaned up. Refuses to run as root, accepts rustup, resolves

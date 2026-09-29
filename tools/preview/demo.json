@@ -1,0 +1,176 @@
+{
+ "ConnectivityService": {
+  "wifiEnabled": true,
+  "wifiConnected": true,
+  "wifiSsid": "Voidnet",
+  "wifiLabel": "Voidnet",
+  "activeNetworkLabel": "Voidnet · 5 GHz",
+  "bluetoothAvailable": true,
+  "bluetoothEnabled": true,
+  "connectedBluetoothDevices": 1,
+  "wifiAvailable": true,
+  "wifiBackendAvailable": true,
+  "ethernetConnected": false,
+  "wifiNetworks": [],
+  "bluetoothDeviceList": []
+ },
+ "AudioService": {
+  "outputMuted": false,
+  "outputVolume": 0.62,
+  "outputReady": true,
+  "inputReady": true,
+  "inputVolume": 0.8,
+  "outputName": "Speakers",
+  "outputLabel": "Speakers",
+  "inputName": "Microphone",
+  "inputLabel": "Built-in microphone",
+  "playbackStreams": [],
+  "outputDevices": [],
+  "inputDevices": []
+ },
+ "PowerService": {
+  "available": true,
+  "percentage": 78,
+  "charging": false,
+  "icon": "battery_5_bar",
+  "backlightAvailable": true,
+  "brightnessPercent": 64,
+  "remainingLabel": "5 h 12 min left",
+  "profileMode": "balanced",
+  "performanceAvailable": true,
+  "cpuUsage": 18,
+  "memoryUsage": 42,
+  "cpuHistory": [],
+  "memoryHistory": [],
+  "brightnessDevices": []
+ },
+ "NotificationService": {
+  "count": 3,
+  "doNotDisturb": false,
+  "popupVisible": true,
+  "popupScreenName": "DP-1",
+  "notifications": [
+   {
+    "appName": "Messages",
+    "summary": "Lyra finished your summary",
+    "body": "Three action items were assigned to you."
+   },
+   {
+    "appName": "Updates",
+    "summary": "12 updates available",
+    "body": "Linux, Mesa and Hyprland are ready to install."
+   },
+   {
+    "appName": "Calendar",
+    "summary": "Design review in 15 minutes",
+    "body": "Voidline 0.3 visual pass"
+   }
+  ],
+  "popupNotification": {
+   "appName": "Messages",
+   "summary": "Lyra finished your summary",
+   "body": "The meeting notes are ready. Three action items were assigned to you for Monday.",
+   "appIcon": "",
+   "actions": [
+    {
+     "text": "Open"
+    },
+    {
+     "text": "Mark as read"
+    }
+   ]
+  }
+ },
+ "SystemActionService": {
+  "keepAwakeActive": true,
+  "hotspotAvailable": true,
+  "recorderAvailable": true,
+  "monitorCount": 1,
+  "sessionActionError": ""
+ },
+ "LockService": {
+  "authenticating": false,
+  "unlocking": false,
+  "message": "",
+  "messageIsError": false,
+  "locked": false,
+  "authenticate": "fn:true",
+  "lock": "fn:true"
+ },
+ "SettingsService": {
+  "osName": "Arch Linux",
+  "hostName": "voidbox",
+  "voidlineVersion": "0.3.0dev",
+  "kernel": "6.16.8-arch1",
+  "cpu": "AMD Ryzen 7 7840U",
+  "gpu": "Radeon 780M",
+  "installedRam": "32 GiB",
+  "storageCapacity": "1 TB",
+  "storageUsed": "412 GB",
+  "uptime": "3 h 12 min",
+  "kernelType": "stable"
+ },
+ "WallpaperService": {
+  "currentPath": "@REPO@/assets/wallpapers/EmeraldRift.png",
+  "wallpapers": []
+ },
+ "MediaService": {
+  "available": false,
+  "players": []
+ },
+ "WeatherService": {
+  "available": false,
+  "weather": {},
+  "setLockActive": "fn:null",
+  "setPanelActive": "fn:null"
+ },
+ "ProfileImageService": {
+  "avatarSource": "",
+  "avatarAvailable": false
+ },
+ "SystemSettingsService": {
+  "borderSize": 2,
+  "windowRounding": 16,
+  "innerGaps": 6,
+  "outerGaps": 12,
+  "activeOpacity": 1,
+  "inactiveOpacity": 0.95,
+  "activeBorderColor": "rgba(8fb8acff)",
+  "activeBorderColor2": "rgba(9caedbff)",
+  "inactiveBorderColor": "rgba(2a2f2eff)",
+  "shadowsEnabled": true,
+  "shadowSize": 18,
+  "shadowStrength": 3,
+  "shadowRange": 1,
+  "shadowColor": "rgba(00000066)",
+  "blurEnabled": true,
+  "blurStrength": 8,
+  "blurPasses": 3,
+  "blurPopups": false,
+  "animationPreset": "balanced",
+  "pointerSpeed": 0,
+  "repeatRate": 25,
+  "repeatDelay": 600,
+  "keyboardLayout": "us",
+  "tapToClick": true,
+  "naturalScroll": true,
+  "workspaceGestures": true,
+  "scrollMethod": "2fg",
+  "nightLightEnabled": false,
+  "dnsServers": "1.1.1.1"
+ },
+ "SecurityService": {
+  "lockTimeout": 300,
+  "activeSessions": 1,
+  "secureBootStatus": "Enabled",
+  "encryptionStatus": "LUKS2",
+  "rootDevice": "/dev/nvme0n1p2"
+ },
+ "UpdateService": {
+  "stage": "Last checked today at 09:30",
+  "packages": [],
+  "officialPackages": [],
+  "aurPackages": [],
+  "history": []
+ }
+}

@@ -218,6 +218,17 @@ is intended to remain hidden or explicitly disabled. Please report violations.
 
 ## Development and issue reports
 
+Design work does not need a Voidline session: `tools/preview` renders the real
+bar, panels, Settings, lock screen, and SDDM theme with sample data on Windows,
+macOS, or Linux and reloads on every save. See
+[tools/preview/README.md](tools/preview/README.md).
+
+```bash
+pip install PySide6
+python tools/preview/preview.py --fetch-fonts
+python tools/preview/preview.py settings --page appearance
+```
+
 Backend checks:
 
 ```bash

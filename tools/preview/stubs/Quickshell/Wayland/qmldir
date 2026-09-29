@@ -1,0 +1,4 @@
+module Quickshell.Wayland
+ExclusionMode 1.0 ExclusionMode.qml
+ScreencopyView 1.0 ScreencopyView.qml
+singleton ToplevelManager 1.0 ToplevelManager.qml

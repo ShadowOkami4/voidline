@@ -31,3 +31,8 @@ __pycache__/
 /artifacts/voidline-lyra.png
 /artifacts/voidline-lyra-weather.png
 /artifacts/voidline-lyra-weather-fixed.png
+
+# Design preview (tools/preview): generated copy, downloaded fonts, screenshots
+/tools/preview/.cache/
+/tools/preview/fonts/
+/tools/preview/shots/
