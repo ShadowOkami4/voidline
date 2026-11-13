@@ -47,7 +47,7 @@ hook() { # file line
 if [[ ${1:-} == --uninstall ]]; then
     unhook "$hypr_main" "$hypr_line"
     unhook "$niri_main" "$niri_line"
-    rm -f "$config/hypr/voidline.lua" "$config/niri/voidline.kdl" "$HOME/.local/bin/voidlinectl"
+    rm -f "$config/hypr/voidline.lua" "$config/niri/voidline.kdl" "$HOME/.local/bin/voidlinectl" "${XDG_DATA_HOME:-$HOME/.local/share}/applications/voidline-settings.desktop"
     rm -rf "$shell_dir"
     say "Voidline removed. Your settings in $config/voidline were kept."
     exit 0
@@ -78,6 +78,25 @@ fi
 mkdir -p "$(dirname "$shell_dir")"
 cp -r "$here/shell" "$shell_dir"
 say "Shell installed to $shell_dir"
+
+# --- wallpapers ---------------------------------------------------------------
+papers=${XDG_DATA_HOME:-$HOME/.local/share}/voidline/wallpapers
+mkdir -p "$papers"
+cp -n "$here"/assets/wallpapers/*.png "$papers"/
+say "Wallpapers copied to $papers"
+
+# --- launcher entry for Settings ------------------------------------------------
+apps=${XDG_DATA_HOME:-$HOME/.local/share}/applications
+mkdir -p "$apps"
+cat > "$apps/voidline-settings.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Voidline Settings
+Comment=Appearance, style and wallpaper of the Voidline shell
+Exec=qs -c voidline ipc call shell settings
+Icon=preferences-system
+Categories=Settings;
+EOF
 
 # --- compositors --------------------------------------------------------------
 found=0

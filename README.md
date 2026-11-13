@@ -47,8 +47,11 @@ minimises it, clicking a minimised window restores it, middle click closes it.
 
 ## Settings
 
-Settings live in `~/.config/voidline/config.json` and apply as soon as the file
-is saved.
+Open **Voidline Settings** from the launcher or the gear in quick settings. It
+covers theme, accent, wallpaper, interface size, style and bar options.
+
+Everything is stored in `~/.config/voidline/config.json`, which you can also
+edit by hand; changes apply as soon as the file is saved.
 
 | Key | Values | Meaning |
 | --- | --- | --- |
@@ -83,6 +86,7 @@ shell/
   widgets/         Buttons, slider, tile, icons, the concave join
   bar/             Bar layouts per style, workspaces, clock, tray, status, task list, dock, frame
   panels/          Launcher, quick settings, notifications, wallpaper
+  settings/        The settings window
 config/            The files hooked into Hyprland and Niri
 helper/            voidlinectl (Rust)
 ```
@@ -100,9 +104,10 @@ Two rules keep it portable:
 Working in 0.4: bar, screen frame, dock, task list, workspaces, tray, clock,
 launcher, quick settings (network, Bluetooth, do not disturb, theme, volume,
 brightness, power), notifications, wallpaper with palette extraction, minimise,
-live style switching.
+live style switching, settings window (appearance, desktop, about).
 
-Not rewritten yet (present in 0.3.0): settings app, lock screen, SDDM theme,
+Not rewritten yet (present in 0.3.0): the system pages of Settings (network,
+Bluetooth, sound, displays), lock screen, SDDM theme,
 full Wi-Fi/Bluetooth/hotspot pages, games page, media controls, overview,
 polkit dialog, translations. The Lyra assistant and the Voidline terminal are
 not planned for 0.4.

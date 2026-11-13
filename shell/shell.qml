@@ -7,6 +7,7 @@ import qs.core
 import qs.compositor
 import qs.bar
 import qs.panels
+import qs.settings
 
 // Voidline 0.4 - a Material 3 Expressive desktop shell for Hyprland and Niri.
 ShellRoot {
@@ -40,6 +41,11 @@ ShellRoot {
 
     NotificationPopups { screen: Quickshell.screens[0] }
 
+    LazyLoader {
+        active: Shell.settingsOpen
+        SettingsWindow {}
+    }
+
     // The UI scale is fixed when the process starts. When the setting no
     // longer matches what we were started with, restart through start.sh.
     readonly property real startedScale: parseFloat(Quickshell.env("VOIDLINE_UI_SCALE") || "0")
@@ -58,6 +64,7 @@ ShellRoot {
             if (name === "next") Config.cycleStyle()
             else if (Config.styles.includes(name)) Config.style = name
         }
+        function settings(): void { Shell.openSettings() }
         function minimize(): void { Compositor.minimizeFocused() }
         function restore(): void { Compositor.restoreLast() }
         function compositor(): string { return Compositor.name }

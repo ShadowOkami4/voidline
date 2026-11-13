@@ -10,6 +10,10 @@ Singleton {
     // "" | "launcher" | "quick"
     property string panel: ""
     property var screen: null
+    property bool settingsOpen: false
+    readonly property string version: "0.4.0-dev"
+
+    function openSettings() { panel = ""; settingsOpen = true }
 
     function toggle(name, onScreen) {
         if (panel === name) { panel = ""; return }

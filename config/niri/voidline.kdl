@@ -14,3 +14,9 @@ binds {
     Mod+Shift+N hotkey-overlay-title="Voidline: Restore Window" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "restore"; }
     Mod+Alt+S hotkey-overlay-title="Voidline: Next Style" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "style" "next"; }
 }
+
+// Voidline Settings opens as a floating window.
+window-rule {
+    match title="^Voidline Settings$"
+    open-floating true
+}

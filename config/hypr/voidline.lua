@@ -28,3 +28,12 @@ hl.config({
         vrr = 1,
     },
 })
+
+-- Voidline Settings opens as a centred floating window.
+hl.window_rule({
+    name = "voidline-settings",
+    match = { title = "Voidline Settings" },
+    float = 1,
+    size = { 920, 640 },
+    center = 1,
+})

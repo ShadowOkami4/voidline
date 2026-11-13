@@ -11,7 +11,7 @@ Singleton {
     id: root
 
     readonly property bool dark: Config.dark
-    readonly property color seed: (Config.wallpaperColors && quantizer.colors.length > 0)
+    readonly property color seed: (Config.wallpaperColors && Config.wallpaper.length > 0 && quantizer.colors.length > 0)
         ? pickSeed(quantizer.colors) : Config.accent
 
     // --- colour roles -----------------------------------------------------

@@ -41,6 +41,10 @@ Singleton {
         return entry && entry.icon ? entry.icon : (appId || "")
     }
 
+    function openUrl(url) {
+        Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "xdg-open", url])
+    }
+
     // Started apps must not inherit the shell's own UI scale, and entries
     // marked Terminal=true need a terminal around them.
     function launch(entry) {

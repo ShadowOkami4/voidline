@@ -37,49 +37,24 @@ PanelSurface {
         width: parent.width - 40
         spacing: 14
 
-        // Header: style switcher + power
+        // Header: title + settings and power
         RowLayout {
             Layout.fillWidth: true
             spacing: 6
 
-            // Connected button group (M3 Expressive): one container, the
-            // selected segment becomes a pill.
-            Rectangle {
+            Label {
                 Layout.fillWidth: true
-                implicitHeight: 44
-                radius: height / 2
-                color: Theme.surfaceContainerHighest
+                leftPadding: 4
+                text: "Voidline"
+                font.pixelSize: Theme.textHeadline
+                font.weight: Font.Black
+            }
 
-                Row {
-                    anchors.fill: parent
-                    anchors.margins: 4
-                    Repeater {
-                        model: [
-                            { id: "voidline", label: "Voidline" },
-                            { id: "windows", label: "Windows" },
-                            { id: "macos", label: "macOS" }
-                        ]
-                        Pressable {
-                            id: seg
-                            required property var modelData
-                            readonly property bool current: Config.style === modelData.id
-                            width: parent.width / 3
-                            height: parent.height
-                            color: current ? Theme.primary : "transparent"
-                            tint: current ? Theme.inkOnPrimary : Theme.ink
-                            restRadius: current ? Theme.cornerFull : Theme.cornerS
-                            Behavior on color { Tint {} }
-                            onClicked: Config.style = modelData.id
-                            Label {
-                                anchors.centerIn: parent
-                                text: seg.modelData.label
-                                font.pixelSize: Theme.textLabel
-                                font.weight: Font.DemiBold
-                                color: seg.current ? Theme.inkOnPrimary : Theme.inkMuted
-                            }
-                        }
-                    }
-                }
+            IconBtn {
+                icon: "settings"
+                size: 44
+                tonal: true
+                onClicked: Shell.openSettings()
             }
 
             Repeater {
@@ -99,6 +74,19 @@ PanelSurface {
                     onClicked: root.power(modelData.id)
                 }
             }
+        }
+
+        // Style switcher (connected button group)
+        Choice {
+            Layout.fillWidth: true
+            segmentWidth: (column.width - 8) / 3
+            value: Config.style
+            options: [
+                { value: "voidline", label: "Voidline" },
+                { value: "windows", label: "Windows" },
+                { value: "macos", label: "macOS" }
+            ]
+            onPicked: v => Config.style = v
         }
 
         GridLayout {
