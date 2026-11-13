@@ -6,6 +6,7 @@ import qs.core
 // Optional: drawn only when a wallpaper is set in the config. Otherwise the
 // compositor's own background (or another wallpaper tool) stays in charge.
 PanelWindow {
+    id: paper
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
     color: Theme.surface
@@ -14,7 +15,7 @@ PanelWindow {
 
     Image {
         anchors.fill: parent
-        source: "file://" + Config.wallpaper
+        source: "file://" + Config.wallpaperFor(paper.screen)
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         sourceSize.width: parent.width

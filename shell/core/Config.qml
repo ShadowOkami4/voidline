@@ -37,6 +37,21 @@ Singleton {
     // Saved display modes, one "name|mode|scale" entry per output.
     property alias displays: data.displays
 
+    // "default" is the bundled Orbit wallpaper, "" is none, anything else a path.
+    readonly property string wallpaperDir: (Quickshell.env("XDG_DATA_HOME") || (Quickshell.env("HOME") + "/.local/share")) + "/voidline/wallpapers"
+    function aspectDir(screen) {
+        return screen && screen.height > 0 && screen.width / screen.height < 1.69 ? "16x10" : "16x9"
+    }
+    // The file to show on `screen`: bundled wallpapers switch to the
+    // composition made for that screen's aspect ratio.
+    function wallpaperFor(screen) {
+        const dir = wallpaperDir + "/" + aspectDir(screen) + "/"
+        if (wallpaper === "default") return dir + "voidline-orbit.png"
+        const bundled = wallpaper.match(/\/voidline\/wallpapers\/16x(?:9|10)\/([^\/]+)$/)
+        return bundled ? dir + bundled[1] : wallpaper
+    }
+    readonly property string wallpaperPath: wallpaperFor(Quickshell.screens[0] ?? null)
+
     readonly property var styles: ["voidline", "windows", "macos"]
 
     function cycleStyle() {
@@ -59,7 +74,7 @@ Singleton {
             property string style: "voidline"
             property bool dark: true
             property string accent: "#8E6BFF"
-            property string wallpaper: ""
+            property string wallpaper: "default"
             property bool wallpaperColors: true
             property bool clock24h: true
             property bool reduceMotion: false

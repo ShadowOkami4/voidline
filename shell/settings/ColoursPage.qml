@@ -78,11 +78,16 @@ ColumnLayout {
             clip: true
             boundsBehavior: Flickable.StopAtBounds
             model: [""].concat(Wallpapers.files)
+            // Start with the wallpaper in use in view.
+            onCountChanged: {
+                const i = model.indexOf(Config.wallpaper.length > 0 ? Config.wallpaperPath : "")
+                if (i > 0) positionViewAtIndex(i, ListView.Center)
+            }
 
             delegate: Item {
                 id: paper
                 required property string modelData
-                readonly property bool current: Config.wallpaper === modelData
+                readonly property bool current: (Config.wallpaper.length > 0 ? Config.wallpaperPath : "") === modelData
                 // The selected item is wider, as in an M3 carousel.
                 width: current ? 250 : (modelData.length === 0 ? 110 : 180)
                 height: carousel.height

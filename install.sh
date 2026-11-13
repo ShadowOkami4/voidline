@@ -82,7 +82,10 @@ say "Shell installed to $shell_dir"
 # --- wallpapers ---------------------------------------------------------------
 papers=${XDG_DATA_HOME:-$HOME/.local/share}/voidline/wallpapers
 mkdir -p "$papers"
-cp -n "$here"/assets/wallpapers/*.png "$papers"/
+for shape in 16x9 16x10; do
+    mkdir -p "$papers/$shape"
+    cp "$here"/assets/wallpapers/$shape/*.png "$papers/$shape/"
+done
 say "Wallpapers copied to $papers"
 
 # --- launcher entry for Settings ------------------------------------------------

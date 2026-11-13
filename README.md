@@ -67,7 +67,7 @@ edit by hand; changes apply as soon as the file is saved.
 | `style` | `voidline`, `windows`, `macos` | Layout preset |
 | `dark` | `true`, `false` | Dark or light theme |
 | `accent` | `#RRGGBB` | Seed colour for the palette |
-| `wallpaper` | file path or `""` | Wallpaper drawn by Voidline (empty: leave it to the compositor) |
+| `wallpaper` | `default`, file path or `""` | Wallpaper drawn by Voidline (`default`: the bundled Orbit; empty: leave it to the compositor) |
 | `wallpaperColors` | `true`, `false` | Derive the palette from the wallpaper |
 | `clock24h` | `true`, `false` | 24-hour clock |
 | `reduceMotion` | `true`, `false` | Turn animations off |

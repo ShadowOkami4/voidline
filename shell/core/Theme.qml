@@ -71,7 +71,7 @@ Singleton {
 
     // --- wallpaper palette --------------------------------------------------
     property ColorQuantizer quantizer: ColorQuantizer {
-        source: (Config.wallpaperColors && Config.wallpaper.length > 0) ? "file://" + Config.wallpaper : ""
+        source: (Config.wallpaperColors && Config.wallpaper.length > 0) ? "file://" + Config.wallpaperPath : ""
         depth: 3
         rescaleSize: 64
     }

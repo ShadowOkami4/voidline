@@ -124,8 +124,8 @@ fn parse(key: &str, raw: &str) -> Value {
             }
         }
         Kind::Text => {
-            if key == "wallpaper" && !raw.is_empty() && !PathBuf::from(raw).is_file() {
-                fail("wallpaper must be an existing file (or \"\" for none)");
+            if key == "wallpaper" && !raw.is_empty() && raw != "default" && !PathBuf::from(raw).is_file() {
+                fail("wallpaper must be an existing file, \"default\", or \"\" for none");
             }
             Value::from(raw)
         }

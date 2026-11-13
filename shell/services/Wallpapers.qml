@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.core
 
 // Lists images in the wallpaper folders. Scanned on demand (when Settings
 // opens), never in the background.
@@ -10,8 +11,10 @@ Singleton {
     id: root
 
     readonly property string home: Quickshell.env("HOME")
-    readonly property string dataDir: (Quickshell.env("XDG_DATA_HOME") || home + "/.local/share") + "/voidline/wallpapers"
-    readonly property var dirs: [dataDir, home + "/Pictures/Wallpapers", home + "/Bilder/Wallpapers", home + "/.config/voidline/wallpapers"]
+    readonly property string dataDir: Config.wallpaperDir
+    // Bundled wallpapers for this screen shape first, then the user's own.
+    readonly property var dirs: [dataDir + "/" + Config.aspectDir(Quickshell.screens[0] ?? null), dataDir,
+        home + "/Pictures/Wallpapers", home + "/Bilder/Wallpapers"]
     property var files: []
 
     function refresh() { scan.running = true }

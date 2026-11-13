@@ -1,5 +1,10 @@
 # Voidline wallpapers
 
-Original Voidline project assets, shipped under the repository's MIT license.
-The installer copies them to `~/.local/share/voidline/wallpapers`. More are in
-[voidline.wallpapers](https://github.com/ShadowOkami4/voidline.wallpapers).
+Original Voidline artwork (not AI-generated), shipped under the repository's MIT
+license. Each wallpaper comes in two compositions:
+
+- `16x9/`  3840 x 2160
+- `16x10/` 3840 x 2400
+
+The installer copies both folders to `~/.local/share/voidline/wallpapers` and
+Voidline picks the one that matches each screen.
