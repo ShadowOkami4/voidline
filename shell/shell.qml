@@ -40,6 +40,13 @@ ShellRoot {
 
     NotificationPopups { screen: Quickshell.screens[0] }
 
+    // The UI scale is fixed when the process starts. When the setting no
+    // longer matches what we were started with, restart through start.sh.
+    readonly property real startedScale: parseFloat(Quickshell.env("VOIDLINE_UI_SCALE") || "0")
+    readonly property real wantedScale: Math.max(0.5, Math.min(1.5, Config.uiScale))
+    readonly property bool scaleStale: Config.loaded && startedScale > 0 && Math.abs(wantedScale - startedScale) > 0.004
+    onScaleStaleChanged: if (scaleStale) Quickshell.execDetached(["sh", Quickshell.shellDir + "/start.sh"])
+
     // Control surface for keybinds and voidlinectl:
     //   qs -c voidline ipc call shell toggle launcher
     IpcHandler {

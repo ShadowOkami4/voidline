@@ -23,6 +23,9 @@ Singleton {
     property alias doNotDisturb: data.doNotDisturb
     property alias pinnedApps: data.pinnedApps
     property alias workspaceCount: data.workspaceCount
+    // Whole-shell size factor (0.5 - 1.5). Applied at start by start.sh.
+    property alias uiScale: data.uiScale
+    property bool loaded: false
 
     readonly property var styles: ["voidline", "windows", "macos"]
 
@@ -36,9 +39,10 @@ Singleton {
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
+        onLoaded: root.loaded = true
         onAdapterUpdated: writeAdapter()
         // First run: the file does not exist yet, write the defaults.
-        onLoadFailed: error => { if (error === FileViewError.FileNotFound) writeAdapter() }
+        onLoadFailed: error => { if (error === FileViewError.FileNotFound) { writeAdapter(); root.loaded = true } }
 
         JsonAdapter {
             id: data
@@ -52,6 +56,7 @@ Singleton {
             property bool doNotDisturb: false
             property list<string> pinnedApps: []
             property int workspaceCount: 5
+            property real uiScale: 0.75
         }
     }
 }

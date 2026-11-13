@@ -17,12 +17,13 @@ const PANELS: [&str; 2] = ["launcher", "quick"];
 enum Kind {
     Bool,
     Int(i64, i64),
+    Float(f64, f64),
     Text,
     OneOf(&'static [&'static str]),
     Color,
 }
 
-const KEYS: [(&str, Kind); 9] = [
+const KEYS: [(&str, Kind); 10] = [
     ("style", Kind::OneOf(&STYLES)),
     ("dark", Kind::Bool),
     ("accent", Kind::Color),
@@ -32,6 +33,7 @@ const KEYS: [(&str, Kind); 9] = [
     ("reduceMotion", Kind::Bool),
     ("doNotDisturb", Kind::Bool),
     ("workspaceCount", Kind::Int(1, 20)),
+    ("uiScale", Kind::Float(0.5, 1.5)),
 ];
 
 fn usage() -> ! {
@@ -100,6 +102,10 @@ fn parse(key: &str, raw: &str) -> Value {
         },
         Kind::Int(min, max) => match raw.parse::<i64>() {
             Ok(n) if (*min..=*max).contains(&n) => Value::from(n),
+            _ => fail(&format!("`{key}` expects a number from {min} to {max}")),
+        },
+        Kind::Float(min, max) => match raw.parse::<f64>() {
+            Ok(n) if n >= *min && n <= *max => Value::from(n),
             _ => fail(&format!("`{key}` expects a number from {min} to {max}")),
         },
         Kind::OneOf(options) => {

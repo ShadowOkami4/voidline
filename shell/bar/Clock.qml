@@ -37,14 +37,14 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 Label {
                     text: Qt.formatDateTime(clock.date, "ddd").toUpperCase()
-                    font.pixelSize: 9
+                    font.pixelSize: 10
                     font.weight: Font.Bold
                     font.letterSpacing: 0.6
                     color: Theme.primary
                 }
                 Label {
                     text: Qt.formatDateTime(clock.date, "d MMM")
-                    font.pixelSize: 10
+                    font.pixelSize: 11
                     font.weight: Font.Medium
                     color: Theme.inkMuted
                 }

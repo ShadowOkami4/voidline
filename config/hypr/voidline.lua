@@ -9,7 +9,7 @@ end
 
 -- Start the shell with the session.
 hl.on("hyprland.start", function()
-    hl.exec_cmd("qs -c voidline")
+    hl.exec_cmd("sh ~/.config/quickshell/voidline/start.sh")
 end)
 
 -- Shell keybinds

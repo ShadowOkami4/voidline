@@ -115,5 +115,5 @@ else
     warn "Rust not installed: skipping voidlinectl (optional; the shell works without it)."
 fi
 
-say "Done. Log out and back in, or start it now with:  qs -c voidline"
+say "Done. Log out and back in, or start it now with:  sh $shell_dir/start.sh"
 say "Keys: Super+Space launcher, Super+A quick settings, Super+N minimise, Super+Shift+N restore, Super+Alt+S next style"

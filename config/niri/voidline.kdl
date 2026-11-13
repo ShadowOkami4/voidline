@@ -4,7 +4,7 @@
 // config.kdl, it only adds the include line.
 
 // Start the shell with the session.
-spawn-at-startup "qs" "-c" "voidline"
+spawn-sh-at-startup "sh ~/.config/quickshell/voidline/start.sh"
 
 binds {
     Mod+Space hotkey-overlay-title="Voidline: Launcher" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "toggle" "launcher"; }

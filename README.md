@@ -29,7 +29,7 @@ Run it as your normal user. The installer copies the shell to
 config and adds a single include line to it (after making a backup). It does not
 replace your Hyprland or Niri config. `./install.sh --uninstall` reverts it.
 
-Then log out and back in, or start it right away with `qs -c voidline`.
+Then log out and back in, or start it right away with `sh ~/.config/quickshell/voidline/start.sh`.
 
 ## Keys
 
@@ -61,6 +61,7 @@ is saved.
 | `reduceMotion` | `true`, `false` | Turn animations off |
 | `doNotDisturb` | `true`, `false` | Collect notifications without popups |
 | `workspaceCount` | number | Minimum workspaces shown (Hyprland) |
+| `uiScale` | `0.5` to `1.5` | Size of the whole shell (default `0.75`); the shell restarts itself when it changes |
 
 `voidlinectl` (optional, built by the installer when Rust is installed) edits
 these with validation and can check your setup:
