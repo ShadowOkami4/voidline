@@ -1,0 +1,16 @@
+// Voidline integration for Niri.
+// Loaded from config.kdl with:  include "voidline.kdl"
+// Everything here is safe to edit; the installer never overwrites your own
+// config.kdl, it only adds the include line.
+
+// Start the shell with the session.
+spawn-at-startup "qs" "-c" "voidline"
+
+binds {
+    Mod+Space hotkey-overlay-title="Voidline: Launcher" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "toggle" "launcher"; }
+    Mod+A hotkey-overlay-title="Voidline: Quick Settings" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "toggle" "quick"; }
+    // Minimised windows are parked on a workspace named "minimized".
+    Mod+N hotkey-overlay-title="Voidline: Minimise Window" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "minimize"; }
+    Mod+Shift+N hotkey-overlay-title="Voidline: Restore Window" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "restore"; }
+    Mod+Alt+S hotkey-overlay-title="Voidline: Next Style" { spawn "qs" "-c" "voidline" "ipc" "call" "shell" "style" "next"; }
+}

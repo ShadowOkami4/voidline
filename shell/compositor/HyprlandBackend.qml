@@ -1,0 +1,49 @@
+import Quickshell
+import Quickshell.Hyprland
+import QtQuick
+import qs.core
+
+// Hyprland (Lua config era, 0.55+): dispatchers are Lua expressions.
+// Minimised windows live on the special workspace "special:minimized".
+QtObject {
+    id: root
+
+    readonly property string stashName: "special:" + Compositor.stash
+
+    readonly property var windows: Hyprland.toplevels.values.map(t => ({
+        id: t.address,
+        appId: (t.wayland && t.wayland.appId) || (t.lastIpcObject && t.lastIpcObject.class) || "",
+        title: t.title || "",
+        focused: t.activated,
+        minimized: !!t.workspace && t.workspace.name === root.stashName,
+        workspace: t.workspace ? t.workspace.id : 0
+    }))
+
+    readonly property var workspaces: {
+        const existing = Hyprland.workspaces.values.filter(w => w.id > 0)
+        const count = Math.max(Config.workspaceCount, existing.reduce((m, w) => Math.max(m, w.id), 0))
+        const focused = Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1
+        const used = {}
+        for (const w of windows) used[w.workspace] = true
+        const list = []
+        for (let i = 1; i <= count; ++i)
+            list.push({ id: i, name: String(i), index: i, active: i === focused, occupied: !!used[i] })
+        return list
+    }
+
+    function sel(id) { return "address:0x" + String(id).replace(/^0x/, "") }
+    function dsp(lua) { Hyprland.dispatch(lua) }
+
+    function focusWorkspace(ws) { dsp(`hl.dsp.focus({ workspace = ${ws.id} })`) }
+    function focusWindow(id) { dsp(`hl.dsp.focus({ window = "${sel(id)}" })`) }
+    function closeWindow(id) { dsp(`hl.dsp.window.close({ window = "${sel(id)}" })`) }
+    function minimize(id) {
+        dsp(`hl.dsp.window.move({ window = "${sel(id)}", workspace = "${stashName}", follow = false })`)
+    }
+    function restore(id) {
+        const ws = Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1
+        dsp(`hl.dsp.window.move({ window = "${sel(id)}", workspace = "${ws}", follow = false })`)
+        focusWindow(id)
+    }
+    function quit() { dsp("hl.dsp.exit()") }
+}

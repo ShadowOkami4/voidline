@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# Voidline installer. Run as your normal user (never with sudo):
+#
+#   ./install.sh                 install the shell and hook it into your compositor(s)
+#   ./install.sh --install-deps  also install missing packages with pacman (asks for sudo)
+#   ./install.sh --uninstall     remove Voidline and the lines it added
+#
+# It never replaces your compositor config. It copies one Voidline file next to
+# it and adds a single include line, after making a backup.
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+config=${XDG_CONFIG_HOME:-$HOME/.config}
+shell_dir=$config/quickshell/voidline
+stamp=$(date +%Y%m%d-%H%M%S)
+
+say()  { printf '\033[1;35m::\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33m!!\033[0m %s\n' "$*"; }
+die()  { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; exit 1; }
+
+[[ $EUID -ne 0 ]] || die "Run this as your normal user, not with sudo."
+
+required=(quickshell ttf-material-symbols-variable)
+recommended=(inter-font papirus-icon-theme brightnessctl networkmanager bluez upower pipewire wireplumber)
+
+hypr_main=$config/hypr/hyprland.lua
+hypr_line='require("voidline")'
+niri_main=$config/niri/config.kdl
+niri_line='include "voidline.kdl"'
+
+missing() { local out=(); for p in "$@"; do pacman -Qq "$p" &>/dev/null || out+=("$p"); done; echo "${out[*]}"; }
+
+unhook() { # file line
+    [[ -f $1 ]] && grep -qxF "$2" "$1" || return 0
+    cp "$1" "$1.voidline-bak-$stamp"
+    grep -vxF "$2" "$1.voidline-bak-$stamp" > "$1" || true
+    say "Removed Voidline line from $1"
+}
+
+hook() { # file line
+    grep -qxF "$2" "$1" && return 0
+    cp "$1" "$1.voidline-bak-$stamp"
+    printf '\n%s\n' "$2" >> "$1"
+    say "Added '$2' to $1 (backup: $(basename "$1").voidline-bak-$stamp)"
+}
+
+if [[ ${1:-} == --uninstall ]]; then
+    unhook "$hypr_main" "$hypr_line"
+    unhook "$niri_main" "$niri_line"
+    rm -f "$config/hypr/voidline.lua" "$config/niri/voidline.kdl" "$HOME/.local/bin/voidlinectl"
+    rm -rf "$shell_dir"
+    say "Voidline removed. Your settings in $config/voidline were kept."
+    exit 0
+fi
+
+command -v pacman >/dev/null || die "Voidline currently supports Arch Linux (pacman not found)."
+
+# --- packages -----------------------------------------------------------------
+need=$(missing "${required[@]}")
+want=$(missing "${recommended[@]}")
+if [[ ${1:-} == --install-deps ]]; then
+    if [[ -n "$need$want" ]]; then
+        say "Installing: $need $want"
+        # shellcheck disable=SC2086
+        sudo pacman -S --needed $need $want
+    fi
+elif [[ -n $need ]]; then
+    die "Missing required packages: $need  (re-run with --install-deps)"
+elif [[ -n $want ]]; then
+    warn "Optional packages not installed (some features stay hidden): $want"
+fi
+
+# --- shell --------------------------------------------------------------------
+if [[ -e $shell_dir ]]; then
+    mv "$shell_dir" "$shell_dir.bak-$stamp"
+    say "Existing shell moved to $shell_dir.bak-$stamp"
+fi
+mkdir -p "$(dirname "$shell_dir")"
+cp -r "$here/shell" "$shell_dir"
+say "Shell installed to $shell_dir"
+
+# --- compositors --------------------------------------------------------------
+found=0
+if command -v Hyprland >/dev/null || command -v hyprland >/dev/null; then
+    found=1
+    if [[ -f $hypr_main ]]; then
+        cp "$here/config/hypr/voidline.lua" "$config/hypr/voidline.lua"
+        hook "$hypr_main" "$hypr_line"
+    else
+        warn "Hyprland found but $hypr_main does not exist (Voidline needs the Lua config, Hyprland 0.55+). Start Hyprland once, then re-run."
+    fi
+fi
+if command -v niri >/dev/null; then
+    found=1
+    if [[ ! -f $niri_main && -f /usr/share/doc/niri/default-config.kdl ]]; then
+        mkdir -p "$config/niri"
+        cp /usr/share/doc/niri/default-config.kdl "$niri_main"
+        say "Created $niri_main from Niri's default config"
+    fi
+    if [[ -f $niri_main ]]; then
+        cp "$here/config/niri/voidline.kdl" "$config/niri/voidline.kdl"
+        hook "$niri_main" "$niri_line"
+        niri validate -c "$niri_main" >/dev/null 2>&1 || warn "niri reports a config problem: run 'niri validate'"
+    fi
+fi
+[[ $found -eq 1 ]] || warn "No supported compositor found. Install hyprland or niri, then re-run."
+
+# --- voidlinectl (optional) -----------------------------------------------------
+if command -v cargo >/dev/null; then
+    say "Building voidlinectl"
+    cargo build --release --manifest-path "$here/helper/Cargo.toml" --quiet
+    install -Dm755 "$here/helper/target/release/voidlinectl" "$HOME/.local/bin/voidlinectl"
+    say "voidlinectl installed to ~/.local/bin"
+else
+    warn "Rust not installed: skipping voidlinectl (optional; the shell works without it)."
+fi
+
+say "Done. Log out and back in, or start it now with:  qs -c voidline"
+say "Keys: Super+Space launcher, Super+A quick settings, Super+N minimise, Super+Shift+N restore, Super+Alt+S next style"
