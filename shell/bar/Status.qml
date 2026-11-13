@@ -19,6 +19,7 @@ Pressable {
 
     readonly property color ink: selected ? Theme.inkOnPrimaryContainer : Theme.inkMuted
 
+    wheelEnabled: true
     onClicked: Shell.toggle("quick", screen)
     onWheel: wheel => Audio.setVolume(Audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))
 

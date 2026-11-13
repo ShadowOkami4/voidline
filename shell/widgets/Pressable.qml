@@ -11,6 +11,8 @@ Rectangle {
     property int pressedRadius: Theme.cornerM
     property bool selected: false
     property bool enabledInput: true
+    // Off by default so lists underneath keep scrolling.
+    property bool wheelEnabled: false
     readonly property bool hovered: area.containsMouse
     readonly property bool pressed: area.pressed
     property alias acceptedButtons: area.acceptedButtons
@@ -38,6 +40,6 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: mouse => root.clicked(mouse)
-        onWheel: wheel => root.wheel(wheel)
+        onWheel: wheel => { if (root.wheelEnabled) root.wheel(wheel); else wheel.accepted = false }
     }
 }

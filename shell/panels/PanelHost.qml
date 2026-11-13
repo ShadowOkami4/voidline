@@ -3,7 +3,8 @@ import Quickshell.Wayland
 import QtQuick
 import qs.core
 
-// Full-screen transparent layer that hosts the launcher and quick settings.
+// Transparent layer covering the work area (the screen minus bar, frame and
+// dock) that hosts the launcher and quick settings.
 // It exists only while a panel is open (or animating out); clicking outside a
 // panel or pressing Esc closes it. This works the same on every compositor,
 // with no compositor-specific focus grabbing.
@@ -14,7 +15,8 @@ PanelWindow {
     readonly property bool wanted: mine && Shell.panel !== ""
 
     anchors { top: true; bottom: true; left: true; right: true }
-    exclusionMode: ExclusionMode.Ignore
+    exclusionMode: ExclusionMode.Normal
+    exclusiveZone: 0
     color: "transparent"
     visible: wanted || launcher.showing || quick.showing
     WlrLayershell.namespace: "voidline-panel"

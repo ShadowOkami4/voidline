@@ -25,6 +25,8 @@ Singleton {
     property alias workspaceCount: data.workspaceCount
     // Whole-shell size factor (0.5 - 1.5). Applied at start by start.sh.
     property alias uiScale: data.uiScale
+    // Terminal used for apps that need one (launched as: <terminal> -e <command>).
+    property alias terminal: data.terminal
     property bool loaded: false
 
     readonly property var styles: ["voidline", "windows", "macos"]
@@ -57,6 +59,7 @@ Singleton {
             property list<string> pinnedApps: []
             property int workspaceCount: 5
             property real uiScale: 0.75
+            property string terminal: "kitty"
         }
     }
 }

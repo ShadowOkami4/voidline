@@ -61,6 +61,7 @@ is saved.
 | `reduceMotion` | `true`, `false` | Turn animations off |
 | `doNotDisturb` | `true`, `false` | Collect notifications without popups |
 | `workspaceCount` | number | Minimum workspaces shown (Hyprland) |
+| `terminal` | command | Terminal for apps that need one (default `kitty`) |
 | `uiScale` | `0.5` to `1.5` | Size of the whole shell (default `0.75`); the shell restarts itself when it changes |
 
 `voidlinectl` (optional, built by the installer when Rust is installed) edits

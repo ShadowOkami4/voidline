@@ -32,11 +32,12 @@ Item {
     anchors.fill: parent
     visible: showing
 
-    readonly property real px: anchor === "center" || anchor.endsWith("center") ? (width - panelWidth) / 2
-        : (attached ? width - Style.frameWidth - panelWidth : width - panelWidth - Style.panelGap - Style.frameWidth)
-    readonly property real py: anchor === "center" ? height * 0.18
-        : (isTop ? Style.barHeight + (attached ? 0 : Style.panelGap)
-            : height - Style.barHeight - Style.panelGap - panelHeight)
+    // The host covers the work area, so (0, 0) is the corner just inside the
+    // bar and frame.
+    readonly property real px: anchor.endsWith("center") ? (width - panelWidth) / 2
+        : width - panelWidth - (attached ? 0 : Style.panelGap)
+    readonly property real py: anchor === "center" ? height * 0.16
+        : (isTop ? (attached ? 0 : Style.panelGap) : height - Style.panelGap - panelHeight)
 
     Rectangle {
         id: card

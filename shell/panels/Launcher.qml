@@ -105,6 +105,7 @@ PanelSurface {
                 restRadius: Theme.cornerLInc
                 pressedRadius: Theme.cornerM
                 onClicked: root.launch(modelData)
+                onHoveredChanged: if (hovered) grid.currentIndex = index
 
                 Column {
                     anchors.centerIn: parent

@@ -2,6 +2,7 @@ pragma Singleton
 
 import Quickshell
 import QtQuick
+import qs.core
 
 Singleton {
     readonly property var all: DesktopEntries.applications.values
@@ -40,5 +41,14 @@ Singleton {
         return entry && entry.icon ? entry.icon : (appId || "")
     }
 
-    function launch(entry) { entry.execute() }
+    // Started apps must not inherit the shell's own UI scale, and entries
+    // marked Terminal=true need a terminal around them.
+    function launch(entry) {
+        let cmd = entry.command.slice()
+        if (cmd.length === 0) { entry.execute(); return }
+        if (entry.runInTerminal) cmd = [Config.terminal, "-e"].concat(cmd)
+        const context = { command: ["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE"].concat(cmd) }
+        if (entry.workingDirectory) context.workingDirectory = entry.workingDirectory
+        Quickshell.execDetached(context)
+    }
 }
