@@ -13,7 +13,12 @@ Singleton {
     property bool settingsOpen: false
     readonly property string version: "0.4.0-dev"
 
-    function openSettings() { panel = ""; settingsOpen = true }
+    property int settingsPage: 0
+    function openSettings(page) {
+        if (page !== undefined) settingsPage = page
+        panel = ""
+        settingsOpen = true
+    }
 
     function toggle(name, onScreen) {
         if (panel === name) { panel = ""; return }

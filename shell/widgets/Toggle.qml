@@ -1,7 +1,8 @@
 import QtQuick
 import qs.core
 
-// M3 switch. The handle grows when on and stretches while pressed.
+// M3 Expressive switch: the handle grows when on, stretches while pressed and
+// carries a check or cross icon.
 Item {
     id: root
 
@@ -21,17 +22,25 @@ Item {
     }
 
     Rectangle {
-        readonly property int size: area.pressed ? 28 : (root.checked ? 24 : 16)
-        width: area.pressed ? size + 4 : size
+        id: handle
+        readonly property int size: area.pressed ? 28 : 24
+        width: area.pressed ? size + 6 : size
         height: size
         radius: height / 2
-        x: root.checked ? parent.width - width - (32 - size) / 2 : (32 - size) / 2
+        x: root.checked ? parent.width - width - 4 + (area.pressed ? 2 : 0) : 4 - (area.pressed ? 2 : 0)
         anchors.verticalCenter: parent.verticalCenter
         color: root.checked ? Theme.inkOnPrimary : Theme.outline
         Behavior on x { Spring {} }
         Behavior on width { Spring {} }
         Behavior on height { Spring {} }
         Behavior on color { Tint {} }
+
+        MIcon {
+            anchors.centerIn: parent
+            icon: root.checked ? "check" : "close"
+            size: 16
+            color: root.checked ? Theme.primary : Theme.surfaceContainerHighest
+        }
     }
 
     MouseArea {

@@ -65,6 +65,7 @@ ShellRoot {
             else if (Config.styles.includes(name)) Config.style = name
         }
         function settings(): void { Shell.openSettings() }
+        function settingsPage(page: int): void { Shell.openSettings(page) }
         function minimize(): void { Compositor.minimizeFocused() }
         function restore(): void { Compositor.restoreLast() }
         function compositor(): string { return Compositor.name }

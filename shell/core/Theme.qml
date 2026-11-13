@@ -106,5 +106,11 @@ Singleton {
         return best
     }
 
+    // Colour families for icon containers: the same tone at different hues,
+    // so a list of settings is colourful but still belongs to the palette.
+    readonly property var hueShifts: [0, 0.14, 0.30, 0.52, 0.68, 0.84]
+    function hueContainer(i) { return tone(seed, hueShifts[i % hueShifts.length], dark ? 0.30 : 0.86, 0.55) }
+    function hueInk(i) { return tone(seed, hueShifts[i % hueShifts.length], dark ? 0.90 : 0.20, 0.65) }
+
     function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
 }
