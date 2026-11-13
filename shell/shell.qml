@@ -8,6 +8,7 @@ import qs.compositor
 import qs.bar
 import qs.panels
 import qs.settings
+import qs.services
 
 // Voidline 0.4 - a Material 3 Expressive desktop shell for Hyprland and Niri.
 ShellRoot {
@@ -46,6 +47,9 @@ ShellRoot {
         SettingsWindow {}
     }
 
+    // Keeps the compositor's generated settings file in step with the config.
+    readonly property string wmSettingsPath: WmConfig.path
+
     // The UI scale is fixed when the process starts. When the setting no
     // longer matches what we were started with, restart through start.sh.
     readonly property real startedScale: parseFloat(Quickshell.env("VOIDLINE_UI_SCALE") || "0")
@@ -66,6 +70,22 @@ ShellRoot {
         }
         function settings(): void { Shell.openSettings() }
         function settingsPage(page: int): void { Shell.openSettings(page) }
+        // Change one setting, e.g.  set desktop.gaps 16   or   set style macos
+        function set(key: string, value: string): string {
+            const parts = key.split(".")
+            let target = Config
+            for (let i = 0; i < parts.length - 1; ++i) {
+                target = target[parts[i]]
+                if (!target) return "unknown setting: " + key
+            }
+            const name = parts[parts.length - 1]
+            const old = target[name]
+            if (old === undefined || typeof old === "function" || typeof old === "object") return "unknown setting: " + key
+            if (typeof old === "boolean") target[name] = value === "true" || value === "on" || value === "1"
+            else if (typeof old === "number") { if (isNaN(Number(value))) return "not a number: " + value; target[name] = Number(value) }
+            else target[name] = value
+            return "ok"
+        }
         function minimize(): void { Compositor.minimizeFocused() }
         function restore(): void { Compositor.restoreLast() }
         function compositor(): string { return Compositor.name }

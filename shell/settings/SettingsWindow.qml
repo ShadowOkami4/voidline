@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import qs.core
+import qs.compositor
 import qs.services
 import qs.widgets
 
@@ -22,6 +23,7 @@ FloatingWindow {
     readonly property var pages: [
         { icon: "dashboard_customize", lobes: 8, label: "Style", hint: "Voidline, Windows, macOS", words: "style layout taskbar dock bar windows macos voidline", view: "StylePage.qml" },
         { icon: "palette", lobes: 4, label: "Wallpaper & colours", hint: "Theme, accent, wallpaper", words: "wallpaper colour color accent dark light theme palette", view: "ColoursPage.qml" },
+        { icon: "select_window", lobes: 8, label: Compositor.name === "niri" ? "Niri" : (Compositor.name === "hyprland" ? "Hyprland" : "Window manager"), hint: "Windows, layout, input", words: "window manager hyprland niri gaps border rounding corner keyboard layout touchpad mouse pointer blur shadow animation vrr focus", view: "WmPage.qml" },
         { icon: "tune", lobes: 0, label: "Interface", hint: "Size, bar, behaviour", words: "interface size scale clock workspaces notifications motion terminal bar", view: "InterfacePage.qml" },
         { icon: "info", lobes: 5, label: "About", hint: "Version " + Shell.version, words: "about version system", view: "AboutPage.qml" }
     ]

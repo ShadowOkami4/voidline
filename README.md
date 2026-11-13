@@ -67,6 +67,27 @@ edit by hand; changes apply as soon as the file is saved.
 | `terminal` | command | Terminal for apps that need one (default `kitty`) |
 | `uiScale` | `0.5` to `1.5` | Size of the whole shell (default `0.75`); the shell restarts itself when it changes |
 
+### Window-manager settings
+
+The Settings page named after your window manager (Hyprland or Niri, detected
+at runtime) controls gaps, borders, corner rounding, animations, keyboard
+layout and pointer behaviour, plus extras of that window manager. The shared
+values are stored once under `desktop`, so the look carries over when you
+switch between Hyprland and Niri.
+
+Voidline writes them to a generated file that is loaded after your own config:
+`~/.config/hypr/voidline-settings.lua` or `~/.config/niri/voidline-settings.kdl`.
+Turn off "Let Voidline manage ..." and that file is emptied, so your own config
+decides again. On Niri a few switches (tap to click, natural scrolling,
+animations) can only be turned on from here, not off, when your `config.kdl`
+already enables them.
+
+Any setting can also be changed from a script or keybind:
+
+```bash
+qs -c voidline ipc call shell set desktop.gaps 16
+```
+
 `voidlinectl` (optional, built by the installer when Rust is installed) edits
 these with validation and can check your setup:
 
@@ -104,7 +125,8 @@ Two rules keep it portable:
 Working in 0.4: bar, screen frame, dock, task list, workspaces, tray, clock,
 launcher, quick settings (network, Bluetooth, do not disturb, theme, volume,
 brightness, power), notifications, wallpaper with palette extraction, minimise,
-live style switching, settings window (appearance, desktop, about).
+live style switching, settings window (style, wallpaper and colours, window
+manager, interface, about).
 
 Not rewritten yet (present in 0.3.0): the system pages of Settings (network,
 Bluetooth, sound, displays), lock screen, SDDM theme,

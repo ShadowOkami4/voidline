@@ -29,6 +29,12 @@ Singleton {
     property alias terminal: data.terminal
     property bool loaded: false
 
+    // Window-manager settings. `desktop` is shared by every compositor so the
+    // look carries over when you switch; `hyprland` and `niri` hold extras.
+    property alias desktop: data.desktop
+    property alias hyprland: data.hyprland
+    property alias niri: data.niri
+
     readonly property var styles: ["voidline", "windows", "macos"]
 
     function cycleStyle() {
@@ -60,6 +66,32 @@ Singleton {
             property int workspaceCount: 5
             property real uiScale: 0.75
             property string terminal: "kitty"
-        }
+
+            property JsonObject desktop: JsonObject {
+                // false: Voidline writes nothing and your own config decides.
+                property bool managed: true
+                property int gaps: 10
+                property int border: 2
+                property int rounding: 14
+                property bool themedBorders: true
+                property bool animations: true
+                property string kbLayout: ""
+                property bool naturalScroll: true
+                property bool tapToClick: true
+                property bool focusFollowsMouse: true
+                property real pointerSpeed: 0
+            }
+            property JsonObject hyprland: JsonObject {
+                property string layout: "dwindle"
+                property bool blur: true
+                property bool shadows: true
+                property bool dimInactive: false
+                property bool vrr: true
+            }
+            property JsonObject niri: JsonObject {
+                property bool hideTitleBars: true
+                property string centerColumn: "never"
+                property real columnWidth: 0.5
+            }        }
     }
 }

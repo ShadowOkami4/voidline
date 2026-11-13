@@ -3,6 +3,9 @@
 // Everything here is safe to edit; the installer never overwrites your own
 // config.kdl, it only adds the include line.
 
+// Gaps, focus ring, input and the rest come from Voidline Settings.
+include "voidline-settings.kdl"
+
 // Start the shell with the session.
 spawn-sh-at-startup "sh ~/.config/quickshell/voidline/start.sh"
 

@@ -22,12 +22,8 @@ hl.bind("SUPER + ALT + S", shell("style", "next")) -- Voidline -> Windows -> mac
 -- Minimised windows live on this hidden workspace. Peek at all of them:
 hl.bind("SUPER + CTRL + N", hl.dsp.workspace.toggle_special("minimized"))
 
--- Adaptive sync on capable displays.
-hl.config({
-    misc = {
-        vrr = 1,
-    },
-})
+-- Gaps, borders, input and the rest come from Voidline Settings.
+pcall(require, "voidline-settings")
 
 -- Voidline Settings opens as a centred floating window.
 hl.window_rule({
