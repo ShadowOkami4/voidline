@@ -79,7 +79,6 @@ PanelSurface {
         // Style switcher (connected button group)
         Choice {
             Layout.fillWidth: true
-            segmentWidth: (column.width - 8) / 3
             value: Config.style
             options: [
                 { value: "voidline", label: "Voidline" },

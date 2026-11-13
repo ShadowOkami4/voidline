@@ -102,7 +102,6 @@ ColumnLayout {
                 : (PowerProfiles.profile === PowerProfile.Performance ? "Full speed, more heat and fan noise." : "A sensible mix for everyday use.")
             extra: Choice {
                 Layout.fillWidth: true
-                segmentWidth: (width - 8) / options.length
                 value: PowerProfiles.profile
                 options: PowerProfiles.hasPerformanceProfile ? [
                     { value: PowerProfile.PowerSaver, label: "Power saver" },

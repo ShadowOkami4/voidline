@@ -307,7 +307,6 @@ ColumnLayout {
                     Choice {
                         Layout.fillWidth: true
                         visible: opt.kind === "choice"
-                        segmentWidth: (width - 8) / Math.max(1, options.length)
                         value: opt.value
                         options: opt.modelData.choices || []
                         onPicked: v => opt.save(v)
@@ -340,7 +339,6 @@ ColumnLayout {
             description: "Higher is smoother and uses more power."
             extra: Choice {
                 Layout.fillWidth: true
-                segmentWidth: (width - 8) / 3
                 value: Config.liveFps
                 options: [
                     { value: 15, label: "15 fps" },

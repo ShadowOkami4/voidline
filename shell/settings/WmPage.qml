@@ -205,7 +205,6 @@ ColumnLayout {
                         : "Each new window splits the focused one.")
                 extra: Choice {
                     Layout.fillWidth: true
-                    segmentWidth: (width - 8) / 3
                     value: Config.hyprland.layout
                     options: [
                         { value: "dwindle", label: "Dwindle" },
@@ -268,7 +267,6 @@ ColumnLayout {
                 description: "Share of the screen a new column takes."
                 extra: Choice {
                     Layout.fillWidth: true
-                    segmentWidth: (width - 8) / 4
                     value: Config.niri.columnWidth
                     options: [
                         { value: 0.33, label: "Third" },
@@ -286,7 +284,6 @@ ColumnLayout {
                 title: "Centre the focused column"
                 extra: Choice {
                     Layout.fillWidth: true
-                    segmentWidth: (width - 8) / 3
                     value: Config.niri.centerColumn
                     options: [
                         { value: "never", label: "Never" },
