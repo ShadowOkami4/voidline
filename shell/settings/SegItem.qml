@@ -116,7 +116,7 @@ Rectangle {
         ColumnLayout {
             id: below
             Layout.fillWidth: true
-            visible: children.length > 0
+            visible: visibleChildren.length > 0
             spacing: 10
         }
     }

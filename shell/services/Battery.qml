@@ -9,6 +9,7 @@ Singleton {
     readonly property bool available: !!device && device.isLaptopBattery
     readonly property int percent: available ? Math.round(device.percentage * 100) : 0
     readonly property bool charging: available && !UPower.onBattery
+    readonly property bool onBattery: UPower.onBattery
     readonly property string icon: {
         if (charging) return "battery_charging_full"
         const steps = ["battery_0_bar", "battery_1_bar", "battery_2_bar", "battery_3_bar",

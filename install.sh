@@ -86,6 +86,9 @@ for shape in 16x9 16x10; do
     mkdir -p "$papers/$shape"
     cp "$here"/assets/wallpapers/$shape/*.png "$papers/$shape/"
 done
+# Live wallpapers (QML packages); yours in the same folder are left alone.
+mkdir -p "$papers/live"
+cp -r "$here"/assets/wallpapers/live/. "$papers/live/"
 say "Wallpapers copied to $papers"
 
 # --- launcher entry for Settings ------------------------------------------------

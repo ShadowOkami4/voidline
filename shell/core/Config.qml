@@ -37,7 +37,29 @@ Singleton {
     // Saved display modes, one "name|mode|scale" entry per output.
     property alias displays: data.displays
 
-    // "default" is the bundled Orbit wallpaper, "" is none, anything else a path.
+    // "default" is the bundled Orbit wallpaper, "" is none, "live:<id>" a live
+    // wallpaper package, anything else an image path.
+    readonly property string liveDir: wallpaperDir + "/live"
+    readonly property string liveId: wallpaper.startsWith("live:") ? wallpaper.slice(5).replace(/[^A-Za-z0-9_-]/g, "") : ""
+    property alias liveOptions: data.liveOptions
+    property alias livePauseOnBattery: data.livePauseOnBattery
+    property alias livePauseWhenCovered: data.livePauseWhenCovered
+    property alias liveFps: data.liveFps
+
+    // Saved option values of live wallpaper `id`, as { key: "value" }.
+    function liveSaved(id) {
+        const out = {}
+        for (const e of liveOptions) {
+            const m = e.match(/^([^.=]+)\.([^.=]+)=(.*)$/)
+            if (m && m[1] === id) out[m[2]] = m[3]
+        }
+        return out
+    }
+    function setLiveOption(id, key, value) {
+        const prefix = id + "." + key + "="
+        liveOptions = liveOptions.filter(e => !e.startsWith(prefix)).concat([prefix + value])
+    }
+
     readonly property string wallpaperDir: (Quickshell.env("XDG_DATA_HOME") || (Quickshell.env("HOME") + "/.local/share")) + "/voidline/wallpapers"
     function aspectDir(screen) {
         return screen && screen.height > 0 && screen.width / screen.height < 1.69 ? "16x10" : "16x9"
@@ -47,6 +69,9 @@ Singleton {
     function wallpaperFor(screen) {
         const dir = wallpaperDir + "/" + aspectDir(screen) + "/"
         if (wallpaper === "default") return dir + "voidline-orbit.png"
+        // Live wallpapers: the still preview stands in while loading and
+        // provides the colours for the palette.
+        if (liveId.length > 0) return liveDir + "/" + liveId + "/preview.png"
         const bundled = wallpaper.match(/\/voidline\/wallpapers\/16x(?:9|10)\/([^\/]+)$/)
         return bundled ? dir + bundled[1] : wallpaper
     }
@@ -85,6 +110,10 @@ Singleton {
             property string terminal: "kitty"
 
             property list<string> displays: []
+            property list<string> liveOptions: []
+            property bool livePauseOnBattery: true
+            property bool livePauseWhenCovered: true
+            property int liveFps: 30
 
             property JsonObject desktop: JsonObject {
                 // false: Voidline writes nothing and your own config decides.

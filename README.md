@@ -67,7 +67,7 @@ edit by hand; changes apply as soon as the file is saved.
 | `style` | `voidline`, `windows`, `macos` | Layout preset |
 | `dark` | `true`, `false` | Dark or light theme |
 | `accent` | `#RRGGBB` | Seed colour for the palette |
-| `wallpaper` | `default`, file path or `""` | Wallpaper drawn by Voidline (`default`: the bundled Orbit; empty: leave it to the compositor) |
+| `wallpaper` | `default`, `live:<id>`, file path or `""` | Wallpaper drawn by Voidline (`default`: the bundled Orbit; empty: leave it to the compositor) |
 | `wallpaperColors` | `true`, `false` | Derive the palette from the wallpaper |
 | `clock24h` | `true`, `false` | 24-hour clock |
 | `reduceMotion` | `true`, `false` | Turn animations off |
@@ -75,6 +75,15 @@ edit by hand; changes apply as soon as the file is saved.
 | `workspaceCount` | number | Minimum workspaces shown (Hyprland) |
 | `terminal` | command | Terminal for apps that need one (default `kitty`) |
 | `uiScale` | `0.5` to `1.5` | Size of the whole shell (default `0.75`); the shell restarts itself when it changes |
+
+### Live wallpapers
+
+Besides still images, Voidline runs live wallpapers: small QML scenes that are
+drawn by the shell's own renderer, with no browser engine. Three are bundled
+(Orbit, Drift, Bloom), each with its own options in Settings. They are capped
+at 30 fps, pause on battery and stop completely while windows cover the
+desktop. Writing your own takes one QML file; see
+[docs/live-wallpapers.md](docs/live-wallpapers.md).
 
 ### Window-manager settings
 
