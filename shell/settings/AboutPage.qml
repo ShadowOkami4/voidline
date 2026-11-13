@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Widgets
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import qs.core
@@ -8,8 +9,25 @@ import qs.services
 import qs.widgets
 
 ColumnLayout {
+    id: page
     spacing: 24
 
+    // Read once when the page opens.
+    property var facts: ({})
+    Process {
+        running: true
+        command: ["sh", "-c", "echo \"host=$(cat /etc/hostname 2>/dev/null)\"; . /etc/os-release 2>/dev/null; echo \"os=$PRETTY_NAME\"; echo \"kernel=$(uname -r)\"; echo \"cpu=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ //')\"; echo \"mem=$(awk '/MemTotal/ {printf \"%.0f\", $2/1048576}' /proc/meminfo)\"; echo \"gpu=$(lspci 2>/dev/null | grep -m1 -iE 'vga|3d|display' | sed -E 's/.*: //; s/ \\(rev.*//')\"; echo \"model=$(cat /sys/class/dmi/id/product_version 2>/dev/null)\""]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const out = {}
+                for (const line of text.split("\n")) {
+                    const i = line.indexOf("=")
+                    if (i > 0) out[line.slice(0, i)] = line.slice(i + 1).trim()
+                }
+                page.facts = out
+            }
+        }
+    }
     // Hero: big type next to an oversized expressive shape.
     ClippingRectangle {
         Layout.fillWidth: true
@@ -64,7 +82,16 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "This system"
+        title: "This computer"
+        SegItem { icon: "computer"; hue: 0; lobes: 8; title: page.facts.host || "Computer"; description: page.facts.model || "" }
+        SegItem { icon: "deployed_code"; hue: 1; lobes: 4; title: "Operating system"; description: (page.facts.os || "") + (page.facts.kernel ? "  ·  Linux " + page.facts.kernel : "") }
+        SegItem { icon: "memory"; hue: 2; lobes: 0; title: "Processor"; description: page.facts.cpu || "" }
+        SegItem { icon: "memory_alt"; hue: 3; lobes: 5; title: "Memory"; description: page.facts.mem ? page.facts.mem + " GB" : "" }
+        SegItem { icon: "developer_board"; hue: 4; lobes: 8; title: "Graphics"; description: page.facts.gpu || "" }
+    }
+
+    SegGroup {
+        title: "Shell"
         SegItem {
             icon: "window"
             hue: 1

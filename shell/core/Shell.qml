@@ -13,7 +13,7 @@ Singleton {
     property bool settingsOpen: false
     readonly property string version: "0.4.0-dev"
 
-    property int settingsPage: 0
+    property string settingsPage: "style"
     function openSettings(page) {
         if (page !== undefined) settingsPage = page
         panel = ""

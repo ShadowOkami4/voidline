@@ -34,6 +34,8 @@ Singleton {
     property alias desktop: data.desktop
     property alias hyprland: data.hyprland
     property alias niri: data.niri
+    // Saved display modes, one "name|mode|scale" entry per output.
+    property alias displays: data.displays
 
     readonly property var styles: ["voidline", "windows", "macos"]
 
@@ -66,6 +68,8 @@ Singleton {
             property int workspaceCount: 5
             property real uiScale: 0.75
             property string terminal: "kitty"
+
+            property list<string> displays: []
 
             property JsonObject desktop: JsonObject {
                 // false: Voidline writes nothing and your own config decides.

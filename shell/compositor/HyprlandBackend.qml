@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import QtQuick
 import qs.core
 
@@ -46,4 +47,30 @@ QtObject {
         focusWindow(id)
     }
     function quit() { dsp("hl.dsp.exit()") }
+
+    property var outputs: []
+    function refreshOutputs() { monitors.running = true }
+    function applyOutput(name, mode, scale) {
+        Quickshell.execDetached(["hyprctl", "eval",
+            `hl.monitor({ output = "${name}", mode = "${mode}", position = "auto", scale = ${scale} })`])
+        refreshLater.restart()
+    }
+
+    property Timer refreshLater: Timer { interval: 900; onTriggered: root.refreshOutputs() }
+    property Process monitors: Process {
+        command: ["hyprctl", "-j", "monitors"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.outputs = JSON.parse(text).map(m => ({
+                        name: m.name,
+                        description: (m.make + " " + m.model).trim(),
+                        mode: `${m.width}x${m.height}@${m.refreshRate.toFixed(2)}`,
+                        scale: m.scale,
+                        modes: m.availableModes.map(s => s.replace("Hz", ""))
+                    }))
+                } catch (e) { console.warn("hyprctl monitors:", e) }
+            }
+        }
+    }
 }

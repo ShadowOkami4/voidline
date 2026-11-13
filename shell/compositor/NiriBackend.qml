@@ -41,6 +41,14 @@ Item {
     function closeWindow(id) { act(["close-window", "--id", String(id)]) }
     function quit() { act(["quit", "--skip-confirmation"]) }
 
+    property var outputs: []
+    function refreshOutputs() { outputQuery.running = true }
+    function applyOutput(name, mode, scale) {
+        Quickshell.execDetached(["sh", "-c",
+            `niri msg output "${name}" mode "${mode}"; niri msg output "${name}" scale ${scale}`])
+        refreshLater.restart()
+    }
+
     function minimize(id) {
         // Create the parking workspace on first use: name the trailing empty
         // workspace, which niri then keeps alive.
@@ -106,4 +114,28 @@ Item {
     }
 
     Timer { id: restart; interval: 1000; onTriggered: stream.running = true }
+    Timer { id: refreshLater; interval: 900; onTriggered: root.refreshOutputs() }
+
+    Process {
+        id: outputQuery
+        command: ["niri", "msg", "--json", "outputs"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const all = JSON.parse(text)
+                    const fmt = m => `${m.width}x${m.height}@${(m.refresh_rate / 1000).toFixed(3)}`
+                    root.outputs = Object.keys(all).map(k => {
+                        const o = all[k]
+                        return {
+                            name: o.name,
+                            description: ((o.make || "") + " " + (o.model || "")).trim(),
+                            mode: o.current_mode !== null && o.modes[o.current_mode] ? fmt(o.modes[o.current_mode]) : "",
+                            scale: o.logical ? o.logical.scale : 1,
+                            modes: o.modes.map(fmt)
+                        }
+                    })
+                } catch (e) { console.warn("niri outputs:", e) }
+            }
+        }
+    }
 }

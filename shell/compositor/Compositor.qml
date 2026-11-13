@@ -9,6 +9,7 @@ import QtQuick
 //
 //   workspaces: [{ id, name, index, active, occupied }]
 //   windows:    [{ id, appId, title, focused, minimized, workspace }]
+//   outputs:    [{ name, description, mode, scale, modes: ["WxH@R"] }]  (after refreshOutputs)
 Singleton {
     id: root
 
@@ -31,6 +32,11 @@ Singleton {
     function minimize(id) { if (backend) backend.minimize(id) }
     function restore(id) { if (backend) backend.restore(id) }
     function quit() { if (backend) backend.quit() }
+
+    readonly property var outputs: backend ? backend.outputs : []
+    function refreshOutputs() { if (backend) backend.refreshOutputs() }
+    // Applies a mode and scale right away, without saving it.
+    function applyOutput(name, mode, scale) { if (backend) backend.applyOutput(name, mode, scale) }
 
     function minimizeFocused() { if (focusedWindow) minimize(focusedWindow.id) }
     function restoreLast() {

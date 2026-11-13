@@ -18,7 +18,8 @@ Rectangle {
     property alias extra: below.data
     signal clicked()
 
-    readonly property var siblings: parent ? parent.visibleChildren : []
+    // Repeaters and empty loaders are children too; only count real rows.
+    readonly property var siblings: parent ? parent.visibleChildren.filter(c => c.height > 0) : []
     readonly property bool first: siblings.length > 0 && siblings[0] === root
     readonly property bool last: siblings.length > 0 && siblings[siblings.length - 1] === root
     readonly property int outer: Theme.cornerXL

@@ -69,7 +69,7 @@ ShellRoot {
             else if (Config.styles.includes(name)) Config.style = name
         }
         function settings(): void { Shell.openSettings() }
-        function settingsPage(page: int): void { Shell.openSettings(page) }
+        function settingsPage(page: string): void { Shell.openSettings(page) }
         // Change one setting, e.g.  set desktop.gaps 16   or   set style macos
         function set(key: string, value: string): string {
             const parts = key.split(".")

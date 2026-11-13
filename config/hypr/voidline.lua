@@ -30,6 +30,6 @@ hl.window_rule({
     name = "voidline-settings",
     match = { title = "Voidline Settings" },
     float = 1,
-    size = { 1040, 700 },
+    size = { 1080, 760 },
     center = 1,
 })

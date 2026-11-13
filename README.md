@@ -47,8 +47,17 @@ minimises it, clicking a minimised window restores it, middle click closes it.
 
 ## Settings
 
-Open **Voidline Settings** from the launcher or the gear in quick settings. It
-covers theme, accent, wallpaper, interface size, style and bar options.
+Open **Voidline Settings** from the launcher or the gear in quick settings.
+
+| Section | Pages |
+| --- | --- |
+| Connections | Network (Wi-Fi and wired, needs NetworkManager), Bluetooth |
+| Device | Display (resolution, refresh rate, scale, brightness), Sound (devices and per-app volume), Battery & power |
+| Personalisation | Style, Wallpaper & colours, Hyprland or Niri, Interface |
+| System | About |
+
+Display changes are applied first and saved only after you confirm them; without
+confirmation they revert after 15 seconds.
 
 Everything is stored in `~/.config/voidline/config.json`, which you can also
 edit by hand; changes apply as soon as the file is saved.
@@ -125,12 +134,12 @@ Two rules keep it portable:
 Working in 0.4: bar, screen frame, dock, task list, workspaces, tray, clock,
 launcher, quick settings (network, Bluetooth, do not disturb, theme, volume,
 brightness, power), notifications, wallpaper with palette extraction, minimise,
-live style switching, settings window (style, wallpaper and colours, window
-manager, interface, about).
+live style switching, and a settings app with network, Bluetooth, display,
+sound, power, style, wallpaper and colours, window manager, interface and about
+pages.
 
-Not rewritten yet (present in 0.3.0): the system pages of Settings (network,
-Bluetooth, sound, displays), lock screen, SDDM theme,
-full Wi-Fi/Bluetooth/hotspot pages, games page, media controls, overview,
+Not rewritten yet (present in 0.3.0): lock screen, SDDM theme,
+hotspot page, games page, media controls, overview,
 polkit dialog, translations. The Lyra assistant and the Voidline terminal are
 not planned for 0.4.
 
