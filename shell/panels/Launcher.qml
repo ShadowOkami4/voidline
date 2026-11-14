@@ -16,7 +16,15 @@ PanelSurface {
     panelHeight: 540
 
     readonly property int columns: 6
-    property var results: Apps.search(search.text)
+    // "> something" runs it as a command instead of searching apps.
+    readonly property bool commandMode: search.text.startsWith(">")
+    readonly property string commandText: commandMode ? search.text.slice(1).trim() : ""
+    property var results: commandMode ? [] : Apps.search(search.text)
+    function run() {
+        if (commandText.length === 0) return
+        Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", "sh", "-c", commandText])
+        Shell.close()
+    }
 
     onOpenChanged: {
         if (open) { search.text = ""; grid.currentIndex = 0; search.forceActiveFocus() }
@@ -63,8 +71,8 @@ PanelSurface {
                 clip: true
 
                 Keys.onEscapePressed: Shell.close()
-                Keys.onReturnPressed: root.launch(root.results[grid.currentIndex])
-                Keys.onEnterPressed: root.launch(root.results[grid.currentIndex])
+                Keys.onReturnPressed: root.commandMode ? root.run() : root.launch(root.results[grid.currentIndex])
+                Keys.onEnterPressed: root.commandMode ? root.run() : root.launch(root.results[grid.currentIndex])
                 Keys.onRightPressed: grid.moveCurrentIndexRight()
                 Keys.onLeftPressed: grid.moveCurrentIndexLeft()
                 Keys.onDownPressed: grid.moveCurrentIndexDown()
@@ -72,7 +80,7 @@ PanelSurface {
 
                 Label {
                     visible: search.text.length === 0
-                    text: "Search apps"
+                    text: "Search apps, or type > to run a command"
                     color: Theme.inkMuted
                     font.pixelSize: Theme.textTitle
                     anchors.verticalCenter: parent.verticalCenter
@@ -132,7 +140,8 @@ PanelSurface {
             Label {
                 anchors.centerIn: parent
                 visible: grid.count === 0
-                text: "No apps found"
+                text: !root.commandMode ? "No apps found"
+                    : (root.commandText.length > 0 ? "Press Enter to run:  " + root.commandText : "Type a command, then press Enter")
                 color: Theme.inkMuted
             }
         }

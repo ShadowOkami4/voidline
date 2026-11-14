@@ -7,7 +7,7 @@ import QtQuick
 Singleton {
     id: root
 
-    // "" | "launcher" | "quick"
+    // "" | "launcher" | "quick" | "calendar" | "clipboard" | "switcher"
     property string panel: ""
     property var screen: null
     property bool settingsOpen: false
@@ -36,4 +36,11 @@ Singleton {
         panel = name
     }
     function close() { panel = "" }
+
+    // Window switcher: the first call opens it, further calls move on.
+    signal switcherStep()
+    function switcher() {
+        if (panel === "switcher") switcherStep()
+        else { screen = screen || Quickshell.screens[0]; panel = "switcher" }
+    }
 }

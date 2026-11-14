@@ -124,6 +124,23 @@ PanelSurface {
                 active: Config.dark
                 onClicked: Config.dark = !Config.dark
             }
+            Tile {
+                Layout.fillWidth: true
+                visible: Appearance.nightAvailable
+                icon: "nightlight"
+                title: "Night light"
+                subtitle: Config.nightLight ? "On" : "Off"
+                active: Config.nightLight
+                onClicked: Config.nightLight = !Config.nightLight
+            }
+            Tile {
+                Layout.fillWidth: true
+                icon: Capture.recording ? "stop_circle" : "screenshot_region"
+                title: Capture.recording ? "Stop recording" : "Screenshot"
+                subtitle: Capture.recording ? "Recording" : "Select an area"
+                active: Capture.recording
+                onClicked: Capture.recording ? Capture.toggleRecording() : Capture.shoot("region")
+            }
         }
 
         ExpSlider {

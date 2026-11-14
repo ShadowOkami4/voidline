@@ -16,6 +16,14 @@ hl.config({ misc = { allow_session_lock_restore = true } })
 -- Settings (Keyboard shortcuts page).
 pcall(require, "voidline-settings")
 
+hl.window_rule({
+    name = "voidline-welcome",
+    match = { title = "Welcome to Voidline" },
+    float = 1,
+    size = { 760, 720 },
+    center = 1,
+})
+
 -- Voidline Settings opens as a centred floating window.
 hl.window_rule({
     name = "voidline-settings",

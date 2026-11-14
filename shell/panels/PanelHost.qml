@@ -18,7 +18,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Normal
     exclusiveZone: 0
     color: "transparent"
-    visible: wanted || launcher.showing || quick.showing
+    visible: wanted || launcher.showing || quick.showing || calendar.showing || clipboard.showing || switcher.showing
     WlrLayershell.namespace: "voidline-panel"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: wanted ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
@@ -36,5 +36,8 @@ PanelWindow {
 
         Launcher { id: launcher; open: host.mine && Shell.panel === "launcher" }
         QuickSettings { id: quick; open: host.mine && Shell.panel === "quick" }
+        CalendarPanel { id: calendar; open: host.mine && Shell.panel === "calendar" }
+        ClipboardPanel { id: clipboard; open: host.mine && Shell.panel === "clipboard" }
+        Switcher { id: switcher; open: host.mine && Shell.panel === "switcher" }
     }
 }

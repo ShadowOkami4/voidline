@@ -40,6 +40,7 @@ Item {
     function focusWindow(id) { act(["focus-window", "--id", String(id)]) }
     function closeWindow(id) { act(["close-window", "--id", String(id)]) }
     function quit() { act(["quit", "--skip-confirmation"]) }
+    function screenPower(on) { act([on ? "power-on-monitors" : "power-off-monitors"]) }
 
     property var outputs: []
     function refreshOutputs() { outputQuery.running = true }

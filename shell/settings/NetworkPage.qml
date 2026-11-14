@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Networking
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import qs.core
@@ -72,6 +73,43 @@ ColumnLayout {
                     color: Theme.inkOnTertiaryContainer
                 }
             }
+        }
+    }
+
+    // Without NetworkManager: read-only facts about the connection in use.
+    property var link: ({})
+    Process {
+        running: !page.available
+        command: ["sh", "-c", "r=$(ip -4 route get 1.1.1.1 2>/dev/null | head -1); dev=$(echo \"$r\" | sed -n 's/.* dev \\([^ ]*\\).*/\\1/p'); [ -n \"$dev\" ] || exit 0; echo \"dev=$dev\"; echo \"ip=$(echo \"$r\" | sed -n 's/.* src \\([^ ]*\\).*/\\1/p')\"; echo \"gw=$(echo \"$r\" | sed -n 's/.* via \\([^ ]*\\).*/\\1/p')\"; [ -d /sys/class/net/$dev/wireless ] && echo kind=wifi || echo kind=wired; echo \"speed=$(cat /sys/class/net/$dev/speed 2>/dev/null)\""]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const out = {}
+                for (const line of text.split("\n")) {
+                    const i = line.indexOf("=")
+                    if (i > 0) out[line.slice(0, i)] = line.slice(i + 1).trim()
+                }
+                page.link = out
+            }
+        }
+    }
+    SegGroup {
+        visible: !page.available
+        title: "Current connection"
+        SegItem {
+            icon: !page.link.dev ? "public_off" : (page.link.kind === "wifi" ? "wifi" : "lan")
+            hue: 0
+            lobes: 8
+            title: !page.link.dev ? "Not connected" : (page.link.kind === "wifi" ? "Wi-Fi" : "Wired") + " (" + page.link.dev + ")"
+            description: !page.link.dev ? "No route to the internet was found."
+                : "Connected" + (parseInt(page.link.speed) > 0 ? "  ·  " + page.link.speed + " Mbit/s" : "")
+        }
+        SegItem {
+            visible: !!page.link.ip
+            icon: "tag"
+            hue: 1
+            lobes: 0
+            title: "Address"
+            description: (page.link.ip || "") + (page.link.gw ? "  ·  router " + page.link.gw : "")
         }
     }
 

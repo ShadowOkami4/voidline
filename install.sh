@@ -3,6 +3,7 @@
 #
 #   ./install.sh                 install the shell and hook it into your compositor(s)
 #   ./install.sh --install-deps  also install missing packages with pacman (asks for sudo)
+#   ./install.sh --sddm          install the Voidline login screen theme (asks for sudo)
 #   ./install.sh --uninstall     remove Voidline and the lines it added
 #
 # It never replaces your compositor config. It copies one Voidline file next to
@@ -21,7 +22,12 @@ die()  { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; exit 1; }
 [[ $EUID -ne 0 ]] || die "Run this as your normal user, not with sudo."
 
 required=(quickshell ttf-material-symbols-variable)
-recommended=(inter-font papirus-icon-theme brightnessctl networkmanager bluez upower pipewire wireplumber)
+recommended=(inter-font papirus-icon-theme brightnessctl networkmanager bluez upower pipewire wireplumber
+    libnotify grim slurp wl-clipboard cliphist swayidle wf-recorder gammastep pacman-contrib
+    xdg-desktop-portal xdg-desktop-portal-gtk)
+# Screen sharing and file dialogs for apps need the portal of the compositor in use.
+command -v Hyprland >/dev/null && recommended+=(xdg-desktop-portal-hyprland hyprsunset)
+command -v niri >/dev/null && recommended+=(xdg-desktop-portal-gnome)
 
 hypr_main=$config/hypr/hyprland.lua
 hypr_line='require("voidline")'
@@ -50,6 +56,20 @@ if [[ ${1:-} == --uninstall ]]; then
     rm -f "$config/hypr/voidline.lua" "$config/niri/voidline.kdl" "$config/hypr/voidline-settings.lua" "$config/niri/voidline-settings.kdl" "$HOME/.local/bin/voidlinectl" "${XDG_DATA_HOME:-$HOME/.local/share}/applications/voidline-settings.desktop"
     rm -rf "$shell_dir"
     say "Voidline removed. Your settings in $config/voidline were kept."
+    exit 0
+fi
+
+if [[ ${1:-} == --sddm ]]; then
+    command -v sddm >/dev/null || die "SDDM is not installed."
+    say "Installing the login screen theme (needs sudo)"
+    sudo mkdir -p /usr/share/sddm/themes /etc/sddm.conf.d
+    sudo rm -rf /usr/share/sddm/themes/voidline
+    sudo cp -r "$here/sddm/voidline" /usr/share/sddm/themes/voidline
+    wall=${XDG_DATA_HOME:-$HOME/.local/share}/voidline/wallpapers/16x10/voidline-orbit.png
+    [[ -f $wall ]] || wall=$here/assets/wallpapers/16x10/voidline-orbit.png
+    sudo cp "$wall" /usr/share/sddm/themes/voidline/background.png
+    printf '[Theme]\nCurrent=voidline\n' | sudo tee /etc/sddm.conf.d/voidline.conf >/dev/null
+    say "Done. You see it at the next login. Remove /etc/sddm.conf.d/voidline.conf to go back."
     exit 0
 fi
 

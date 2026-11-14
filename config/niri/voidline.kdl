@@ -13,5 +13,6 @@ spawn-sh-at-startup "sh ~/.config/quickshell/voidline/start.sh"
 // Voidline Settings opens as a floating window.
 window-rule {
     match title="^Voidline Settings$"
+    match title="^Welcome to Voidline$"
     open-floating true
 }

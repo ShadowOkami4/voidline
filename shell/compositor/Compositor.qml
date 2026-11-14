@@ -32,6 +32,8 @@ Singleton {
     function minimize(id) { if (backend) backend.minimize(id) }
     function restore(id) { if (backend) backend.restore(id) }
     function quit() { if (backend) backend.quit() }
+    // Turns all screens off or on (they also wake on input).
+    function screenPower(on) { if (backend) backend.screenPower(on) }
 
     readonly property var outputs: backend ? backend.outputs : []
     function refreshOutputs() { if (backend) backend.refreshOutputs() }

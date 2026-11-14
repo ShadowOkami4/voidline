@@ -90,6 +90,31 @@ ColumnLayout {
         SegItem { icon: "developer_board"; hue: 4; lobes: 8; title: "Graphics"; description: page.facts.gpu || "" }
     }
 
+    // Counts pending updates without changing anything (pacman-contrib).
+    property string updates: ""
+    property bool checking: false
+    Process {
+        id: check
+        command: ["sh", "-c", "command -v checkupdates >/dev/null || { echo missing; exit 0; }; checkupdates 2>/dev/null | wc -l"]
+        onStarted: page.checking = true
+        stdout: StdioCollector { onStreamFinished: { page.updates = text.trim(); page.checking = false } }
+    }
+    SegGroup {
+        title: "Software"
+        SegItem {
+            icon: "system_update_alt"
+            hue: 0
+            lobes: 5
+            title: page.checking ? "Checking…" : (page.updates === "" ? "Updates"
+                : (page.updates === "missing" ? "Updates" : (page.updates === "0" ? "Up to date" : page.updates + " updates available")))
+            description: page.updates === "missing" ? "Checking needs the package “pacman-contrib”."
+                : (parseInt(page.updates) > 0 ? "Install them in a terminal with:  sudo pacman -Syu" : "Looks for new package versions. Nothing is installed.")
+            clickable: !page.checking
+            onClicked: check.running = true
+            MIcon { icon: "refresh"; size: 22; color: Theme.inkMuted }
+        }
+    }
+
     SegGroup {
         title: "Shell"
         SegItem {

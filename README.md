@@ -42,6 +42,9 @@ Then log out and back in, or start it right away with `sh ~/.config/quickshell/v
 | Super + Alt + S | Next style |
 | Super + I | Settings |
 | Super + L | Lock the screen |
+| Super + Tab | Switch between windows |
+| Super + Shift + V | Clipboard history |
+| Print | Screenshot (Shift: select an area, Ctrl: start or stop a recording) |
 | Super + Ctrl + N | Show minimised windows |
 
 Change them in Settings under Keyboard shortcuts.
@@ -55,8 +58,8 @@ Open **Voidline Settings** from the launcher or the gear in quick settings.
 | Section | Pages |
 | --- | --- |
 | Connections | Network (Wi-Fi and wired, needs NetworkManager), Bluetooth |
-| Device | Display (resolution, refresh rate, scale, brightness), Sound (devices and per-app volume), Battery & power |
-| Personalisation | Style, Wallpaper & colours, Hyprland or Niri, Interface |
+| Device | Display (resolution, refresh rate, scale, brightness), Sound (devices and per-app volume), Lock & sleep, Battery & power |
+| Personalisation | Style, Wallpaper & colours, Hyprland or Niri, Apps & startup (app theme, icons, pointer, night light, autostart), Interface |
 | System | Notifications, Keyboard shortcuts, Default apps, Date & time, About |
 
 Display changes are applied first and saved only after you confirm them; without
@@ -152,6 +155,18 @@ notifications, keyboard shortcuts, default apps, date and time and about pages,
 a password dialog (polkit agent) for changes that need administrator rights,
 a lock screen (session lock, unlocked through PAM) and media controls in quick
 settings (any MPRIS player).
+
+Also part of the shell: volume and brightness popups, screenshots and screen
+recording, clipboard history, a calendar on the clock, a window switcher, a
+command runner in the launcher (type `>`), a first-run welcome screen and a
+login screen theme (`./install.sh --sddm`).
+
+Some features use small helper programs and stay switched off, with a note in
+Settings, until they are installed (`./install.sh --install-deps` installs all
+of them): `swayidle` (automatic lock and screen off), `cliphist` and
+`wl-clipboard` (clipboard history), `grim` and `slurp` (screenshots),
+`wf-recorder` (recording), `hyprsunset` or `gammastep` (night light),
+`pacman-contrib` (update check).
 
 Not rewritten yet (present in 0.3.0): SDDM theme, hotspot page, games page,
 overview, translations. The Lyra assistant and the Voidline terminal are

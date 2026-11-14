@@ -32,6 +32,7 @@ Singleton {
     // "bottom-right" | "center"
     readonly property string launcherAnchor: voidline ? "top-center" : (windows ? "bottom-center" : "center")
     readonly property string quickAnchor: windows ? "bottom-right" : "top-right"
+    readonly property string calendarAnchor: voidline ? "top-center" : quickAnchor
     readonly property string notificationAnchor: windows ? "bottom-right" : "top-right"
     readonly property int panelGap: 10
 }

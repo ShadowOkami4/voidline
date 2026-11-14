@@ -43,6 +43,15 @@ ShellRoot {
     NotificationPopups { screen: Quickshell.screens[0] }
     AuthDialog {}
     LockScreen {}
+    Osd {}
+
+    LazyLoader {
+        active: Config.loaded && !Config.welcomed
+        Welcome {}
+    }
+
+    // Background services start by being mentioned once.
+    readonly property var services: [Idle.hasSwayidle, Clipboard.available, Appearance.available, Autostart.launched, Capture.canShoot]
 
     LazyLoader {
         active: Shell.settingsOpen
@@ -89,6 +98,12 @@ ShellRoot {
             return "ok"
         }
         function lock(): void { Shell.lock() }
+        function switcher(): void { Shell.switcher() }
+        // screenshot screen | region
+        function screenshot(mode: string): void { Capture.shoot(mode) }
+        function record(): void { Capture.toggleRecording() }
+        // screen on | off
+        function screen(state: string): void { Compositor.screenPower(state !== "off") }
         // media toggle | next | previous
         function media(action: string): void {
             if (action === "next") Media.next()

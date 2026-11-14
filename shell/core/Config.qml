@@ -36,6 +36,17 @@ Singleton {
     property alias terminal: data.terminal
     property bool loaded: false
 
+    // Minutes of inactivity before each step; 0 switches the step off.
+    property alias lockAfter: data.lockAfter
+    property alias screenOffAfter: data.screenOffAfter
+    property alias sleepAfter: data.sleepAfter
+    property alias lockOnSleep: data.lockOnSleep
+    property alias nightLight: data.nightLight
+    property alias nightLightTemp: data.nightLightTemp
+    // Keep GTK/libadwaita apps in step with the shell's dark or light theme.
+    property alias syncAppTheme: data.syncAppTheme
+    property alias welcomed: data.welcomed
+
     // Window-manager settings. `desktop` is shared by every compositor so the
     // look carries over when you switch; `hyprland` and `niri` hold extras.
     property alias desktop: data.desktop
@@ -116,6 +127,14 @@ Singleton {
             property bool notifKeepUrgent: true
             property bool clockSeconds: false
             property list<string> keybinds: []
+            property int lockAfter: 10
+            property int screenOffAfter: 15
+            property int sleepAfter: 0
+            property bool lockOnSleep: true
+            property bool nightLight: false
+            property int nightLightTemp: 4000
+            property bool syncAppTheme: true
+            property bool welcomed: false
             property list<string> pinnedApps: []
             property int workspaceCount: 5
             property real uiScale: 0.75

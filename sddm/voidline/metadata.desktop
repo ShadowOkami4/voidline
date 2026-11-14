@@ -1,0 +1,13 @@
+[SddmGreeterTheme]
+Name=Voidline
+Description=Login screen matching the Voidline shell
+Author=ShadowOkami
+License=MIT
+Type=sddm-theme
+Version=0.4.0
+Website=https://github.com/ShadowOkami4/voidline
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=voidline
+Theme-API=2.0
+QtVersion=6

@@ -48,6 +48,7 @@ QtObject {
         focusWindow(id)
     }
     function quit() { dsp("hl.dsp.exit()") }
+    function screenPower(on) { dsp(`hl.dsp.dpms({ action = "${on ? "on" : "off"}" })`) }
 
     property var outputs: []
     function refreshOutputs() { monitors.running = true }

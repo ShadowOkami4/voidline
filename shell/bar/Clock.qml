@@ -15,6 +15,13 @@ Item {
     implicitWidth: loader.implicitWidth
     implicitHeight: loader.implicitHeight
 
+    // Opens the calendar.
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: Shell.toggle("calendar", null)
+    }
+
     SystemClock { id: clock; precision: Config.clockSeconds ? SystemClock.Seconds : SystemClock.Minutes }
 
     Loader {
