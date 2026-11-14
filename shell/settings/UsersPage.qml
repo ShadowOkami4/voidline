@@ -31,7 +31,7 @@ ColumnLayout {
     Process {
         id: read
         running: true
-        command: ["sh", "-c", "echo \"user=$USER\"; echo \"name=$(getent passwd \"$USER\" | cut -d: -f5 | cut -d, -f1)\"; echo \"host=$(cat /etc/hostname 2>/dev/null)\"; echo \"admin=$(id -nG | tr ' ' '\\n' | grep -cx wheel)\"; echo \"lang=$(localectl status 2>/dev/null | sed -n 's/.*LANG=//p' | head -n 1)\"; echo \"printers=$(command -v system-config-printer >/dev/null && echo yes)\"; echo \"cups=$(systemctl is-active cups.service cups.socket 2>/dev/null | grep -c '^active')\"; locale -a 2>/dev/null | grep -i 'utf' | sed 's/^/locale=/'"]
+        command: ["sh", "-c", "echo \"user=$USER\"; echo \"name=$(getent passwd \"$USER\" | cut -d: -f5 | cut -d, -f1)\"; echo \"host=$(cat /etc/hostname 2>/dev/null)\"; echo \"admin=$(id -nG | tr ' ' '\\n' | grep -cx wheel)\"; echo \"lang=$(localectl status 2>/dev/null | sed -n 's/.*LANG=//p' | head -n 1)\"; echo \"printers=$(command -v system-config-printer >/dev/null && echo yes)\"; echo \"scanapp=$(command -v simple-scan >/dev/null && echo yes)\"; echo \"cups=$(systemctl is-active cups.service cups.socket 2>/dev/null | grep -c '^active')\"; locale -a 2>/dev/null | grep -i 'utf' | sed 's/^/locale=/'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const out = {}, list = []
@@ -44,6 +44,25 @@ ColumnLayout {
                 }
                 page.facts = out
                 page.locales = list.filter(l => !l.startsWith("C.") && !l.startsWith("POSIX"))
+            }
+        }
+    }
+    // Scanners the system can see. Looking takes a few seconds, so it runs
+    // once when the page opens; scanning itself is the scan app's job.
+    property var scanners: []
+    property bool scanLooking: true
+    Process {
+        running: true
+        command: ["sh", "-c", "command -v scanimage >/dev/null && LC_ALL=C scanimage -L 2>/dev/null"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const found = []
+                for (const line of text.split("\n")) {
+                    const m = line.match(/^device `[^']*' is an? (.+)$/)
+                    if (m) found.push(m[1].replace(/ (flatbed|multi-function|sheetfed|virtual) ?(scanner|peripheral|device)?$/i, "").trim())
+                }
+                page.scanners = found
+                page.scanLooking = false
             }
         }
     }
@@ -197,6 +216,19 @@ ColumnLayout {
             clickable: page.facts.printers === "yes"
             onClicked: Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", "system-config-printer"])
             MIcon { visible: page.facts.printers === "yes"; icon: "arrow_outward"; size: 22; color: Theme.inkMuted }
+        }
+        SegItem {
+            icon: "scanner"
+            hue: 0
+            lobes: 4
+            title: Lang.t("Scanners")
+            description: page.facts.scanapp !== "yes" ? Lang.t("Needs the package “simple-scan”.")
+                : (page.scanLooking ? Lang.t("Looking for scanners…")
+                    : (page.scanners.length > 0 ? page.scanners.join(", ") + Lang.t(". Click to scan.")
+                        : Lang.t("No scanner found. Switch it on or plug it in; the scan app also finds network scanners.")))
+            clickable: page.facts.scanapp === "yes"
+            onClicked: Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", "simple-scan"])
+            MIcon { visible: page.facts.scanapp === "yes"; icon: "arrow_outward"; size: 22; color: Theme.inkMuted }
         }
     }
 }
