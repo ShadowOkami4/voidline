@@ -62,6 +62,14 @@ ColumnLayout {
             Toggle { checked: Config.syncAppTheme; onToggled: v => Config.syncAppTheme = v }
         }
         SegItem {
+            icon: "format_color_fill"
+            hue: 4
+            lobes: 4
+            title: "Apps use Voidline's colours"
+            description: "The file manager and other GTK apps take the shell's colours. Restart an app to see it."
+            Toggle { checked: Config.appColors; onToggled: v => Config.appColors = v }
+        }
+        SegItem {
             id: icons
             readonly property bool expanded: page.open === "icons"
             icon: "category"

@@ -121,7 +121,14 @@ while read -r real aliases; do
     [[ -z $real || $real == \#* ]] && continue
     for a in $aliases; do ln -sf "$real" "$pointer/cursors/$a"; done
 done < "$here/assets/cursors/aliases.txt"
-say "Mouse pointer theme installed to $pointer"
+# Icons live in the same theme folder, so "Voidline" is one theme for both.
+cp -r "$here"/assets/icons/Voidline/. "$pointer/"
+while read -r dir real aliases; do
+    [[ -z $dir ]] && continue
+    for a in $aliases; do ln -sf "$real" "$pointer/$dir/$a"; done
+done < "$here/assets/icons/Voidline/aliases.txt"
+command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -f "$pointer" 2>/dev/null || true
+say "Mouse pointer and icon theme installed to $pointer"
 
 # --- launcher entry for Settings ------------------------------------------------
 apps=${XDG_DATA_HOME:-$HOME/.local/share}/applications
@@ -132,7 +139,7 @@ Type=Application
 Name=Voidline Settings
 Comment=Appearance, style and wallpaper of the Voidline shell
 Exec=qs -c voidline ipc call shell settings
-Icon=preferences-system
+Icon=voidline-settings
 Categories=Settings;
 EOF
 

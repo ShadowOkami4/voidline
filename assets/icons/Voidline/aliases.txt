@@ -1,0 +1,26 @@
+scalable/places folder.svg inode-directory.svg folder-open.svg folder-drag-accept.svg folder-visiting.svg gnome-fs-directory.svg
+scalable/places user-home.svg folder-home.svg go-home-folder.svg gnome-fs-home.svg
+scalable/places user-desktop.svg folder-desktop.svg gnome-fs-desktop.svg
+scalable/places folder-documents.svg folder-document.svg folder-text.svg
+scalable/places folder-download.svg folder-downloads.svg
+scalable/places folder-music.svg folder-sound.svg folder-audio.svg
+scalable/places folder-pictures.svg folder-image.svg folder-images.svg folder-photos.svg
+scalable/places folder-videos.svg folder-video.svg folder-movies.svg
+scalable/places folder-publicshare.svg folder-public.svg
+scalable/places folder-remote.svg network-workgroup.svg folder-network.svg network-server.svg
+scalable/places folder-recent.svg document-open-recent-folder.svg
+scalable/places folder-favorites.svg user-bookmarks.svg folder-bookmark.svg starred.svg
+scalable/places folder-development.svg folder-code.svg folder-git.svg folder-projects.svg
+scalable/places user-trash.svg trashcan_empty.svg gnome-fs-trash-empty.svg
+scalable/places user-trash-full.svg trashcan_full.svg gnome-fs-trash-full.svg
+scalable/devices drive-harddisk.svg drive-harddisk-system.svg drive-harddisk-solidstate.svg gnome-dev-harddisk.svg
+scalable/devices drive-removable-media.svg drive-removable-media-usb.svg media-removable.svg media-flash.svg drive-harddisk-usb.svg media-flash-sd-mmc.svg
+scalable/devices computer.svg computer-laptop.svg video-display.svg
+scalable/mimetypes text-x-generic.svg text-plain.svg text-x-plain.svg application-text.svg x-office-document.svg text-markdown.svg
+scalable/mimetypes image-x-generic.svg image-png.svg image-jpeg.svg image-gif.svg image-webp.svg image-svg+xml.svg image-bmp.svg
+scalable/mimetypes audio-x-generic.svg audio-mpeg.svg audio-flac.svg audio-x-wav.svg audio-ogg.svg audio-mp4.svg
+scalable/mimetypes video-x-generic.svg video-mp4.svg video-x-matroska.svg video-webm.svg video-quicktime.svg
+scalable/mimetypes text-x-script.svg application-x-shellscript.svg text-x-python.svg text-x-csrc.svg text-html.svg application-json.svg text-x-source.svg application-x-executable.svg
+scalable/mimetypes package-x-generic.svg application-zip.svg application-x-tar.svg application-x-compressed-tar.svg application-x-7z-compressed.svg application-gzip.svg application-x-archive.svg
+scalable/mimetypes application-pdf.svg application-x-pdf.svg gnome-mime-application-pdf.svg
+scalable/apps voidline-settings.svg voidline.svg

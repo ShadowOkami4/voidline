@@ -1,0 +1,34 @@
+[Icon Theme]
+Name=Voidline
+Comment=Icons and mouse pointers of the Voidline shell
+Inherits=Papirus-Dark,Papirus,Adwaita,hicolor
+Directories=scalable/places,scalable/devices,scalable/mimetypes,scalable/apps
+
+[scalable/places]
+Size=64
+MinSize=16
+MaxSize=512
+Context=Places
+Type=Scalable
+
+[scalable/devices]
+Size=64
+MinSize=16
+MaxSize=512
+Context=Devices
+Type=Scalable
+
+[scalable/mimetypes]
+Size=64
+MinSize=16
+MaxSize=512
+Context=MimeTypes
+Type=Scalable
+
+[scalable/apps]
+Size=64
+MinSize=16
+MaxSize=512
+Context=Applications
+Type=Scalable
+

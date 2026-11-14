@@ -45,6 +45,8 @@ Singleton {
     property alias nightLightTemp: data.nightLightTemp
     // Keep GTK/libadwaita apps in step with the shell's dark or light theme.
     property alias syncAppTheme: data.syncAppTheme
+    // Give GTK apps (the file manager, settings dialogs, ...) Voidline's colours.
+    property alias appColors: data.appColors
     property alias welcomed: data.welcomed
     // Light during the day (7:00 to 19:00), dark at night.
     property alias autoTheme: data.autoTheme
@@ -142,6 +144,7 @@ Singleton {
             property bool nightLight: false
             property int nightLightTemp: 4000
             property bool syncAppTheme: true
+            property bool appColors: true
             property bool welcomed: false
             property bool autoTheme: false
             property string font: ""

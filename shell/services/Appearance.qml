@@ -90,6 +90,67 @@ exit 0`]
         }
     }
 
+    // ---- colours for GTK apps -----------------------------------------------------------
+    // GTK 4 / libadwaita apps (Files, and most GNOME apps) read named colours
+    // from ~/.config/gtk-4.0/gtk.css. Voidline writes its palette to a file of
+    // its own (voidline.css) and adds one @import line to gtk.css, so anything
+    // already in there stays. Apps pick the colours up when they are started.
+    function hex(c) { return String(c).substring(0, 7) }
+    readonly property string gtkCss: {
+        const t = Theme
+        const d = (name, colour) => `@define-color ${name} ${hex(colour)};\n`
+        return "/* Written by Voidline (Settings > Apps & startup). Changes are overwritten. */\n"
+            + d("accent_color", t.primary) + d("accent_bg_color", t.primary) + d("accent_fg_color", t.inkOnPrimary)
+            + d("destructive_color", t.error) + d("destructive_bg_color", t.error) + d("destructive_fg_color", t.surface)
+            + d("window_bg_color", t.surface) + d("window_fg_color", t.ink)
+            + d("view_bg_color", t.surfaceContainerLow) + d("view_fg_color", t.ink)
+            + d("headerbar_bg_color", t.surface) + d("headerbar_fg_color", t.ink)
+            + d("headerbar_backdrop_color", t.surface) + d("headerbar_shade_color", t.surface)
+            + d("sidebar_bg_color", t.surface) + d("sidebar_fg_color", t.ink)
+            + d("sidebar_backdrop_color", t.surface) + d("sidebar_shade_color", t.surface)
+            + d("secondary_sidebar_bg_color", t.surfaceContainerLow) + d("secondary_sidebar_fg_color", t.ink)
+            + d("secondary_sidebar_backdrop_color", t.surfaceContainerLow)
+            + d("card_bg_color", t.surfaceContainerHigh) + d("card_fg_color", t.ink)
+            + d("dialog_bg_color", t.surfaceContainerHigh) + d("dialog_fg_color", t.ink)
+            + d("popover_bg_color", t.surfaceContainerHigh) + d("popover_fg_color", t.ink)
+            + d("thumbnail_bg_color", t.surfaceContainerHigh) + d("thumbnail_fg_color", t.ink)
+            // GTK 3 names, for older apps
+            + d("theme_selected_bg_color", t.primary) + d("theme_selected_fg_color", t.inkOnPrimary)
+            // The rounder shapes of the shell, kept to a few safe places.
+            + ".navigation-sidebar row, .sidebar-row, listview row, columnview row { border-radius: 14px; }\n"
+            + ".navigation-sidebar row:selected { background-color: alpha(@accent_bg_color, 0.26); }\n"
+            + "gridview child { border-radius: 16px; }\n"
+            + "button, entry, .linked > button { border-radius: 14px; }\n"
+            + "button.circular, button.pill, entry.search, searchbar entry { border-radius: 9999px; }\n"
+            + "popover > contents, .card, menu, .menu { border-radius: 18px; }\n"
+            + "window.csd { border-radius: 18px; }\n"
+    }
+    readonly property bool gtkWanted: Config.loaded && Config.appColors
+    onGtkCssChanged: gtkWrite.restart()
+    onGtkWantedChanged: gtkWrite.restart()
+    Timer {
+        id: gtkWrite
+        interval: 600
+        onTriggered: {
+            if (!Config.loaded) return
+            const script = `
+line='@import "voidline.css";'
+for v in gtk-4.0 gtk-3.0; do
+    dir="\${XDG_CONFIG_HOME:-$HOME/.config}/$v"
+    if [ "$1" = on ]; then
+        mkdir -p "$dir"
+        printf '%s' "$2" > "$dir/voidline.css"
+        [ -f "$dir/gtk.css" ] || : > "$dir/gtk.css"
+        grep -qxF "$line" "$dir/gtk.css" || { printf '%s\n' "$line"; cat "$dir/gtk.css"; } > "$dir/gtk.css.voidline-new" && [ -f "$dir/gtk.css.voidline-new" ] && mv "$dir/gtk.css.voidline-new" "$dir/gtk.css"
+    elif [ -f "$dir/gtk.css" ]; then
+        grep -vxF "$line" "$dir/gtk.css" > "$dir/gtk.css.voidline-new"; mv "$dir/gtk.css.voidline-new" "$dir/gtk.css"
+        rm -f "$dir/voidline.css"
+    fi
+done`
+            Quickshell.execDetached(["sh", "-c", script, "sh", root.gtkWanted ? "on" : "off", root.gtkCss])
+        }
+    }
+
     // Light by day, dark at night.
     function followClock() {
         if (!Config.loaded || !Config.autoTheme) return
