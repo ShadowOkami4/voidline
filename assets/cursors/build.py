@@ -6,6 +6,10 @@ the rest of the shell) and writes them straight into the Xcursor format, so no
 other tool is needed.  Needs python-cairo.
 
     python3 build.py [output-dir]        default: ./Voidline
+    python3 build.py --windows [dir]     default: ./Voidline-Windows
+
+The first form writes the Linux theme (Xcursor files), the second the same
+pointers for Windows (.cur and .ani files plus an install.inf).
 
 Only the real pointers are written.  The many other names apps ask for
 (left_ptr, hand2, xterm, ...) are listed in aliases.txt and become links when
@@ -155,6 +159,102 @@ def xcursor(path, pictures):
         f.write(b"Xcur" + struct.pack("<3I", 16, 0x10000, len(pictures)) + toc + chunks)
 
 
+# ---- Windows: .cur (still) and .ani (animated) ---------------------------------
+WIN_SIZES = [32, 48, 64, 96]
+
+
+def dib(surface):
+    """A picture as Windows wants it inside a cursor: a 32-bit bitmap stored
+    bottom-up, colours not multiplied by alpha, followed by an empty mask."""
+    w, h, stride = surface.get_width(), surface.get_height(), surface.get_stride()
+    src = bytes(surface.get_data())
+    rows = []
+    for y in range(h - 1, -1, -1):
+        row = bytearray(src[y * stride:y * stride + w * 4])
+        for x in range(0, w * 4, 4):
+            a = row[x + 3]
+            if 0 < a < 255:
+                row[x] = min(255, row[x] * 255 // a)
+                row[x + 1] = min(255, row[x + 1] * 255 // a)
+                row[x + 2] = min(255, row[x + 2] * 255 // a)
+        rows.append(bytes(row))
+    mask = bytes(((w + 31) // 32) * 4) * h
+    header = struct.pack("<IiiHHIIiiII", 40, w, h * 2, 1, 32, 0, w * h * 4 + len(mask), 0, 0, 0, 0)
+    return header + b"".join(rows) + mask
+
+
+def cur(pictures):
+    """pictures: [(surface, hot x, hot y)] -> the bytes of a .cur file."""
+    images = [dib(surface) for surface, _, _ in pictures]
+    offset = 6 + 16 * len(pictures)
+    entries = b""
+    for (surface, hx, hy), image in zip(pictures, images):
+        w, h = surface.get_width(), surface.get_height()
+        entries += struct.pack("<BBBBHHII", w % 256, h % 256, 0, 0, hx, hy, len(image), offset)
+        offset += len(image)
+    return struct.pack("<HHH", 0, 2, len(pictures)) + entries + b"".join(images)
+
+
+def ani(frames, jiffies):
+    """frames: a list of .cur files as bytes; jiffies: 1/60 s per frame."""
+    def chunk(tag, data):
+        return tag + struct.pack("<I", len(data)) + data + (b"\0" if len(data) % 2 else b"")
+    anih = struct.pack("<9I", 36, len(frames), len(frames), 0, 0, 0, 0, jiffies, 1)
+    icons = b"fram" + b"".join(chunk(b"icon", f) for f in frames)
+    body = b"ACON" + chunk(b"anih", anih) + chunk(b"LIST", icons)
+    return b"RIFF" + struct.pack("<I", len(body)) + body
+
+
+# Windows pointer slots, in the order a scheme lists them -> our pointer.
+WIN_SCHEME = [
+    ("Arrow", "default"), ("Help", "default"), ("AppStarting", "progress"), ("Wait", "wait"),
+    ("Crosshair", "crosshair"), ("IBeam", "text"), ("NWPen", "default"), ("No", "not-allowed"),
+    ("SizeNS", "ns-resize"), ("SizeWE", "ew-resize"), ("SizeNWSE", "nwse-resize"), ("SizeNESW", "nesw-resize"),
+    ("SizeAll", "move"), ("UpArrow", "default"), ("Hand", "pointer"), ("Pin", "pointer"), ("Person", "pointer"),
+]
+SPINS = (("wait", [], (0.5, 0.5, 0.30, 0.13), (0.5, 0.5)),
+         ("progress", "arrow", (0.74, 0.74, 0.16, 0.09), (0.12, 0.07)))
+
+
+def build_windows(out):
+    os.makedirs(out, exist_ok=True)
+    files = {}
+    for name, (shapes, hot) in STILL.items():
+        files[name] = name + ".cur"
+        with open(os.path.join(out, files[name]), "wb") as f:
+            f.write(cur([(render(s, shapes), round(hot[0] * s), round(hot[1] * s)) for s in WIN_SIZES]))
+    for name, base, where, hot in SPINS:
+        base = ARROW if base == "arrow" else []
+        frames = []
+        for frame in range(FRAMES):
+            track, arc = spinner(*where, frame)
+            frames.append(cur([(render(s, base + track, arc), round(hot[0] * s), round(hot[1] * s)) for s in (32, 48, 64)]))
+        files[name] = name + ".ani"
+        with open(os.path.join(out, files[name]), "wb") as f:
+            f.write(ani(frames, 4))
+
+    used = sorted(set(files[ours] for _, ours in WIN_SCHEME))
+    scheme = ",".join("%10%\\%CUR_DIR%\\" + files[ours] for _, ours in WIN_SCHEME)
+    slots = "\n".join('HKCU,"Control Panel\\Cursors",%s,0x00020000,"%%10%%\\%%CUR_DIR%%\\%s"' % (slot, files[ours]) for slot, ours in WIN_SCHEME)
+    inf = (
+        "; Voidline mouse pointers for Windows.\r\n"
+        "; Right-click this file and choose Install, then pick \"Voidline\" under\r\n"
+        "; Settings > Bluetooth & devices > Mouse > Additional mouse settings > Pointers.\r\n"
+        "[Version]\r\nsignature=\"$CHICAGO$\"\r\n\r\n"
+        "[DefaultInstall]\r\nCopyFiles = Scheme.Cur\r\nAddReg = Scheme.Reg\r\n\r\n"
+        "[DestinationDirs]\r\nScheme.Cur = 10,\"%CUR_DIR%\"\r\n\r\n"
+        "[Scheme.Reg]\r\n"
+        'HKCU,"Control Panel\\Cursors\\Schemes","%SCHEME_NAME%",,"' + scheme + '"\r\n'
+        'HKCU,"Control Panel\\Cursors",,0x00020000,"%SCHEME_NAME%"\r\n'
+        + slots.replace("\n", "\r\n") + "\r\n\r\n"
+        "[Scheme.Cur]\r\n" + "\r\n".join(used) + "\r\n\r\n"
+        "[Strings]\r\nCUR_DIR = \"Cursors\\Voidline\"\r\nSCHEME_NAME = \"Voidline\"\r\n"
+    )
+    with open(os.path.join(out, "install.inf"), "w", newline="") as f:
+        f.write(inf)
+    print("built", len(files), "Windows pointers in", out)
+
+
 # name: (shapes, hot spot as a share of the size)
 STILL = {
     "default": (ARROW, (0.12, 0.07)),
@@ -172,6 +272,10 @@ STILL = {
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--windows":
+        here = os.path.dirname(os.path.abspath(__file__))
+        build_windows(sys.argv[2] if len(sys.argv) > 2 else os.path.join(here, "Voidline-Windows"))
+        return
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "Voidline")
     cursors = os.path.join(out, "cursors")
     os.makedirs(cursors, exist_ok=True)

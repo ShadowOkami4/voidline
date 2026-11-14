@@ -1,0 +1,51 @@
+; Voidline mouse pointers for Windows.
+; Right-click this file and choose Install, then pick "Voidline" under
+; Settings > Bluetooth & devices > Mouse > Additional mouse settings > Pointers.
+[Version]
+signature="$CHICAGO$"
+
+[DefaultInstall]
+CopyFiles = Scheme.Cur
+AddReg = Scheme.Reg
+
+[DestinationDirs]
+Scheme.Cur = 10,"%CUR_DIR%"
+
+[Scheme.Reg]
+HKCU,"Control Panel\Cursors\Schemes","%SCHEME_NAME%",,"%10%\%CUR_DIR%\default.cur,%10%\%CUR_DIR%\default.cur,%10%\%CUR_DIR%\progress.ani,%10%\%CUR_DIR%\wait.ani,%10%\%CUR_DIR%\crosshair.cur,%10%\%CUR_DIR%\text.cur,%10%\%CUR_DIR%\default.cur,%10%\%CUR_DIR%\not-allowed.cur,%10%\%CUR_DIR%\ns-resize.cur,%10%\%CUR_DIR%\ew-resize.cur,%10%\%CUR_DIR%\nwse-resize.cur,%10%\%CUR_DIR%\nesw-resize.cur,%10%\%CUR_DIR%\move.cur,%10%\%CUR_DIR%\default.cur,%10%\%CUR_DIR%\pointer.cur,%10%\%CUR_DIR%\pointer.cur,%10%\%CUR_DIR%\pointer.cur"
+HKCU,"Control Panel\Cursors",,0x00020000,"%SCHEME_NAME%"
+HKCU,"Control Panel\Cursors",Arrow,0x00020000,"%10%\%CUR_DIR%\default.cur"
+HKCU,"Control Panel\Cursors",Help,0x00020000,"%10%\%CUR_DIR%\default.cur"
+HKCU,"Control Panel\Cursors",AppStarting,0x00020000,"%10%\%CUR_DIR%\progress.ani"
+HKCU,"Control Panel\Cursors",Wait,0x00020000,"%10%\%CUR_DIR%\wait.ani"
+HKCU,"Control Panel\Cursors",Crosshair,0x00020000,"%10%\%CUR_DIR%\crosshair.cur"
+HKCU,"Control Panel\Cursors",IBeam,0x00020000,"%10%\%CUR_DIR%\text.cur"
+HKCU,"Control Panel\Cursors",NWPen,0x00020000,"%10%\%CUR_DIR%\default.cur"
+HKCU,"Control Panel\Cursors",No,0x00020000,"%10%\%CUR_DIR%\not-allowed.cur"
+HKCU,"Control Panel\Cursors",SizeNS,0x00020000,"%10%\%CUR_DIR%\ns-resize.cur"
+HKCU,"Control Panel\Cursors",SizeWE,0x00020000,"%10%\%CUR_DIR%\ew-resize.cur"
+HKCU,"Control Panel\Cursors",SizeNWSE,0x00020000,"%10%\%CUR_DIR%\nwse-resize.cur"
+HKCU,"Control Panel\Cursors",SizeNESW,0x00020000,"%10%\%CUR_DIR%\nesw-resize.cur"
+HKCU,"Control Panel\Cursors",SizeAll,0x00020000,"%10%\%CUR_DIR%\move.cur"
+HKCU,"Control Panel\Cursors",UpArrow,0x00020000,"%10%\%CUR_DIR%\default.cur"
+HKCU,"Control Panel\Cursors",Hand,0x00020000,"%10%\%CUR_DIR%\pointer.cur"
+HKCU,"Control Panel\Cursors",Pin,0x00020000,"%10%\%CUR_DIR%\pointer.cur"
+HKCU,"Control Panel\Cursors",Person,0x00020000,"%10%\%CUR_DIR%\pointer.cur"
+
+[Scheme.Cur]
+crosshair.cur
+default.cur
+ew-resize.cur
+move.cur
+nesw-resize.cur
+not-allowed.cur
+ns-resize.cur
+nwse-resize.cur
+pointer.cur
+progress.ani
+text.cur
+wait.ani
+
+[Strings]
+CUR_DIR = "Cursors\Voidline"
+SCHEME_NAME = "Voidline"
