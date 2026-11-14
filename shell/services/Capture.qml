@@ -33,6 +33,10 @@ if [ "$1" = region ]; then
 else
     grim "$file" || exit 1
 fi
+# Draw on it first (arrows, text, blur) when the editor is installed and wanted.
+if [ "$2" = edit ] && command -v swappy >/dev/null; then
+    swappy -f "$file" -o "$file"
+fi
 command -v wl-copy >/dev/null && wl-copy --type image/png < "$file"
 notify-send -a Voidline -i "$file" "Screenshot saved" "$file"
 `
@@ -49,7 +53,7 @@ notify-send -a Voidline -i "$file" "Screenshot saved" "$file"
         id: later
         property string mode: "screen"
         interval: 350
-        onTriggered: Quickshell.execDetached(["sh", "-c", root.shootScript, "sh", mode])
+        onTriggered: Quickshell.execDetached(["sh", "-c", root.shootScript, "sh", mode, Config.screenshotEdit ? "edit" : ""])
     }
 
     // Click any pixel: its colour is copied as #RRGGBB.

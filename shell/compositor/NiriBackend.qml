@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 import qs.core
 
@@ -20,6 +21,7 @@ Item {
         appId: w.app_id || "",
         title: w.title || "",
         focused: !!w.is_focused,
+        handle: ToplevelManager.toplevels.values.find(t => t.appId === (w.app_id || "") && t.title === (w.title || "")) ?? null,
         minimized: !!root.stashWs && w.workspace_id === root.stashWs.id,
         workspace: w.workspace_id
     }))

@@ -34,10 +34,10 @@ Singleton {
     readonly property color surfaceContainer: tone(seed, 0, dark ? 0.125 : 0.935, 0.10)
     readonly property color surfaceContainerHigh: tone(seed, 0, dark ? 0.165 : 0.905, 0.10)
     readonly property color surfaceContainerHighest: tone(seed, 0, dark ? 0.21 : 0.875, 0.10)
-    readonly property color ink: tone(seed, 0, dark ? 0.92 : 0.10, 0.08)
-    readonly property color inkMuted: tone(seed, 0, dark ? 0.74 : 0.30, 0.10)
+    readonly property color ink: Config.highContrast ? (dark ? "#FFFFFF" : "#000000") : tone(seed, 0, dark ? 0.92 : 0.10, 0.08)
+    readonly property color inkMuted: Config.highContrast ? (dark ? "#E6E6E6" : "#1E1E1E") : tone(seed, 0, dark ? 0.74 : 0.30, 0.10)
     readonly property color outline: tone(seed, 0, dark ? 0.52 : 0.48, 0.08)
-    readonly property color outlineVariant: tone(seed, 0, dark ? 0.26 : 0.80, 0.10)
+    readonly property color outlineVariant: Config.highContrast ? (dark ? "#B4B4B4" : "#4A4A4A") : tone(seed, 0, dark ? 0.26 : 0.80, 0.10)
     readonly property color scrim: Qt.rgba(0, 0, 0, 0.32)
     readonly property color shadow: "#000000"
 

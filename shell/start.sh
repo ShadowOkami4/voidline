@@ -7,6 +7,15 @@ scale=$(awk -F: '/"uiScale"/ { gsub(/[^0-9.]/, "", $2); v = $2 + 0; if (v < 0.5)
 [ -n "$scale" ] || scale=0.75
 
 qs kill -c voidline >/dev/null 2>&1 && sleep 0.3
+# A shell that is busy or hung does not answer that request, and helpers it
+# started can outlive it. Anything still running from an earlier start is
+# recognised by the variable set below and stopped, so there is never a second
+# bar on screen.
+for p in $(pgrep -x quickshell) $(pgrep -x qs) $(pgrep -x dbus-monitor) $(pgrep -x wl-paste); do
+    [ "$p" = "$$" ] && continue
+    grep -qz '^VOIDLINE_UI_SCALE=' "/proc/$p/environ" 2>/dev/null && kill "$p" 2>/dev/null
+done
+sleep 0.2
 
 export VOIDLINE_UI_SCALE="$scale"
 export QT_SCALE_FACTOR="$scale"

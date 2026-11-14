@@ -53,6 +53,10 @@ Singleton {
     property alias notifMuted: data.notifMuted
     property alias desktopIcons: data.desktopIcons
     property alias batteryWarnings: data.batteryWarnings
+    // Stronger text and outlines.
+    property alias highContrast: data.highContrast
+    // Open a screenshot in the editor (swappy) before saving, when installed.
+    property alias screenshotEdit: data.screenshotEdit
     property alias welcomed: data.welcomed
     // Light during the day (7:00 to 19:00), dark at night.
     property alias autoTheme: data.autoTheme
@@ -155,6 +159,8 @@ Singleton {
             property list<string> notifMuted: []
             property bool desktopIcons: true
             property bool batteryWarnings: true
+            property bool highContrast: false
+            property bool screenshotEdit: false
             property bool welcomed: false
             property bool autoTheme: false
             property string font: ""

@@ -163,7 +163,7 @@ login screen theme (`./install.sh --sddm`).
 
 Some features use small helper programs and stay switched off, with a note in
 Settings, until they are installed (`./install.sh --install-deps` installs all
-of them): `swayidle` (automatic lock and screen off), `cliphist` and
+of them): `cliphist` and
 `wl-clipboard` (clipboard history), `grim` and `slurp` (screenshots),
 `wf-recorder` (recording), `hyprsunset` or `gammastep` (night light),
 `pacman-contrib` (update check).

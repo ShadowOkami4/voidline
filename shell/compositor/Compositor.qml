@@ -8,7 +8,8 @@ import QtQuick
 // backend file with the same properties and functions.
 //
 //   workspaces: [{ id, name, index, active, occupied }]
-//   windows:    [{ id, appId, title, focused, minimized, workspace }]
+//   windows:    [{ id, appId, title, focused, minimized, workspace,
+//                  handle (for live previews, may be null) }]
 //   outputs:    [{ name, description, mode, scale, modes: ["WxH@R"],
 //                  x, y, w, h (place and size on the desktop), mirror }]  (after refreshOutputs)
 Singleton {

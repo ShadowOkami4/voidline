@@ -2,56 +2,51 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 import qs.core
 import qs.compositor
 
-// Automatic lock, screen off and sleep.
-//
-// With swayidle installed (works on Hyprland and Niri) the idle timers run
-// there, and it also holds sleep back for the moment it takes to lock. Without
-// it, only "lock before sleep" works, by listening for the system's
-// about-to-sleep signal.
+// Automatic lock, screen off and sleep. The compositor tells the shell when
+// nobody has touched keyboard or mouse for a while (idle-notify protocol), so
+// no extra program is needed. Video players and calls can hold this back.
 Singleton {
     id: root
 
-    property bool hasSwayidle: false
-    readonly property string call: "qs -c voidline ipc call shell "
+    // Kept for the Settings page: the timers always work now.
+    readonly property bool hasSwayidle: true
+    readonly property bool ready: Config.loaded
 
-    readonly property var args: {
-        const a = ["swayidle", "-w"]
-        const minutes = v => String(Math.max(1, v) * 60)
-        if (Config.lockAfter > 0) a.push("timeout", minutes(Config.lockAfter), call + "lock")
-        if (Config.screenOffAfter > 0)
-            a.push("timeout", minutes(Config.screenOffAfter), call + "screen off", "resume", call + "screen on")
-        if (Config.sleepAfter > 0) a.push("timeout", minutes(Config.sleepAfter), "systemctl suspend")
-        if (Config.lockOnSleep) a.push("before-sleep", call + "lock")
-        a.push("lock", call + "lock")
-        return a
+    IdleMonitor {
+        enabled: root.ready && Config.lockAfter > 0
+        timeout: Math.max(1, Config.lockAfter) * 60
+        respectInhibitors: true
+        onIsIdleChanged: if (isIdle) Shell.lock()
+    }
+    IdleMonitor {
+        enabled: root.ready && Config.screenOffAfter > 0
+        timeout: Math.max(1, Config.screenOffAfter) * 60
+        respectInhibitors: true
+        onIsIdleChanged: Compositor.screenPower(!isIdle)
+    }
+    IdleMonitor {
+        enabled: root.ready && Config.sleepAfter > 0
+        timeout: Math.max(1, Config.sleepAfter) * 60
+        respectInhibitors: true
+        onIsIdleChanged: if (isIdle) Quickshell.execDetached(["systemctl", "suspend"])
     }
 
+    // Lock when the system announces sleep (lid closed, sleep button, timer),
+    // and when something asks for the session to be locked (loginctl lock-session).
     Process {
-        running: true
-        command: ["sh", "-c", "command -v swayidle"]
-        onExited: code => root.hasSwayidle = code === 0
-    }
-
-    // Restarted whenever a setting changes.
-    Process {
-        id: idle
-        command: root.args
-        running: root.hasSwayidle && Config.loaded
-        onCommandChanged: if (running) { running = false; restart.restart() }
-    }
-    Timer { id: restart; interval: 300; onTriggered: idle.running = Qt.binding(() => root.hasSwayidle && Config.loaded) }
-
-    // Fallback: lock when the system announces sleep.
-    Process {
-        running: !root.hasSwayidle && Config.loaded && Config.lockOnSleep
+        running: root.ready && Config.lockOnSleep
         command: ["dbus-monitor", "--system",
             "type='signal',interface='org.freedesktop.login1.Manager',member='PrepareForSleep'"]
-        stdout: SplitParser {
-            onRead: line => { if (line.includes("boolean true")) Shell.lock() }
-        }
+        stdout: SplitParser { onRead: line => { if (line.includes("boolean true")) Shell.lock() } }
+    }
+    Process {
+        running: root.ready
+        command: ["dbus-monitor", "--system", "type='signal',interface='org.freedesktop.login1.Session',member='Lock'"]
+        stdout: SplitParser { onRead: line => { if (line.includes("member=Lock")) Shell.lock() } }
     }
 }

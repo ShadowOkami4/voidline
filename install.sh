@@ -23,7 +23,7 @@ die()  { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; exit 1; }
 
 required=(quickshell ttf-material-symbols-variable)
 recommended=(inter-font papirus-icon-theme brightnessctl networkmanager bluez upower pipewire wireplumber
-    libnotify grim slurp wl-clipboard cliphist swayidle wf-recorder gammastep pacman-contrib
+    libnotify grim slurp wl-clipboard cliphist wf-recorder swappy gammastep pacman-contrib
     xdg-desktop-portal xdg-desktop-portal-gtk)
 # Screen sharing and file dialogs for apps need the portal of the compositor in use.
 command -v Hyprland >/dev/null && recommended+=(xdg-desktop-portal-hyprland hyprsunset)

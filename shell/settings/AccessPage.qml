@@ -82,6 +82,18 @@ ColumnLayout {
     }
 
     SegGroup {
+        title: "Contrast"
+        SegItem {
+            icon: "contrast"
+            hue: 3
+            lobes: 5
+            title: "High contrast"
+            description: "Pure white or black text and stronger outlines in the shell."
+            Toggle { checked: Config.highContrast; onToggled: v => Config.highContrast = v }
+        }
+    }
+
+    SegGroup {
         title: "Motion and focus"
         SegItem {
             icon: "animation"

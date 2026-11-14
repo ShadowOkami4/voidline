@@ -18,7 +18,8 @@ QtObject {
         // Hyprland keeps the last window "activated" on an empty workspace.
         focused: t.activated && (!Hyprland.focusedWorkspace || !t.workspace || t.workspace.id < 0 || t.workspace.id === Hyprland.focusedWorkspace.id),
         minimized: !!t.workspace && t.workspace.name === root.stashName,
-        workspace: t.workspace ? t.workspace.id : 0
+        workspace: t.workspace ? t.workspace.id : 0,
+        handle: t.wayland ?? null
     }))
 
     readonly property var workspaces: {

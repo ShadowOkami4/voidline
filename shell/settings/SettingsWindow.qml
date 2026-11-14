@@ -49,6 +49,7 @@ FloatingWindow {
         { id: "shortcuts", icon: "keyboard", lobes: 0, label: "Keyboard shortcuts", hint: "Launcher, minimise, styles", words: "keyboard shortcuts keybinds hotkeys keys bind launcher minimise minimize restore", view: "ShortcutsPage.qml" },
         { id: "apps", icon: "apps", lobes: 4, label: "Default apps", hint: "Browser, files, terminal", words: "default apps applications browser file manager terminal editor image video music pdf mail open with", view: "DefaultAppsPage.qml" },
         { id: "datetime", icon: "schedule", lobes: 5, label: "Date & time", hint: "Time zone, clock", words: "date time clock timezone zone ntp automatic seconds 24 hour", view: "DateTimePage.qml" },
+        { id: "users", icon: "person", lobes: 5, label: "Users & region", hint: "Password, language, printers", words: "user account password language region locale printer printers scanner name", view: "UsersPage.qml" },
         { id: "access", icon: "accessibility_new", lobes: 0, label: "Accessibility", hint: "Larger text, less motion", words: "accessibility large text size zoom pointer motion contrast screen reader keyboard a11y", view: "AccessPage.qml" },
         { id: "about", icon: "info", lobes: 4, label: "About", hint: "Version " + Shell.version, words: "about version system computer processor memory graphics kernel", view: "AboutPage.qml" }
     ]

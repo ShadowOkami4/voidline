@@ -338,6 +338,75 @@ ColumnLayout {
     }
     function nmcli(args) { hotspotNote = ""; nm.command = ["nmcli"].concat(args); nm.running = true }
 
+    // A network that does not announce its name. The password goes to nmcli on
+    // its input, not on the command line, so other programs cannot read it.
+    property bool hiddenOpen: false
+    SegGroup {
+        visible: page.available && !!page.wifi && Networking.wifiEnabled
+        title: "Other networks"
+        SegItem {
+            icon: "wifi_find"
+            hue: 5
+            lobes: 0
+            title: "Join a hidden network"
+            description: page.hotspotNote.length > 0 && page.hiddenOpen ? page.hotspotNote : "For networks that do not show up in the list."
+            clickable: true
+            onClicked: page.hiddenOpen = !page.hiddenOpen
+            MIcon { icon: page.hiddenOpen ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }
+            extra: RowLayout {
+                visible: page.hiddenOpen
+                Layout.fillWidth: true
+                spacing: 8
+                Repeater {
+                    model: [{ id: "ssid", hint: "Network name" }, { id: "pass", hint: "Password" }]
+                    Rectangle {
+                        id: box
+                        required property var modelData
+                        property alias text: field.text
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 1
+                        implicitHeight: 48
+                        radius: field.activeFocus ? Theme.cornerM : height / 2
+                        color: Theme.surfaceContainerHighest
+                        border.width: field.activeFocus ? 2 : 0
+                        border.color: Theme.primary
+                        TextInput {
+                            id: field
+                            anchors.fill: parent
+                            anchors.leftMargin: 18
+                            anchors.rightMargin: 18
+                            verticalAlignment: TextInput.AlignVCenter
+                            echoMode: box.modelData.id === "pass" ? TextInput.Password : TextInput.Normal
+                            color: Theme.ink
+                            selectionColor: Theme.primaryContainer
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textBody
+                            clip: true
+                            onTextChanged: box.modelData.id === "pass" ? (page.hiddenPass = text) : (page.hiddenName = text)
+                            Label { visible: field.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: box.modelData.hint; color: Theme.inkMuted }
+                        }
+                    }
+                }
+                Pressable {
+                    implicitWidth: 92
+                    implicitHeight: 48
+                    enabledInput: page.hiddenName.length > 0 && (page.hiddenPass.length === 0 || page.hiddenPass.length >= 8)
+                    opacity: enabledInput ? 1 : 0.5
+                    color: Theme.primary
+                    tint: Theme.inkOnPrimary
+                    onClicked: {
+                        page.hotspotNote = ""
+                        nm.command = ["sh", "-c", "if [ -n \"$2\" ]; then printf '%s\\n' \"$2\" | nmcli --ask device wifi connect \"$1\" hidden yes; else nmcli device wifi connect \"$1\" hidden yes; fi", "sh", page.hiddenName, page.hiddenPass]
+                        nm.running = true
+                    }
+                    Label { anchors.centerIn: parent; text: "Join"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                }
+            }
+        }
+    }
+    property string hiddenName: ""
+    property string hiddenPass: ""
+
     SegGroup {
         visible: page.available && !!page.wifi
         title: "Hotspot"

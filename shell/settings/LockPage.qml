@@ -34,7 +34,7 @@ ColumnLayout {
             width: parent.width - 44
             wrapMode: Text.Wrap
             color: Theme.inkOnTertiaryContainer
-            text: "The timers below need the package “swayidle”, which is not installed. Locking before sleep works without it."
+            text: "The timers are not available."
         }
     }
 

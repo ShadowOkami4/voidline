@@ -1,4 +1,6 @@
 import Quickshell
+import Quickshell.Wayland
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import qs.core
@@ -6,16 +8,21 @@ import qs.compositor
 import qs.services
 import qs.widgets
 
-// Window switcher (Super + Tab): every window on every workspace, minimised
-// ones included. Tab or the arrows move, Enter or letting go of Super picks,
-// Esc cancels.
+// Window overview (Super + Tab): every window on every workspace with a live
+// picture of it, minimised ones included. Tab or the arrows move, Enter or
+// letting go of Super picks, Esc cancels.
 PanelSurface {
     id: root
 
     open: Shell.panel === "switcher"
     anchor: "center"
-    panelWidth: Math.min(1100, Math.max(360, list.length * 150 + 40))
-    panelHeight: 210
+
+    readonly property int tileW: 260
+    readonly property int tileH: 214
+    readonly property int perRow: Math.max(1, Math.min(list.length, Math.floor((parent.width - 120) / (tileW + 8))))
+    readonly property int rows: Math.max(1, Math.ceil(list.length / perRow))
+    panelWidth: Math.max(360, perRow * (tileW + 8) + 32)
+    panelHeight: rows * (tileH + 8) + 32
 
     // Frozen while open so the order does not jump around.
     property var list: []
@@ -47,8 +54,10 @@ PanelSurface {
         anchors.fill: parent
         focus: true
         Keys.onPressed: event => {
-            if (event.key === Qt.Key_Tab || event.key === Qt.Key_Right || event.key === Qt.Key_Down) root.step(1)
-            else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Left || event.key === Qt.Key_Up) root.step(-1)
+            if (event.key === Qt.Key_Tab || event.key === Qt.Key_Right) root.step(1)
+            else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Left) root.step(-1)
+            else if (event.key === Qt.Key_Down) root.step(root.perRow)
+            else if (event.key === Qt.Key_Up) root.step(-root.perRow)
             else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) root.pick()
             else if (event.key === Qt.Key_Escape) Shell.close()
             else return
@@ -58,9 +67,10 @@ PanelSurface {
             if (event.key === Qt.Key_Meta || event.key === Qt.Key_Super_L || event.key === Qt.Key_Super_R) root.pick()
         }
 
-        Row {
+        Grid {
             anchors.centerIn: parent
-            spacing: 6
+            columns: root.perRow
+            spacing: 8
 
             Repeater {
                 model: root.list
@@ -69,8 +79,8 @@ PanelSurface {
                     required property var modelData
                     required property int index
                     readonly property bool current: root.index === index
-                    width: 144
-                    height: 170
+                    width: root.tileW
+                    height: root.tileH
                     color: current ? Theme.secondaryContainer : "transparent"
                     restRadius: current ? Theme.cornerXL : Theme.cornerL
                     pressedRadius: Theme.cornerM
@@ -78,37 +88,65 @@ PanelSurface {
                     onHoveredChanged: if (hovered) root.index = index
                     onClicked: { root.index = index; root.pick() }
 
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 10
+                    // Live picture of the window (or its icon when the window
+                    // manager cannot provide one, e.g. for minimised windows).
+                    ClippingRectangle {
+                        id: frame
+                        x: 10
+                        y: 10
+                        width: parent.width - 20
+                        height: 148
+                        radius: Theme.cornerL
+                        color: Theme.surfaceContainerHighest
+                        opacity: tile.modelData.minimized ? 0.6 : 1
+
+                        ScreencopyView {
+                            id: view
+                            anchors.centerIn: parent
+                            captureSource: root.open ? (tile.modelData.handle ?? null) : null
+                            live: true
+                            constraintSize: Qt.size(frame.width, frame.height)
+                        }
                         AppIcon {
-                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.centerIn: parent
+                            visible: !view.hasContent
                             size: 64
                             icon: Apps.iconNameFor(tile.modelData.appId)
                             name: tile.modelData.appId
-                            opacity: tile.modelData.minimized ? 0.5 : 1
-                            scale: tile.current ? 1.08 : 1
-                            Behavior on scale { Spring {} }
+                        }
+                    }
+                    Row {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 14
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 12
+                        spacing: 8
+                        AppIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            size: 24
+                            icon: Apps.iconNameFor(tile.modelData.appId)
+                            name: tile.modelData.appId
                         }
                         Label {
-                            width: tile.width - 20
-                            horizontalAlignment: Text.AlignHCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 32
                             elide: Text.ElideRight
-                            maximumLineCount: 2
-                            wrapMode: Text.Wrap
                             text: tile.modelData.title || tile.modelData.appId
-                            font.pixelSize: Theme.textLabel
+                            font.pixelSize: Theme.textLabel + 1
                             font.weight: tile.current ? Font.Bold : Font.Medium
                             color: tile.current ? Theme.inkOnSecondaryContainer : Theme.ink
                         }
                     }
                 }
             }
-            Label {
-                visible: root.list.length === 0
-                text: "No windows open"
-                color: Theme.inkMuted
-            }
+        }
+        Label {
+            anchors.centerIn: parent
+            visible: root.list.length === 0
+            text: "No windows open"
+            color: Theme.inkMuted
         }
     }
 }

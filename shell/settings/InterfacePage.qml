@@ -128,6 +128,18 @@ ColumnLayout {
     }
 
     SegGroup {
+        title: "Screenshots"
+        SegItem {
+            icon: "draw"
+            hue: 2
+            lobes: 8
+            title: "Edit before saving"
+            description: "Opens each screenshot in an editor to add arrows, text or blur. Needs the package “swappy”."
+            Toggle { checked: Config.screenshotEdit; onToggled: v => Config.screenshotEdit = v }
+        }
+    }
+
+    SegGroup {
         title: "Behaviour"
         SegItem {
             icon: "animation"
