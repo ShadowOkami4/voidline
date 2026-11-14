@@ -8,13 +8,13 @@ ColumnLayout {
     spacing: 24
 
     SegGroup {
-        title: "Size"
+        title: Lang.t("Size")
         SegItem {
             icon: "format_size"
             hue: 0
             lobes: 8
-            title: "Interface size"
-            description: "The shell restarts briefly to apply this."
+            title: Lang.t("Interface size")
+            description: Lang.t("The shell restarts briefly to apply this.")
 
             // Button group: the letters show the size you get.
             extra: RowLayout {
@@ -22,10 +22,10 @@ ColumnLayout {
                 spacing: 6
                 Repeater {
                     model: [
-                        { value: 0.65, label: "Small", px: 13 },
-                        { value: 0.75, label: "Default", px: 16 },
-                        { value: 0.9, label: "Large", px: 20 },
-                        { value: 1.0, label: "Huge", px: 24 }
+                        { value: 0.65, label: Lang.t("Small"), px: 13 },
+                        { value: 0.75, label: Lang.t("Default"), px: 16 },
+                        { value: 0.9, label: Lang.t("Large"), px: 20 },
+                        { value: 1.0, label: Lang.t("Huge"), px: 24 }
                     ]
                     Pressable {
                         id: size
@@ -69,8 +69,8 @@ ColumnLayout {
             icon: "font_download"
             hue: 1
             lobes: 0
-            title: "Font"
-            description: "Used everywhere in the shell: " + Theme.font
+            title: Lang.t("Font")
+            description: Lang.t("Used everywhere in the shell: ") + Theme.font
             extra: Flow {
                 Layout.fillWidth: true
                 spacing: 6
@@ -91,7 +91,7 @@ ColumnLayout {
                         Label {
                             id: faceLabel
                             anchors.centerIn: parent
-                            text: face.modelData || "Automatic"
+                            text: face.modelData || Lang.t("Automatic")
                             font.family: face.modelData || Theme.font
                             font.weight: Font.DemiBold
                             color: face.current ? Theme.inkOnPrimary : Theme.ink
@@ -104,13 +104,13 @@ ColumnLayout {
 
     SegGroup {
         visible: Compositor.name === "hyprland"
-        title: "Bar"
+        title: Lang.t("Bar")
         SegItem {
             icon: "workspaces"
             hue: 2
             lobes: 4
-            title: "Workspaces shown"
-            description: "Minimum number of workspace dots in the bar."
+            title: Lang.t("Workspaces shown")
+            description: Lang.t("Minimum number of workspace dots in the bar.")
             Row {
                 spacing: 4
                 IconBtn { icon: "remove"; size: 40; tonal: true; onClicked: Config.workspaceCount = Math.max(1, Config.workspaceCount - 1) }
@@ -128,25 +128,25 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Screenshots"
+        title: Lang.t("Screenshots")
         SegItem {
             icon: "draw"
             hue: 2
             lobes: 8
-            title: "Edit before saving"
-            description: "Opens each screenshot in an editor to add arrows, text or blur. Needs the package “swappy”."
+            title: Lang.t("Edit before saving")
+            description: Lang.t("Opens each screenshot in an editor to add arrows, text or blur. Needs the package “swappy”.")
             Toggle { checked: Config.screenshotEdit; onToggled: v => Config.screenshotEdit = v }
         }
     }
 
     SegGroup {
-        title: "Behaviour"
+        title: Lang.t("Behaviour")
         SegItem {
             icon: "animation"
             hue: 4
             lobes: 5
-            title: "Reduce motion"
-            description: "Turn animations off."
+            title: Lang.t("Reduce motion")
+            description: Lang.t("Turn animations off.")
             Toggle { checked: Config.reduceMotion; onToggled: v => Config.reduceMotion = v }
         }
     }

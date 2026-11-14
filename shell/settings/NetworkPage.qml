@@ -73,7 +73,7 @@ ColumnLayout {
             spacing: 8
             Label {
                 Layout.fillWidth: true
-                text: "NetworkManager is not running"
+                text: Lang.t("NetworkManager is not running")
                 font.pixelSize: Theme.textTitle + 4
                 font.weight: Font.Black
                 color: Theme.inkOnTertiaryContainer
@@ -83,7 +83,7 @@ ColumnLayout {
                 wrapMode: Text.Wrap
                 color: Theme.inkOnTertiaryContainer
                 opacity: 0.9
-                text: "Voidline manages networks through NetworkManager. Your connection is currently handled by something else, so it is left alone. To manage it here, enable NetworkManager in a terminal:"
+                text: Lang.t("Voidline manages networks through NetworkManager. Your connection is currently handled by something else, so it is left alone. To manage it here, enable NetworkManager in a terminal:")
             }
             Rectangle {
                 Layout.fillWidth: true
@@ -120,36 +120,36 @@ ColumnLayout {
     }
     SegGroup {
         visible: !page.available
-        title: "Current connection"
+        title: Lang.t("Current connection")
         SegItem {
             icon: !page.link.dev ? "public_off" : (page.link.kind === "wifi" ? "wifi" : "lan")
             hue: 0
             lobes: 8
-            title: !page.link.dev ? "Not connected" : (page.link.kind === "wifi" ? "Wi-Fi" : "Wired") + " (" + page.link.dev + ")"
-            description: !page.link.dev ? "No route to the internet was found."
-                : "Connected" + (parseInt(page.link.speed) > 0 ? "  ·  " + page.link.speed + " Mbit/s" : "")
+            title: !page.link.dev ? Lang.t("Not connected") : (page.link.kind === "wifi" ? Lang.t("Wi-Fi") : Lang.t("Wired")) + " (" + page.link.dev + ")"
+            description: !page.link.dev ? Lang.t("No route to the internet was found.")
+                : Lang.t("Connected") + (parseInt(page.link.speed) > 0 ? "  ·  " + page.link.speed + " Mbit/s" : "")
         }
         SegItem {
             visible: !!page.link.ip
             icon: "tag"
             hue: 1
             lobes: 0
-            title: "Address"
-            description: (page.link.ip || "") + (page.link.gw ? "  ·  router " + page.link.gw : "")
+            title: Lang.t("Address")
+            description: (page.link.ip || "") + (page.link.gw ? Lang.t("  ·  router ") + page.link.gw : "")
         }
     }
 
     // ---- Wi-Fi ----------------------------------------------------------------------------
     SegGroup {
         visible: page.available
-        title: "Wi-Fi"
+        title: Lang.t("Wi-Fi")
 
         SegItem {
             icon: Networking.wifiEnabled ? "wifi" : "wifi_off"
             hue: 0
             lobes: 8
-            title: "Wi-Fi"
-            description: !page.wifi ? "No Wi-Fi adapter found" : (Networking.wifiEnabled ? "On" : "Off")
+            title: Lang.t("Wi-Fi")
+            description: !page.wifi ? Lang.t("No Wi-Fi adapter found") : (Networking.wifiEnabled ? Lang.t("On") : Lang.t("Off"))
             Toggle {
                 checked: Networking.wifiEnabled
                 onToggled: v => Networking.wifiEnabled = v
@@ -168,12 +168,12 @@ ColumnLayout {
                 icon: page.bars(modelData.signalStrength)
                 hue: modelData.connected ? 0 : 2
                 lobes: modelData.connected ? 8 : 0
-                title: modelData.name || "Hidden network"
+                title: modelData.name || Lang.t("Hidden network")
                 readonly property bool failed: page.failed === modelData.name && !modelData.connected
-                description: modelData.stateChanging ? "Connecting..."
-                    : (modelData.connected ? "Connected"
-                        : (failed ? "Could not connect. Check the password and try again."
-                            : (modelData.known ? "Saved" : (open ? "Open" : "Secured"))))
+                description: modelData.stateChanging ? Lang.t("Connecting...")
+                    : (modelData.connected ? Lang.t("Connected")
+                        : (failed ? Lang.t("Could not connect. Check the password and try again.")
+                            : (modelData.known ? Lang.t("Saved") : (open ? Lang.t("Open") : Lang.t("Secured")))))
                 clickable: !modelData.connected && !asking
                 onClicked: {
                     page.failed = ""
@@ -218,7 +218,7 @@ ColumnLayout {
                         height: 40
                         color: Theme.surfaceContainerHighest
                         onClicked: net.modelData.disconnect()
-                        Label { anchors.centerIn: parent; text: "Disconnect"; font.pixelSize: Theme.textLabel + 1; font.weight: Font.DemiBold }
+                        Label { anchors.centerIn: parent; text: Lang.t("Disconnect"); font.pixelSize: Theme.textLabel + 1; font.weight: Font.DemiBold }
                     }
                 }
 
@@ -252,7 +252,7 @@ ColumnLayout {
                             Label {
                                 visible: psk.text.length === 0
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Password"
+                                text: Lang.t("Password")
                                 color: Theme.inkMuted
                             }
                         }
@@ -262,7 +262,7 @@ ColumnLayout {
                         implicitHeight: 48
                         color: Theme.surfaceContainerHighest
                         onClicked: page.asking = null
-                        Label { anchors.centerIn: parent; text: "Cancel"; font.weight: Font.DemiBold }
+                        Label { anchors.centerIn: parent; text: Lang.t("Cancel"); font.weight: Font.DemiBold }
                     }
                     Pressable {
                         id: join
@@ -277,7 +277,7 @@ ColumnLayout {
                             psk.text = ""
                             page.asking = null
                         }
-                        Label { anchors.centerIn: parent; text: "Join"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                        Label { anchors.centerIn: parent; text: Lang.t("Join"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
                     }
                 }
             }
@@ -287,7 +287,7 @@ ColumnLayout {
     // ---- wired ------------------------------------------------------------------------------
     SegGroup {
         visible: page.available && page.wired.length > 0
-        title: "Wired"
+        title: Lang.t("Wired")
         Repeater {
             model: page.wired
             SegItem {
@@ -296,7 +296,7 @@ ColumnLayout {
                 hue: 4
                 lobes: 4
                 title: modelData.name
-                description: modelData.connected ? "Connected" : "Not connected"
+                description: modelData.connected ? Lang.t("Connected") : Lang.t("Not connected")
             }
         }
     }
@@ -332,7 +332,7 @@ ColumnLayout {
         id: nm
         stderr: StdioCollector { id: nmErrors }
         onExited: code => {
-            page.hotspotNote = code === 0 ? "" : (nmErrors.text.trim().split("\n").pop() || "That did not work.")
+            page.hotspotNote = code === 0 ? "" : (nmErrors.text.trim().split("\n").pop() || Lang.t("That did not work."))
             page.refreshExtras()
         }
     }
@@ -343,13 +343,13 @@ ColumnLayout {
     property bool hiddenOpen: false
     SegGroup {
         visible: page.available && !!page.wifi && Networking.wifiEnabled
-        title: "Other networks"
+        title: Lang.t("Other networks")
         SegItem {
             icon: "wifi_find"
             hue: 5
             lobes: 0
-            title: "Join a hidden network"
-            description: page.hotspotNote.length > 0 && page.hiddenOpen ? page.hotspotNote : "For networks that do not show up in the list."
+            title: Lang.t("Join a hidden network")
+            description: page.hotspotNote.length > 0 && page.hiddenOpen ? page.hotspotNote : Lang.t("For networks that do not show up in the list.")
             clickable: true
             onClicked: page.hiddenOpen = !page.hiddenOpen
             MIcon { icon: page.hiddenOpen ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }
@@ -358,7 +358,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 8
                 Repeater {
-                    model: [{ id: "ssid", hint: "Network name" }, { id: "pass", hint: "Password" }]
+                    model: [{ id: "ssid", hint: Lang.t("Network name") }, { id: "pass", hint: Lang.t("Password") }]
                     Rectangle {
                         id: box
                         required property var modelData
@@ -399,7 +399,7 @@ ColumnLayout {
                         nm.command = ["sh", "-c", "if [ -n \"$2\" ]; then printf '%s\\n' \"$2\" | nmcli --ask device wifi connect \"$1\" hidden yes; else nmcli device wifi connect \"$1\" hidden yes; fi", "sh", page.hiddenName, page.hiddenPass]
                         nm.running = true
                     }
-                    Label { anchors.centerIn: parent; text: "Join"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                    Label { anchors.centerIn: parent; text: Lang.t("Join"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
                 }
             }
         }
@@ -414,15 +414,15 @@ ColumnLayout {
             icon: "wifi_tethering"
             hue: 3
             lobes: 5
-            title: "Share this connection"
+            title: Lang.t("Share this connection")
             description: page.hotspotNote.length > 0 ? page.hotspotNote
-                : (page.hotspotOn ? "Other devices can join “" + page.hotspotName + "”." : "Turns this computer's Wi-Fi into a network others can join. Wi-Fi itself disconnects while it is on.")
+                : (page.hotspotOn ? Lang.t("Other devices can join “") + page.hotspotName + "”." : Lang.t("Turns this computer's Wi-Fi into a network others can join. Wi-Fi itself disconnects while it is on."))
             Toggle {
                 checked: page.hotspotOn
                 onToggled: v => {
                     if (!v) page.nmcli(["connection", "down", "Hotspot"])
                     else if (hotPass.text.length >= 8) page.nmcli(["device", "wifi", "hotspot", "con-name", "Hotspot", "ssid", page.hotspotName, "password", hotPass.text])
-                    else page.hotspotNote = "Choose a password of at least 8 characters first."
+                    else page.hotspotNote = Lang.t("Choose a password of at least 8 characters first.")
                 }
             }
             extra: Rectangle {
@@ -451,7 +451,7 @@ ColumnLayout {
                     Label {
                         visible: hotPass.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "Password for the hotspot"
+                        text: Lang.t("Password for the hotspot")
                         color: Theme.inkMuted
                     }
                 }
@@ -472,7 +472,7 @@ ColumnLayout {
                 hue: index + 4
                 lobes: [8, 0, 4, 5][index % 4]
                 title: modelData.name
-                description: modelData.active ? "Connected" : "Off"
+                description: modelData.active ? Lang.t("Connected") : Lang.t("Off")
                 Toggle {
                     checked: tunnel.modelData.active
                     onToggled: v => page.nmcli(["connection", v ? "up" : "down", "id", tunnel.modelData.name])

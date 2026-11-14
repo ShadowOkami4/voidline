@@ -96,7 +96,7 @@ PanelSurface {
             Tile {
                 Layout.fillWidth: true
                 icon: Network.icon
-                title: Network.type === "ethernet" ? "Ethernet" : "Wi-Fi"
+                title: Network.type === "ethernet" ? "Ethernet" : Lang.t("Wi-Fi")
                 subtitle: Network.label
                 active: Network.connected
                 enabledInput: Network.available
@@ -109,8 +109,8 @@ PanelSurface {
                 Layout.fillWidth: true
                 icon: Bt.on ? (Bt.connected.length > 0 ? "bluetooth_connected" : "bluetooth") : "bluetooth_disabled"
                 title: "Bluetooth"
-                subtitle: !Bt.available ? "Unavailable" : (Bt.switching ? "Switching on…"
-                    : (!Bt.on ? "Off" : (Bt.connected.length > 0 ? Bt.connected[0].name : "On")))
+                subtitle: !Bt.available ? Lang.t("Unavailable") : (Bt.switching ? Lang.t("Switching on…")
+                    : (!Bt.on ? Lang.t("Off") : (Bt.connected.length > 0 ? Bt.connected[0].name : Lang.t("On"))))
                 active: Bt.on
                 enabledInput: Bt.available
                 opacity: Bt.available ? 1 : 0.5
@@ -121,16 +121,16 @@ PanelSurface {
             Tile {
                 Layout.fillWidth: true
                 icon: Config.doNotDisturb ? "notifications_off" : "notifications"
-                title: "Do not disturb"
-                subtitle: Config.doNotDisturb ? "On" : "Off"
+                title: Lang.t("Do not disturb")
+                subtitle: Config.doNotDisturb ? Lang.t("On") : Lang.t("Off")
                 active: Config.doNotDisturb
                 onClicked: Config.doNotDisturb = !Config.doNotDisturb
             }
             Tile {
                 Layout.fillWidth: true
                 icon: Config.dark ? "dark_mode" : "light_mode"
-                title: "Dark theme"
-                subtitle: Config.dark ? "On" : "Off"
+                title: Lang.t("Dark theme")
+                subtitle: Config.dark ? Lang.t("On") : Lang.t("Off")
                 active: Config.dark
                 onClicked: Config.dark = !Config.dark
             }
@@ -138,16 +138,16 @@ PanelSurface {
                 Layout.fillWidth: true
                 visible: Appearance.nightAvailable
                 icon: "nightlight"
-                title: "Night light"
-                subtitle: Config.nightLight ? "On" : "Off"
+                title: Lang.t("Night light")
+                subtitle: Config.nightLight ? Lang.t("On") : Lang.t("Off")
                 active: Config.nightLight
                 onClicked: Config.nightLight = !Config.nightLight
             }
             Tile {
                 Layout.fillWidth: true
                 icon: Capture.recording ? "stop_circle" : "screenshot_region"
-                title: Capture.recording ? "Stop recording" : "Screenshot"
-                subtitle: Capture.recording ? "Recording" : "Select an area"
+                title: Capture.recording ? Lang.t("Stop recording") : Lang.t("Screenshot")
+                subtitle: Capture.recording ? Lang.t("Recording") : Lang.t("Select an area")
                 active: Capture.recording
                 onClicked: Capture.recording ? Capture.toggleRecording() : Capture.shoot("region")
             }
@@ -175,8 +175,8 @@ PanelSurface {
             Repeater {
                 model: [
                     { icon: "memory", label: "CPU", value: Math.round(Sys.cpu * 100) + "%", level: Sys.cpu },
-                    { icon: "memory_alt", label: "Memory", value: Sys.memoryGb.toFixed(1) + " GB", level: Sys.memory },
-                    { icon: "device_thermostat", label: "Heat", value: Sys.temperature > 0 ? Sys.temperature + "°" : "–", level: Math.max(0, Math.min(1, (Sys.temperature - 30) / 65)) }
+                    { icon: "memory_alt", label: Lang.t("Memory"), value: Sys.memoryGb.toFixed(1) + " GB", level: Sys.memory },
+                    { icon: "device_thermostat", label: Lang.t("Heat"), value: Sys.temperature > 0 ? Sys.temperature + "°" : "–", level: Math.max(0, Math.min(1, (Sys.temperature - 30) / 65)) }
                 ]
                 Rectangle {
                     id: gauge
@@ -216,7 +216,7 @@ PanelSurface {
             Layout.topMargin: 4
             Label {
                 Layout.fillWidth: true
-                text: "Notifications"
+                text: Lang.t("Notifications")
                 font.pixelSize: Theme.textTitle
                 font.weight: Font.Bold
             }
@@ -234,7 +234,7 @@ PanelSurface {
             Layout.bottomMargin: 10
             visible: Notifs.list.length === 0 && Notifs.earlier.length === 0
             horizontalAlignment: Text.AlignHCenter
-            text: "All quiet"
+            text: Lang.t("All quiet")
             color: Theme.inkMuted
         }
 
@@ -258,7 +258,7 @@ PanelSurface {
             visible: Notifs.earlier.length > 0
             Layout.topMargin: 2
             leftPadding: 4
-            text: "Earlier"
+            text: Lang.t("Earlier")
             font.pixelSize: Theme.textLabel
             font.weight: Font.Bold
             color: Theme.inkMuted
@@ -295,7 +295,7 @@ PanelSurface {
                         width: parent.width
                         elide: Text.ElideRight
                         maximumLineCount: 1
-                        text: Qt.formatDateTime(new Date(old.modelData.time), "ddd HH:mm") + (old.modelData.text ? "  ·  " + old.modelData.text.replace(/\s+/g, " ") : "")
+                        text: Lang.date(new Date(old.modelData.time), "ddd HH:mm") + (old.modelData.text ? "  ·  " + old.modelData.text.replace(/\s+/g, " ") : "")
                         font.pixelSize: Theme.textLabelS
                         color: Theme.inkMuted
                     }

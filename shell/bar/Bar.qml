@@ -143,7 +143,7 @@ PanelWindow {
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     width: Math.min(implicitWidth, 420)
-                    text: Compositor.focusedWindow ? (Compositor.focusedWindow.title || Compositor.focusedWindow.appId) : "Desktop"
+                    text: Compositor.focusedWindow ? (Compositor.focusedWindow.title || Compositor.focusedWindow.appId) : Lang.t("Desktop")
                     font.pixelSize: 13
                     font.weight: Font.Bold
                 }

@@ -43,7 +43,7 @@ ColumnLayout {
     }
 
     // ---- how the screens are used: extend, duplicate, or only one -----------------------
-    function nice(o) { return o.name.startsWith("eDP") || o.name.startsWith("LVDS") ? "Laptop screen" : o.name }
+    function nice(o) { return o.name.startsWith("eDP") || o.name.startsWith("LVDS") ? Lang.t("Laptop screen") : o.name }
     function stateOf(o) { return o.disabled ? "off" : (o.mirror ? "mirror" : "on") }
     // "extend" | "duplicate" | "only:<name>" | "custom"
     readonly property string layout: {
@@ -56,12 +56,12 @@ ColumnLayout {
     }
     readonly property var layouts: {
         const list = [
-            { value: "extend", icon: "view_column_2", label: "Extend", hint: "One big desktop across all screens" },
-            { value: "duplicate", icon: "content_copy", label: "Duplicate", hint: "The same picture on every screen" }
+            { value: "extend", icon: "view_column_2", label: Lang.t("Extend"), hint: Lang.t("One big desktop across all screens") },
+            { value: "duplicate", icon: "content_copy", label: Lang.t("Duplicate"), hint: Lang.t("The same picture on every screen") }
         ]
         for (const o of outputs)
             list.push({ value: "only:" + o.name, icon: nice(o) === o.name ? "desktop_windows" : "laptop_chromebook",
-                label: "Only " + (nice(o) === o.name ? o.name : "laptop"), hint: "Other screens are switched off" })
+                label: Lang.t("Only %1", nice(o) === o.name ? o.name : Lang.t("laptop")), hint: Lang.t("Other screens are switched off") })
         return list
     }
 
@@ -203,14 +203,14 @@ ColumnLayout {
                 spacing: 2
                 Label {
                     Layout.fillWidth: true
-                    text: page.pending && page.pending.layout ? "Keep this screen setup?" : "Keep these display settings?"
+                    text: page.pending && page.pending.layout ? Lang.t("Keep this screen setup?") : Lang.t("Keep these display settings?")
                     font.pixelSize: Theme.textTitle + 4
                     font.weight: Font.Black
                     color: Theme.inkOnTertiaryContainer
                 }
                 Label {
                     Layout.fillWidth: true
-                    text: "Reverting in " + page.secondsLeft + " seconds."
+                    text: Lang.t("Reverting in ") + page.secondsLeft + Lang.t(" seconds.")
                     color: Theme.inkOnTertiaryContainer
                     opacity: 0.85
                 }
@@ -220,7 +220,7 @@ ColumnLayout {
                 implicitHeight: 52
                 color: Theme.surfaceContainerHigh
                 onClicked: page.revert()
-                Label { anchors.centerIn: parent; text: "Revert"; font.weight: Font.Bold }
+                Label { anchors.centerIn: parent; text: Lang.t("Revert"); font.weight: Font.Bold }
             }
             Pressable {
                 implicitWidth: 104
@@ -228,7 +228,7 @@ ColumnLayout {
                 color: Theme.tertiary
                 tint: Theme.surface
                 onClicked: page.keep()
-                Label { anchors.centerIn: parent; text: "Keep"; font.weight: Font.Bold; color: Theme.surface }
+                Label { anchors.centerIn: parent; text: Lang.t("Keep"); font.weight: Font.Bold; color: Theme.surface }
             }
         }
     }
@@ -317,7 +317,7 @@ ColumnLayout {
         Label {
             visible: page.outputs.length === 0
             anchors.centerIn: parent
-            text: Compositor.supported ? "Looking for displays…" : "No supported window manager is running."
+            text: Compositor.supported ? Lang.t("Looking for displays…") : Lang.t("No supported window manager is running.")
             color: Theme.inkMuted
         }
 
@@ -400,8 +400,8 @@ ColumnLayout {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 14
             visible: page.outputs.length > 0
-            text: page.placed.length > 1 ? "Drag a screen to where it stands on your desk. Click one to change its settings."
-                : (page.several ? "Only this screen carries the desktop. The others are listed below." : "One screen connected.")
+            text: page.placed.length > 1 ? Lang.t("Drag a screen to where it stands on your desk. Click one to change its settings.")
+                : (page.several ? Lang.t("Only this screen carries the desktop. The others are listed below.") : Lang.t("One screen connected."))
             font.pixelSize: Theme.textLabel
             color: Theme.inkMuted
         }
@@ -459,8 +459,8 @@ ColumnLayout {
             icon: "aspect_ratio"
             hue: 0
             lobes: 4
-            title: "Resolution"
-            description: "How many pixels the screen shows. The top entry is its sharpest."
+            title: Lang.t("Resolution")
+            description: Lang.t("How many pixels the screen shows. The top entry is its sharpest.")
             Dropdown {
                 width: 230
                 value: group.resolution
@@ -472,8 +472,8 @@ ColumnLayout {
             icon: "speed"
             hue: 1
             lobes: 8
-            title: "Refresh rate"
-            description: "Higher is smoother and uses a little more power."
+            title: Lang.t("Refresh rate")
+            description: Lang.t("Higher is smoother and uses a little more power.")
             Dropdown {
                 width: 230
                 value: page.rateOf(group.mode)
@@ -485,8 +485,8 @@ ColumnLayout {
             icon: "zoom_in"
             hue: 2
             lobes: 0
-            title: "Scale"
-            description: "How large apps and text appear. Voidline's own size is under Interface."
+            title: Lang.t("Scale")
+            description: Lang.t("How large apps and text appear. Voidline's own size is under Interface.")
             Dropdown {
                 width: 230
                 value: group.zoom
@@ -499,8 +499,8 @@ ColumnLayout {
             icon: "done_all"
             hue: 4
             lobes: 5
-            title: "Apply changes"
-            description: "You will be asked to confirm; otherwise it reverts after 15 seconds."
+            title: Lang.t("Apply changes")
+            description: Lang.t("You will be asked to confirm; otherwise it reverts after 15 seconds.")
             Row {
                 spacing: 8
                 Pressable {
@@ -509,7 +509,7 @@ ColumnLayout {
                     enabledInput: !page.pending
                     color: Theme.surfaceContainerHighest
                     onClicked: group.reset()
-                    Label { anchors.centerIn: parent; text: "Reset"; font.weight: Font.DemiBold }
+                    Label { anchors.centerIn: parent; text: Lang.t("Reset"); font.weight: Font.DemiBold }
                 }
                 Pressable {
                     width: 110
@@ -519,7 +519,7 @@ ColumnLayout {
                     color: Theme.primary
                     tint: Theme.inkOnPrimary
                     onClicked: page.apply(group.output, group.mode, Math.round(group.zoom * 1000000) / 1000000)
-                    Label { anchors.centerIn: parent; text: "Apply"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                    Label { anchors.centerIn: parent; text: Lang.t("Apply"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
                 }
             }
         }
@@ -528,17 +528,17 @@ ColumnLayout {
             icon: "tv_options_input_settings"
             hue: 3
             lobes: 5
-            title: "Use this screen"
-            description: page.stateOf(group.output) === "off" ? "Switched off."
-                : (page.stateOf(group.output) === "mirror" ? "Shows a copy of the main screen." : "Part of the desktop.")
+            title: Lang.t("Use this screen")
+            description: page.stateOf(group.output) === "off" ? Lang.t("Switched off.")
+                : (page.stateOf(group.output) === "mirror" ? Lang.t("Shows a copy of the main screen.") : Lang.t("Part of the desktop."))
             Dropdown {
                 width: 230
                 enabledInput: !page.pending
                 value: page.stateOf(group.output)
                 options: [
-                    { value: "on", label: "On" },
-                    { value: "mirror", label: "Same picture" },
-                    { value: "off", label: "Off" }
+                    { value: "on", label: Lang.t("On") },
+                    { value: "mirror", label: Lang.t("Same picture") },
+                    { value: "off", label: Lang.t("Off") }
                 ]
                 onPicked: v => page.setState(group.output.name, v)
             }
@@ -548,7 +548,7 @@ ColumnLayout {
     // A mirrored screen is not in the picture above; this is how to select it.
     SegGroup {
         visible: page.outputs.some(o => o.mirror || o.disabled)
-        title: "Other screens"
+        title: Lang.t("Other screens")
         Repeater {
             model: page.outputs.filter(o => o.mirror || o.disabled)
             SegItem {
@@ -557,7 +557,7 @@ ColumnLayout {
                 hue: 5
                 lobes: 0
                 title: modelData.name + (modelData.description ? "  ·  " + modelData.description : "")
-                description: (modelData.disabled ? "Switched off" : "Shows the same picture") + ". Click to change its settings."
+                description: (modelData.disabled ? Lang.t("Switched off") : Lang.t("Shows the same picture")) + Lang.t(". Click to change its settings.")
                 clickable: true
                 onClicked: page.selected = modelData.name
             }
@@ -567,12 +567,12 @@ ColumnLayout {
     // ---- brightness -----------------------------------------------------------------
     SegGroup {
         visible: Brightness.available
-        title: "Brightness"
+        title: Lang.t("Brightness")
         SliderItem {
             icon: "brightness_medium"
             hue: 3
             lobes: 8
-            title: "Laptop screen"
+            title: Lang.t("Laptop screen")
             from: 2; to: 100; step: 1; suffix: "%"
             value: Math.round(Brightness.value * 100)
             onChanged: v => Brightness.set(v / 100)

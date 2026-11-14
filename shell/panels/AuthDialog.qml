@@ -61,7 +61,7 @@ Scope {
                     Label {
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
-                        text: "Password needed"
+                        text: Lang.t("Password needed")
                         font.pixelSize: 24
                         font.weight: Font.Black
                     }
@@ -100,7 +100,7 @@ Scope {
                             Label {
                                 visible: secret.text.length === 0
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: root.flow && root.flow.inputPrompt ? root.flow.inputPrompt.replace(/:\s*$/, "") : "Password"
+                                text: root.flow && root.flow.inputPrompt ? root.flow.inputPrompt.replace(/:\s*$/, "") : Lang.t("Password")
                                 color: Theme.inkMuted
                             }
                         }
@@ -110,7 +110,7 @@ Scope {
                         visible: text.length > 0
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.Wrap
-                        text: !root.flow ? "" : (root.flow.supplementaryMessage || (root.flow.failed ? "That did not work. Try again." : ""))
+                        text: !root.flow ? "" : (root.flow.supplementaryMessage || (root.flow.failed ? Lang.t("That did not work. Try again.") : ""))
                         color: root.flow && (root.flow.failed || root.flow.supplementaryIsError) ? Theme.error : Theme.inkMuted
                         font.weight: Font.DemiBold
                     }
@@ -124,7 +124,7 @@ Scope {
                             implicitHeight: 50
                             color: Theme.surfaceContainerHighest
                             onClicked: win.cancel()
-                            Label { anchors.centerIn: parent; text: "Cancel"; font.weight: Font.DemiBold }
+                            Label { anchors.centerIn: parent; text: Lang.t("Cancel"); font.weight: Font.DemiBold }
                         }
                         Pressable {
                             Layout.fillWidth: true
@@ -133,7 +133,7 @@ Scope {
                             color: Theme.primary
                             tint: Theme.inkOnPrimary
                             onClicked: win.send()
-                            Label { anchors.centerIn: parent; text: "Continue"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                            Label { anchors.centerIn: parent; text: Lang.t("Continue"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
                         }
                     }
                 }

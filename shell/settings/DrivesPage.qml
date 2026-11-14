@@ -61,7 +61,7 @@ ColumnLayout {
         id: action
         stderr: StdioCollector { id: errors }
         onExited: code => {
-            if (code !== 0) page.problem = errors.text.trim().split("\n").pop().replace(/^Error [^:]*: /, "") || "That did not work."
+            if (code !== 0) page.problem = errors.text.trim().split("\n").pop().replace(/^Error [^:]*: /, "") || Lang.t("That did not work.")
             page.refresh()
         }
     }
@@ -83,7 +83,7 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "This computer"
+        title: Lang.t("This computer")
         Repeater {
             model: page.fixed
             SegItem {
@@ -94,7 +94,7 @@ ColumnLayout {
                 hue: index
                 lobes: [8, 4, 0, 5][index % 4]
                 title: modelData.mount === "/" ? "System" : (modelData.label || modelData.mount)
-                description: page.gb(modelData.total - modelData.used) + " free of " + page.gb(modelData.total)
+                description: page.gb(modelData.total - modelData.used) + Lang.t(" free of ") + page.gb(modelData.total)
                 clickable: true
                 onClicked: Apps.openUrl("file://" + modelData.mount)
                 extra: Rectangle {
@@ -114,7 +114,7 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Removable drives"
+        title: Lang.t("Removable drives")
         Repeater {
             model: page.removable
             SegItem {
@@ -125,9 +125,9 @@ ColumnLayout {
                 icon: "usb"
                 hue: index + 2
                 lobes: [0, 5, 8, 4][index % 4]
-                title: modelData.label || (page.gb(modelData.size) + " drive")
-                description: mounted ? page.gb(modelData.total - modelData.used) + " free of " + page.gb(modelData.total)
-                    : page.gb(modelData.size) + "  ·  not opened yet"
+                title: modelData.label || (page.gb(modelData.size) + Lang.t(" drive"))
+                description: mounted ? page.gb(modelData.total - modelData.used) + Lang.t(" free of ") + page.gb(modelData.total)
+                    : page.gb(modelData.size) + Lang.t("  ·  not opened yet")
                 clickable: mounted
                 onClicked: Apps.openUrl("file://" + modelData.mount)
                 Row {
@@ -158,8 +158,8 @@ ColumnLayout {
             icon: "usb_off"
             hue: 2
             lobes: 0
-            title: "Nothing plugged in"
-            description: "USB sticks, SD cards and external disks show up here."
+            title: Lang.t("Nothing plugged in")
+            description: Lang.t("USB sticks, SD cards and external disks show up here.")
         }
     }
 }

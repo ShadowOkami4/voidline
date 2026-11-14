@@ -145,7 +145,7 @@ PanelSurface {
         Label {
             anchors.centerIn: parent
             visible: root.list.length === 0
-            text: "No windows open"
+            text: Lang.t("No windows open")
             color: Theme.inkMuted
         }
     }

@@ -67,7 +67,7 @@ PanelSurface {
             Layout.topMargin: 6
             Layout.bottomMargin: 10
             horizontalAlignment: Text.AlignHCenter
-            text: root.item && root.item.hasMenu ? "Loading…" : "This icon has no menu"
+            text: root.item && root.item.hasMenu ? Lang.t("Loading…") : Lang.t("This icon has no menu")
             color: Theme.inkMuted
         }
 

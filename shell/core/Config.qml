@@ -59,6 +59,8 @@ Singleton {
     property alias screenshotEdit: data.screenshotEdit
     // Town for the weather in the calendar; empty = no weather, nothing is requested.
     property alias weatherPlace: data.weatherPlace
+    // Language of the shell: "" follows the system, otherwise "en", "de", ...
+    property alias language: data.language
     // A different picture on single screens, one "screen name=path" entry each.
     property alias screenWallpapers: data.screenWallpapers
     function screenWallpaper(name) {
@@ -180,6 +182,7 @@ Singleton {
             property bool highContrast: false
             property bool screenshotEdit: false
             property string weatherPlace: ""
+            property string language: ""
             property list<string> screenWallpapers: []
             property bool welcomed: false
             property bool autoTheme: false

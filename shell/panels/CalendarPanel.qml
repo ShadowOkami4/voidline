@@ -21,7 +21,7 @@ PanelSurface {
     onOpenChanged: if (open) month = new Date(today.getFullYear(), today.getMonth(), 1)
 
     function shift(by) { month = new Date(month.getFullYear(), month.getMonth() + by, 1) }
-    readonly property int firstDay: Qt.locale().firstDayOfWeek      // 0 = Sunday
+    readonly property int firstDay: Lang.locale.firstDayOfWeek      // 0 = Sunday
     // 42 cells, starting on the first weekday of the locale.
     readonly property var days: {
         const lead = (month.getDay() - firstDay + 7) % 7
@@ -50,14 +50,14 @@ PanelSurface {
             spacing: 0
             Label {
                 leftPadding: 6
-                text: Qt.formatDateTime(root.today, "dddd")
+                text: Lang.date(root.today, "dddd")
                 font.pixelSize: Theme.textTitle
                 font.weight: Font.Bold
                 color: Theme.primary
             }
             Label {
                 leftPadding: 6
-                text: Qt.formatDateTime(root.today, "d MMMM yyyy")
+                text: Lang.date(root.today, Lang.t("d MMMM yyyy"))
                 font.pixelSize: 30
                 font.weight: Font.Black
                 font.letterSpacing: -0.5
@@ -75,7 +75,7 @@ PanelSurface {
             Label {
                 visible: !Weather.ready
                 anchors.centerIn: parent
-                text: Weather.problem || "Getting the weather…"
+                text: Weather.problem || Lang.t("Getting the weather…")
                 color: Theme.inkOnSecondaryContainer
             }
             Row {
@@ -116,7 +116,7 @@ PanelSurface {
             Label {
                 Layout.fillWidth: true
                 leftPadding: 6
-                text: Qt.formatDateTime(root.month, "MMMM yyyy")
+                text: Lang.date(root.month, "MMMM yyyy")
                 font.weight: Font.Bold
             }
             IconBtn { icon: "today"; size: 36; onClicked: root.month = new Date(root.today.getFullYear(), root.today.getMonth(), 1) }
@@ -138,7 +138,7 @@ PanelSurface {
                     height: 28
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    text: Qt.locale().dayName((root.firstDay + index) % 7, Locale.NarrowFormat)
+                    text: Lang.locale.dayName((root.firstDay + index) % 7, Locale.NarrowFormat)
                     font.pixelSize: Theme.textLabel
                     font.weight: Font.Bold
                     color: Theme.inkMuted

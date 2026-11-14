@@ -80,7 +80,7 @@ PanelSurface {
 
                 Label {
                     visible: search.text.length === 0
-                    text: "Search apps, or type > to run a command"
+                    text: Lang.t("Search apps, or type > to run a command")
                     color: Theme.inkMuted
                     font.pixelSize: Theme.textTitle
                     anchors.verticalCenter: parent.verticalCenter
@@ -140,8 +140,8 @@ PanelSurface {
             Label {
                 anchors.centerIn: parent
                 visible: grid.count === 0
-                text: !root.commandMode ? "No apps found"
-                    : (root.commandText.length > 0 ? "Press Enter to run:  " + root.commandText : "Type a command, then press Enter")
+                text: !root.commandMode ? Lang.t("No apps found")
+                    : (root.commandText.length > 0 ? Lang.t("Press Enter to run:  ") + root.commandText : Lang.t("Type a command, then press Enter"))
                 color: Theme.inkMuted
             }
         }

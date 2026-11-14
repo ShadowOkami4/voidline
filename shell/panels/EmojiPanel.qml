@@ -62,7 +62,7 @@ PanelSurface {
                 Label {
                     visible: search.text.length === 0
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Search emoji"
+                    text: Lang.t("Search emoji")
                     color: Theme.inkMuted
                     font.pixelSize: Theme.textTitle
                 }
@@ -102,7 +102,7 @@ PanelSurface {
             Label {
                 anchors.centerIn: parent
                 visible: grid.count === 0
-                text: "No emoji found"
+                text: Lang.t("No emoji found")
                 color: Theme.inkMuted
             }
         }

@@ -76,9 +76,9 @@ ColumnLayout {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 color: page.recording ? Theme.inkOnPrimaryContainer : Theme.inkMuted
-                text: page.recording ? "Press the new shortcut now. Esc cancels, Backspace switches the shortcut off."
-                    : "Click a shortcut, then press the keys you want. Keys that " + (Compositor.name === "niri" ? "Niri" : "Hyprland")
-                        + " already uses for something else in your own config cannot be picked up here."
+                text: page.recording ? Lang.t("Press the new shortcut now. Esc cancels, Backspace switches the shortcut off.")
+                    : Lang.t("Click a shortcut, then press the keys you want. Keys that ") + (Compositor.name === "niri" ? "Niri" : "Hyprland")
+                        + Lang.t(" already uses for something else in your own config cannot be picked up here.")
             }
         }
     }
@@ -97,7 +97,7 @@ ColumnLayout {
                 hue: index
                 lobes: [8, 0, 4, 5][index % 4]
                 title: modelData.label
-                description: hot ? "Waiting for keys…" : (Keybinds.isDefault(modelData.id) ? "" : "Changed")
+                description: hot ? Lang.t("Waiting for keys…") : (Keybinds.isDefault(modelData.id) ? "" : Lang.t("Changed"))
                 clickable: true
                 color: hot ? Theme.secondaryContainer : Theme.surfaceContainerHigh
                 Behavior on color { Tint {} }
@@ -122,7 +122,7 @@ ColumnLayout {
                     Label {
                         visible: row.combo.length === 0
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "Off"
+                        text: Lang.t("Off")
                         color: Theme.inkMuted
                         font.weight: Font.DemiBold
                     }
@@ -146,6 +146,6 @@ ColumnLayout {
         color: Theme.secondaryContainer
         tint: Theme.inkOnSecondaryContainer
         onClicked: Keybinds.resetAll()
-        Label { id: resetLabel; anchors.centerIn: parent; text: "Reset all shortcuts"; font.weight: Font.DemiBold; color: Theme.inkOnSecondaryContainer }
+        Label { id: resetLabel; anchors.centerIn: parent; text: Lang.t("Reset all shortcuts"); font.weight: Font.DemiBold; color: Theme.inkOnSecondaryContainer }
     }
 }

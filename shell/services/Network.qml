@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.core
 
 // Deliberately small: connection state via NetworkManager's `nmcli monitor`
 // (event driven, no polling). Without NetworkManager the shell still works
@@ -17,7 +18,7 @@ Singleton {
     readonly property bool connected: type.length > 0
     readonly property string icon: !available ? "language"
         : (type === "ethernet" ? "lan" : (type === "wifi" ? "wifi" : (wifiEnabled ? "wifi_find" : "wifi_off")))
-    readonly property string label: !available ? "Network" : (connected ? name : (wifiEnabled ? "Not connected" : "Wi-Fi off"))
+    readonly property string label: !available ? Lang.t("Network") : (connected ? name : (wifiEnabled ? Lang.t("Not connected") : Lang.t("Wi-Fi off")))
 
     function setWifi(on) {
         if (!available) return

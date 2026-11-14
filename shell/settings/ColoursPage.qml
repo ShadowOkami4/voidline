@@ -19,8 +19,8 @@ ColumnLayout {
 
         Repeater {
             model: [
-                { dark: false, icon: "light_mode", label: "Light" },
-                { dark: true, icon: "dark_mode", label: "Dark" }
+                { dark: false, icon: "light_mode", label: Lang.t("Light") },
+                { dark: true, icon: "dark_mode", label: Lang.t("Dark") }
             ]
             Pressable {
                 id: mode
@@ -65,7 +65,7 @@ ColumnLayout {
 
         Label {
             Layout.leftMargin: 8
-            text: "Wallpaper"
+            text: Lang.t("Wallpaper")
             font.weight: Font.Bold
             color: Theme.primary
         }
@@ -77,7 +77,7 @@ ColumnLayout {
             Layout.fillWidth: true
             property string screenName: ""
             value: screenName
-            options: [{ value: "", label: "All screens" }].concat(Quickshell.screens.map(s => ({ value: s.name, label: s.name })))
+            options: [{ value: "", label: Lang.t("All screens") }].concat(Quickshell.screens.map(s => ({ value: s.name, label: s.name })))
             onPicked: v => screenName = v
         }
         Label {
@@ -87,8 +87,8 @@ ColumnLayout {
             wrapMode: Text.Wrap
             color: Theme.inkMuted
             font.pixelSize: Theme.textLabel + 1
-            text: Config.screenWallpaper(aim.screenName).length > 0 ? "This screen has its own picture. Pick “none” (the first tile) to follow the others again."
-                : "This screen follows the others. Pick a picture to give it its own."
+            text: Config.screenWallpaper(aim.screenName).length > 0 ? Lang.t("This screen has its own picture. Pick “none” (the first tile) to follow the others again.")
+                : Lang.t("This screen follows the others. Pick a picture to give it its own.")
         }
 
         ListView {
@@ -135,7 +135,7 @@ ColumnLayout {
                         visible: paper.modelData.length === 0
                         spacing: 4
                         MIcon { anchors.horizontalCenter: parent.horizontalCenter; icon: "hide_image"; size: 26; color: Theme.inkMuted }
-                        Label { anchors.horizontalCenter: parent.horizontalCenter; text: "None"; font.pixelSize: Theme.textLabel; color: Theme.inkMuted }
+                        Label { anchors.horizontalCenter: parent.horizontalCenter; text: Lang.t("None"); font.pixelSize: Theme.textLabel; color: Theme.inkMuted }
                     }
                     Rectangle {
                         anchors.fill: parent
@@ -174,7 +174,7 @@ ColumnLayout {
             wrapMode: Text.Wrap
             font.pixelSize: Theme.textLabel
             color: Theme.inkMuted
-            text: "Add your own images to " + Wallpapers.dataDir.replace(Wallpapers.home, "~") + " or ~/Pictures/Wallpapers."
+            text: Lang.t("Add your own images to ") + Wallpapers.dataDir.replace(Wallpapers.home, "~") + Lang.t(" or ~/Pictures/Wallpapers.")
         }
     }
 
@@ -186,7 +186,7 @@ ColumnLayout {
 
         Label {
             Layout.leftMargin: 8
-            text: "Live wallpapers"
+            text: Lang.t("Live wallpapers")
             font.weight: Font.Bold
             color: Theme.primary
         }
@@ -270,7 +270,7 @@ ColumnLayout {
             wrapMode: Text.Wrap
             font.pixelSize: Theme.textLabel
             color: Theme.inkMuted
-            text: "Live wallpapers are small programs. Only add ones you trust, in " + Config.liveDir.replace(Wallpapers.home, "~") + "."
+            text: Lang.t("Live wallpapers are small programs. Only add ones you trust, in ") + Config.liveDir.replace(Wallpapers.home, "~") + "."
         }
     }
 
@@ -344,24 +344,24 @@ ColumnLayout {
             icon: "battery_saver"
             hue: 0
             lobes: 5
-            title: "Pause on battery"
-            description: "Freeze live wallpapers while the laptop is unplugged."
+            title: Lang.t("Pause on battery")
+            description: Lang.t("Freeze live wallpapers while the laptop is unplugged.")
             Toggle { checked: Config.livePauseOnBattery; onToggled: v => Config.livePauseOnBattery = v }
         }
         SegItem {
             icon: "tab_inactive"
             hue: 2
             lobes: 8
-            title: "Pause behind windows"
-            description: "Animate only while the desktop is visible."
+            title: Lang.t("Pause behind windows")
+            description: Lang.t("Animate only while the desktop is visible.")
             Toggle { checked: Config.livePauseWhenCovered; onToggled: v => Config.livePauseWhenCovered = v }
         }
         SegItem {
             icon: "slow_motion_video"
             hue: 4
             lobes: 4
-            title: "Smoothness"
-            description: "Higher is smoother and uses more power."
+            title: Lang.t("Smoothness")
+            description: Lang.t("Higher is smoother and uses more power.")
             extra: Choice {
                 Layout.fillWidth: true
                 value: Config.liveFps
@@ -377,14 +377,14 @@ ColumnLayout {
 
     // ---- Colours -----------------------------------------------------------------
     SegGroup {
-        title: "Colours"
+        title: Lang.t("Colours")
 
         SegItem {
             icon: "wallpaper"
             hue: 0
             lobes: 8
-            title: "Use wallpaper colours"
-            description: Config.wallpaper.length > 0 ? "The palette follows the wallpaper." : "Pick a wallpaper to use this."
+            title: Lang.t("Use wallpaper colours")
+            description: Config.wallpaper.length > 0 ? Lang.t("The palette follows the wallpaper.") : Lang.t("Pick a wallpaper to use this.")
             Toggle { checked: Config.wallpaperColors; onToggled: v => Config.wallpaperColors = v }
         }
 
@@ -392,8 +392,8 @@ ColumnLayout {
             icon: "palette"
             hue: 2
             lobes: 4
-            title: "Accent colour"
-            description: page.fromWallpaper ? "Used when wallpaper colours are off." : "Every surface is tinted from this colour."
+            title: Lang.t("Accent colour")
+            description: page.fromWallpaper ? Lang.t("Used when wallpaper colours are off.") : Lang.t("Every surface is tinted from this colour.")
             opacity: page.fromWallpaper ? 0.55 : 1
 
             extra: Flow {

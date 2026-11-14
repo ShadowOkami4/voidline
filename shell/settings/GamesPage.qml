@@ -51,7 +51,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
                 Label {
-                    text: "Game mode"
+                    text: Lang.t("Game mode")
                     font.pixelSize: 28
                     font.weight: Font.Black
                     color: Config.gameMode ? Theme.inkOnPrimary : Theme.inkOnPrimaryContainer
@@ -61,7 +61,7 @@ ColumnLayout {
                     wrapMode: Text.Wrap
                     opacity: 0.85
                     color: Config.gameMode ? Theme.inkOnPrimary : Theme.inkOnPrimaryContainer
-                    text: "Switches off blur, shadows and window animations, pauses the live wallpaper and holds back notification popups."
+                    text: Lang.t("Switches off blur, shadows and window animations, pauses the live wallpaper and holds back notification popups.")
                 }
             }
             Toggle { checked: Config.gameMode; onToggled: v => Config.gameMode = v }
@@ -70,13 +70,13 @@ ColumnLayout {
 
     SegGroup {
         visible: Compositor.name === "hyprland"
-        title: "Display"
+        title: Lang.t("Display")
         SegItem {
             icon: "autorenew"
             hue: 1
             lobes: 0
-            title: "Variable refresh rate"
-            description: "The screen follows the game's frame rate (FreeSync / G-Sync)."
+            title: Lang.t("Variable refresh rate")
+            description: Lang.t("The screen follows the game's frame rate (FreeSync / G-Sync).")
             Toggle { checked: Config.hyprland.vrr; onToggled: v => Config.hyprland.vrr = v }
         }
     }
@@ -98,7 +98,7 @@ ColumnLayout {
     ColumnLayout {
         Layout.fillWidth: true
         spacing: 6
-        Label { leftPadding: 8; text: "Library"; font.weight: Font.Bold; color: Theme.primary }
+        Label { leftPadding: 8; text: Lang.t("Library"); font.weight: Font.Bold; color: Theme.primary }
 
         Repeater {
             model: page.steam
@@ -122,7 +122,7 @@ ColumnLayout {
             visible: page.steam.length === 0 && page.apps.length === 0
             leftPadding: 8
             topPadding: 6
-            text: "No games found. Games from Steam and installed game apps show up here."
+            text: Lang.t("No games found. Games from Steam and installed game apps show up here.")
             color: Theme.inkMuted
         }
     }

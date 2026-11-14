@@ -14,18 +14,18 @@ ColumnLayout {
 
     // `probe` is the file type asked about; `types` are all set together.
     readonly property var kinds: [
-        { id: "browser", icon: "language", lobes: 8, label: "Web browser", probe: "x-scheme-handler/https",
+        { id: "browser", icon: "language", lobes: 8, label: Lang.t("Web browser"), probe: "x-scheme-handler/https",
           types: ["x-scheme-handler/http", "x-scheme-handler/https", "text/html"] },
-        { id: "mail", icon: "mail", lobes: 0, label: "Email", probe: "x-scheme-handler/mailto", types: ["x-scheme-handler/mailto"] },
-        { id: "files", icon: "folder", lobes: 4, label: "File manager", probe: "inode/directory", types: ["inode/directory"] },
-        { id: "text", icon: "edit_note", lobes: 5, label: "Text editor", probe: "text/plain", types: ["text/plain"] },
-        { id: "images", icon: "image", lobes: 8, label: "Image viewer", probe: "image/png",
+        { id: "mail", icon: "mail", lobes: 0, label: Lang.t("Email"), probe: "x-scheme-handler/mailto", types: ["x-scheme-handler/mailto"] },
+        { id: "files", icon: "folder", lobes: 4, label: Lang.t("File manager"), probe: "inode/directory", types: ["inode/directory"] },
+        { id: "text", icon: "edit_note", lobes: 5, label: Lang.t("Text editor"), probe: "text/plain", types: ["text/plain"] },
+        { id: "images", icon: "image", lobes: 8, label: Lang.t("Image viewer"), probe: "image/png",
           types: ["image/png", "image/jpeg", "image/webp", "image/gif", "image/bmp", "image/svg+xml"] },
-        { id: "video", icon: "movie", lobes: 0, label: "Video player", probe: "video/mp4",
+        { id: "video", icon: "movie", lobes: 0, label: Lang.t("Video player"), probe: "video/mp4",
           types: ["video/mp4", "video/x-matroska", "video/webm", "video/quicktime", "video/x-msvideo"] },
-        { id: "music", icon: "music_note", lobes: 4, label: "Music player", probe: "audio/mpeg",
+        { id: "music", icon: "music_note", lobes: 4, label: Lang.t("Music player"), probe: "audio/mpeg",
           types: ["audio/mpeg", "audio/flac", "audio/ogg", "audio/x-wav", "audio/mp4"] },
-        { id: "pdf", icon: "picture_as_pdf", lobes: 5, label: "PDF documents", probe: "application/pdf", types: ["application/pdf"] }
+        { id: "pdf", icon: "picture_as_pdf", lobes: 5, label: Lang.t("PDF documents"), probe: "application/pdf", types: ["application/pdf"] }
     ]
 
     // { kindId: { current: "app.desktop", apps: ["app.desktop", ...] } }
@@ -37,7 +37,7 @@ ColumnLayout {
         return DesktopEntries.applications.values.find(e => e.id === id) ?? null
     }
     function nameOf(file) {
-        if (!file) return "Not set"
+        if (!file) return Lang.t("Not set")
         const e = entry(file)
         return e ? e.name : file.replace(/\.desktop$/, "")
     }
@@ -110,7 +110,7 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Open with"
+        title: Lang.t("Open with")
         Repeater {
             model: page.kinds
             SegItem {
@@ -123,7 +123,7 @@ ColumnLayout {
                 hue: index
                 lobes: modelData.lobes
                 title: modelData.label
-                description: info.apps.length === 0 ? "No app installed for this" : page.nameOf(info.current)
+                description: info.apps.length === 0 ? Lang.t("No app installed for this") : page.nameOf(info.current)
                 clickable: info.apps.length > 0
                 onClicked: page.open = expanded ? "" : modelData.id
                 MIcon { visible: item.info.apps.length > 0; icon: item.expanded ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }
@@ -157,7 +157,7 @@ ColumnLayout {
             hue: 2
             lobes: 8
             title: "Terminal"
-            description: (page.terminalEntry ? page.terminalEntry.name : Config.terminal) + ". Used for apps that run in a terminal."
+            description: (page.terminalEntry ? page.terminalEntry.name : Config.terminal) + Lang.t(". Used for apps that run in a terminal.")
             clickable: true
             onClicked: page.open = expanded ? "" : "terminal"
             MIcon { icon: term.expanded ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }

@@ -43,14 +43,14 @@ Item {
             Column {
                 anchors.verticalCenter: parent.verticalCenter
                 Label {
-                    text: Qt.formatDateTime(clock.date, "ddd").toUpperCase()
+                    text: Lang.date(clock.date, "ddd").toUpperCase()
                     font.pixelSize: 10
                     font.weight: Font.Bold
                     font.letterSpacing: 0.6
                     color: Theme.primary
                 }
                 Label {
-                    text: Qt.formatDateTime(clock.date, "d MMM")
+                    text: Lang.date(clock.date, Lang.t("d MMM"))
                     font.pixelSize: 11
                     font.weight: Font.Medium
                     color: Theme.inkMuted
@@ -80,7 +80,7 @@ Item {
     Component {
         id: inline
         Label {
-            text: Qt.formatDateTime(clock.date, "ddd d MMM") + "   " + root.timeText
+            text: Lang.date(clock.date, Lang.t("ddd d MMM")) + "   " + root.timeText
             font.pixelSize: 13
             font.weight: Font.DemiBold
         }

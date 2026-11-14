@@ -59,7 +59,7 @@ PanelSurface {
                     Label {
                         visible: search.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "Search the clipboard"
+                        text: Lang.t("Search the clipboard")
                         color: Theme.inkMuted
                         font.pixelSize: Theme.textTitle
                     }
@@ -113,7 +113,7 @@ PanelSurface {
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight
                     maximumLineCount: 1
-                    text: row.modelData.image ? "Picture" : row.modelData.text.replace(/\s+/g, " ")
+                    text: row.modelData.image ? Lang.t("Picture") : row.modelData.text.replace(/\s+/g, " ")
                     color: row.current ? Theme.inkOnSecondaryContainer : Theme.ink
                 }
                 IconBtn {
@@ -134,8 +134,8 @@ PanelSurface {
                 visible: view.count === 0
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
-                text: !Clipboard.available ? "Clipboard history needs the packages “cliphist” and “wl-clipboard”."
-                    : (search.text.length > 0 ? "Nothing matches" : "Nothing copied yet")
+                text: !Clipboard.available ? Lang.t("Clipboard history needs the packages “cliphist” and “wl-clipboard”.")
+                    : (search.text.length > 0 ? Lang.t("Nothing matches") : Lang.t("Nothing copied yet"))
                 color: Theme.inkMuted
             }
         }

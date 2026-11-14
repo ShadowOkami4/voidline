@@ -43,19 +43,19 @@ ColumnLayout {
     }
     Process {
         id: buttonsWrite
-        onExited: code => { page.buttonsNote = code === 0 ? "" : "Not changed. It needs your password."; page.readButtons() }
+        onExited: code => { page.buttonsNote = code === 0 ? "" : Lang.t("Not changed. It needs your password."); page.readButtons() }
     }
 
     component Minutes: Choice {
         Layout.fillWidth: true
         options: [
-            { value: 0, label: "Never" },
+            { value: 0, label: Lang.t("Never") },
             { value: 2, label: "2 min" },
             { value: 5, label: "5 min" },
             { value: 10, label: "10 min" },
             { value: 15, label: "15 min" },
             { value: 30, label: "30 min" },
-            { value: 60, label: "1 hour" }
+            { value: 60, label: Lang.t("1 hour") }
         ]
     }
 
@@ -72,7 +72,7 @@ ColumnLayout {
             width: parent.width - 44
             wrapMode: Text.Wrap
             color: Theme.inkOnTertiaryContainer
-            text: "The timers are not available."
+            text: Lang.t("The timers are not available.")
         }
     }
 
@@ -81,72 +81,72 @@ ColumnLayout {
             icon: "lock"
             hue: 0
             lobes: 8
-            title: "Lock now"
-            description: "Also on Super + L and in quick settings."
+            title: Lang.t("Lock now")
+            description: Lang.t("Also on Super + L and in quick settings.")
             clickable: true
             onClicked: Shell.lock()
         }
     }
 
     SegGroup {
-        title: "When left alone"
+        title: Lang.t("When left alone")
         opacity: Idle.hasSwayidle ? 1 : 0.5
         enabled: Idle.hasSwayidle
         SegItem {
             icon: "lock_clock"
             hue: 1
             lobes: 0
-            title: "Lock the screen"
-            description: Config.lockAfter > 0 ? "After " + Config.lockAfter + " minutes without input." : "Only when you ask."
+            title: Lang.t("Lock the screen")
+            description: Config.lockAfter > 0 ? Lang.t("After ") + Config.lockAfter + Lang.t(" minutes without input.") : Lang.t("Only when you ask.")
             extra: Minutes { value: Config.lockAfter; onPicked: v => Config.lockAfter = v }
         }
         SegItem {
             icon: "desktop_access_disabled"
             hue: 2
             lobes: 4
-            title: "Turn the screen off"
-            description: Config.screenOffAfter > 0 ? "After " + Config.screenOffAfter + " minutes. Any key or mouse movement wakes it." : "Stays on."
+            title: Lang.t("Turn the screen off")
+            description: Config.screenOffAfter > 0 ? Lang.t("After ") + Config.screenOffAfter + Lang.t(" minutes. Any key or mouse movement wakes it.") : Lang.t("Stays on.")
             extra: Minutes { value: Config.screenOffAfter; onPicked: v => Config.screenOffAfter = v }
         }
         SegItem {
             icon: "bedtime"
             hue: 3
             lobes: 5
-            title: "Go to sleep"
-            description: Config.sleepAfter > 0 ? "After " + Config.sleepAfter + " minutes." : "Never on its own."
+            title: Lang.t("Go to sleep")
+            description: Config.sleepAfter > 0 ? Lang.t("After ") + Config.sleepAfter + Lang.t(" minutes.") : Lang.t("Never on its own.")
             extra: Minutes { value: Config.sleepAfter; onPicked: v => Config.sleepAfter = v }
         }
     }
 
     SegGroup {
-        title: "Sleep"
+        title: Lang.t("Sleep")
         SegItem {
             icon: "shield_lock"
             hue: 4
             lobes: 8
-            title: "Lock before sleep"
-            description: "Ask for your password after closing the lid or waking up."
+            title: Lang.t("Lock before sleep")
+            description: Lang.t("Ask for your password after closing the lid or waking up.")
             Toggle { checked: Config.lockOnSleep; onToggled: v => Config.lockOnSleep = v }
         }
     }
 
     SegGroup {
         visible: page.lid.length > 0
-        title: "Lid and power button"
+        title: Lang.t("Lid and power button")
         SegItem {
             icon: "laptop_chromebook"
             hue: 5
             lobes: 0
-            title: "When the lid closes"
-            description: page.buttonsNote || "Asks for your password to change."
+            title: Lang.t("When the lid closes")
+            description: page.buttonsNote || Lang.t("Asks for your password to change.")
             Dropdown {
                 width: 220
                 value: page.lid
                 options: [
-                    { value: "suspend", label: "Sleep" },
-                    { value: "lock", label: "Lock" },
-                    { value: "ignore", label: "Do nothing" },
-                    { value: "poweroff", label: "Shut down" }
+                    { value: "suspend", label: Lang.t("Sleep") },
+                    { value: "lock", label: Lang.t("Lock") },
+                    { value: "ignore", label: Lang.t("Do nothing") },
+                    { value: "poweroff", label: Lang.t("Shut down") }
                 ]
                 onPicked: v => page.setButtons(v, page.button || "poweroff")
             }
@@ -155,16 +155,16 @@ ColumnLayout {
             icon: "power_settings_new"
             hue: 0
             lobes: 5
-            title: "Power button"
-            description: "A short press. Holding it for several seconds always switches off."
+            title: Lang.t("Power button")
+            description: Lang.t("A short press. Holding it for several seconds always switches off.")
             Dropdown {
                 width: 220
                 value: page.button
                 options: [
-                    { value: "poweroff", label: "Shut down" },
-                    { value: "suspend", label: "Sleep" },
-                    { value: "lock", label: "Lock" },
-                    { value: "ignore", label: "Do nothing" }
+                    { value: "poweroff", label: Lang.t("Shut down") },
+                    { value: "suspend", label: Lang.t("Sleep") },
+                    { value: "lock", label: Lang.t("Lock") },
+                    { value: "ignore", label: Lang.t("Do nothing") }
                 ]
                 onPicked: v => page.setButtons(page.lid || "suspend", v)
             }

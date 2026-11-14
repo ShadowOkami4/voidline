@@ -73,7 +73,7 @@ Rectangle {
                 spacing: 1
                 Label {
                     Layout.fillWidth: true
-                    text: Media.title || "Nothing playing"
+                    text: Media.title || Lang.t("Nothing playing")
                     elide: Text.ElideRight
                     font.pixelSize: Theme.textTitle
                     font.weight: Font.Bold

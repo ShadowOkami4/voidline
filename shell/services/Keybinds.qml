@@ -13,24 +13,24 @@ Singleton {
     // `ipc` is passed to "qs -c voidline ipc call shell"; `hypr` and `niri`
     // are used instead where the compositor does the work itself.
     readonly property var actions: [
-        { id: "launcher", icon: "apps", label: "Open the launcher", combo: "SUPER+space", ipc: ["toggle", "launcher"] },
-        { id: "quick", icon: "tune", label: "Open quick settings", combo: "SUPER+A", ipc: ["toggle", "quick"] },
-        { id: "settings", icon: "settings", label: "Open Settings", combo: "SUPER+I", ipc: ["settings"] },
-        { id: "switcher", icon: "tab", label: "Switch between windows", combo: "SUPER+Tab", ipc: ["switcher"] },
-        { id: "clipboard", icon: "content_paste", label: "Open the clipboard history", combo: "SUPER+SHIFT+V", ipc: ["toggle", "clipboard"] },
-        { id: "shot", icon: "screenshot_monitor", label: "Take a screenshot", combo: "Print", ipc: ["screenshot", "screen"] },
-        { id: "shotRegion", icon: "screenshot_region", label: "Screenshot part of the screen", combo: "SHIFT+Print", ipc: ["screenshot", "region"] },
-        { id: "record", icon: "radio_button_checked", label: "Start or stop a screen recording", combo: "CTRL+Print", ipc: ["record"] },
-        { id: "emoji", icon: "mood", label: "Open the emoji picker", combo: "SUPER+period", ipc: ["toggle", "emoji"] },
-        { id: "colour", icon: "colorize", label: "Pick a colour from the screen", combo: "SUPER+SHIFT+C", ipc: ["colour"] },
-        { id: "layout", icon: "language", label: "Switch keyboard layout", combo: "SUPER+ALT+space", ipc: [],
+        { id: "launcher", icon: "apps", label: Lang.t("Open the launcher"), combo: "SUPER+space", ipc: ["toggle", "launcher"] },
+        { id: "quick", icon: "tune", label: Lang.t("Open quick settings"), combo: "SUPER+A", ipc: ["toggle", "quick"] },
+        { id: "settings", icon: "settings", label: Lang.t("Open Settings"), combo: "SUPER+I", ipc: ["settings"] },
+        { id: "switcher", icon: "tab", label: Lang.t("Switch between windows"), combo: "SUPER+Tab", ipc: ["switcher"] },
+        { id: "clipboard", icon: "content_paste", label: Lang.t("Open the clipboard history"), combo: "SUPER+SHIFT+V", ipc: ["toggle", "clipboard"] },
+        { id: "shot", icon: "screenshot_monitor", label: Lang.t("Take a screenshot"), combo: "Print", ipc: ["screenshot", "screen"] },
+        { id: "shotRegion", icon: "screenshot_region", label: Lang.t("Screenshot part of the screen"), combo: "SHIFT+Print", ipc: ["screenshot", "region"] },
+        { id: "record", icon: "radio_button_checked", label: Lang.t("Start or stop a screen recording"), combo: "CTRL+Print", ipc: ["record"] },
+        { id: "emoji", icon: "mood", label: Lang.t("Open the emoji picker"), combo: "SUPER+period", ipc: ["toggle", "emoji"] },
+        { id: "colour", icon: "colorize", label: Lang.t("Pick a colour from the screen"), combo: "SUPER+SHIFT+C", ipc: ["colour"] },
+        { id: "layout", icon: "language", label: Lang.t("Switch keyboard layout"), combo: "SUPER+ALT+space", ipc: [],
           hypr: 'hl.dsp.exec_cmd("hyprctl switchxkblayout all next")', niri: 'switch-layout "next"' },
-        { id: "lock", icon: "lock", label: "Lock the screen", combo: "SUPER+L", ipc: ["lock"] },
-        { id: "minimize", icon: "minimize", label: "Minimise the window", combo: "SUPER+N", ipc: ["minimize"] },
-        { id: "restore", icon: "open_in_full", label: "Bring back the last minimised window", combo: "SUPER+SHIFT+N", ipc: ["restore"] },
-        { id: "peek", icon: "stacks", label: "Show minimised windows", combo: "SUPER+CTRL+N", ipc: [],
+        { id: "lock", icon: "lock", label: Lang.t("Lock the screen"), combo: "SUPER+L", ipc: ["lock"] },
+        { id: "minimize", icon: "minimize", label: Lang.t("Minimise the window"), combo: "SUPER+N", ipc: ["minimize"] },
+        { id: "restore", icon: "open_in_full", label: Lang.t("Bring back the last minimised window"), combo: "SUPER+SHIFT+N", ipc: ["restore"] },
+        { id: "peek", icon: "stacks", label: Lang.t("Show minimised windows"), combo: "SUPER+CTRL+N", ipc: [],
           hypr: 'hl.dsp.workspace.toggle_special("minimized")', niri: 'focus-workspace "minimized"' },
-        { id: "style", icon: "dashboard_customize", label: "Switch to the next style", combo: "SUPER+ALT+S", ipc: ["style", "next"] }
+        { id: "style", icon: "dashboard_customize", label: Lang.t("Switch to the next style"), combo: "SUPER+ALT+S", ipc: ["style", "next"] }
     ]
 
     readonly property var mods: ["SUPER", "CTRL", "ALT", "SHIFT"]
@@ -70,9 +70,9 @@ Singleton {
     function resetAll() { Config.keybinds = [] }
 
     // ---- display ---------------------------------------------------------------------
-    readonly property var keyNames: ({ space: "Space", Return: "Enter", Prior: "Page Up", Next: "Page Down", comma: ",", period: ".",
+    readonly property var keyNames: ({ space: Lang.t("Space"), Return: Lang.t("Enter"), Prior: Lang.t("Page Up"), Next: Lang.t("Page Down"), comma: ",", period: ".",
         minus: "-", equal: "=", slash: "/", backslash: "\\", semicolon: ";", apostrophe: "'", bracketleft: "[", bracketright: "]", grave: "`" })
-    readonly property var modNames: ({ SUPER: "Super", CTRL: "Ctrl", ALT: "Alt", SHIFT: "Shift" })
+    readonly property var modNames: ({ SUPER: "Super", CTRL: Lang.t("Ctrl"), ALT: "Alt", SHIFT: Lang.t("Shift") })
     // ["Super", "Shift", "N"]
     function parts(value) {
         if (!value) return []

@@ -49,24 +49,24 @@ ColumnLayout {
             icon: "routine"
             hue: 5
             lobes: 5
-            title: "Dark at night"
-            description: "Light theme from 7:00, dark theme from 19:00."
+            title: Lang.t("Dark at night")
+            description: Lang.t("Light theme from 7:00, dark theme from 19:00.")
             Toggle { checked: Config.autoTheme; onToggled: v => Config.autoTheme = v }
         }
         SegItem {
             icon: "contrast"
             hue: 0
             lobes: 8
-            title: "Apps follow dark and light"
-            description: "Tells apps to use the same dark or light look as the shell."
+            title: Lang.t("Apps follow dark and light")
+            description: Lang.t("Tells apps to use the same dark or light look as the shell.")
             Toggle { checked: Config.syncAppTheme; onToggled: v => Config.syncAppTheme = v }
         }
         SegItem {
             icon: "format_color_fill"
             hue: 4
             lobes: 4
-            title: "Apps use Voidline's colours"
-            description: "The file manager and other GTK apps take the shell's colours. Restart an app to see it."
+            title: Lang.t("Apps use Voidline's colours")
+            description: Lang.t("The file manager and other GTK apps take the shell's colours. Restart an app to see it.")
             Toggle { checked: Config.appColors; onToggled: v => Config.appColors = v }
         }
         SegItem {
@@ -75,8 +75,8 @@ ColumnLayout {
             icon: "category"
             hue: 1
             lobes: 0
-            title: "Icons"
-            description: Appearance.iconTheme || "Default"
+            title: Lang.t("Icons")
+            description: Appearance.iconTheme || Lang.t("Default")
             clickable: true
             onClicked: page.open = expanded ? "" : "icons"
             MIcon { icon: icons.expanded ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }
@@ -101,8 +101,8 @@ ColumnLayout {
             icon: "arrow_selector_tool"
             hue: 2
             lobes: 4
-            title: "Mouse pointer"
-            description: (Appearance.cursorTheme || "Default") + ", size " + Appearance.cursorSize
+            title: Lang.t("Mouse pointer")
+            description: (Appearance.cursorTheme || Lang.t("Default")) + Lang.t(", size ") + Appearance.cursorSize
             clickable: true
             onClicked: page.open = expanded ? "" : "cursor"
             MIcon { icon: pointer.expanded ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }
@@ -115,10 +115,10 @@ ColumnLayout {
                     Layout.bottomMargin: 6
                     value: Appearance.cursorSize
                     options: [
-                        { value: 16, label: "Small" },
+                        { value: 16, label: Lang.t("Small") },
                         { value: 24, label: "Normal" },
-                        { value: 32, label: "Large" },
-                        { value: 48, label: "Huge" }
+                        { value: 32, label: Lang.t("Large") },
+                        { value: 48, label: Lang.t("Huge") }
                     ]
                     onPicked: v => Appearance.setCursor(Appearance.cursorTheme, v)
                 }
@@ -136,14 +136,14 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Night light"
+        title: Lang.t("Night light")
         SegItem {
             icon: "nightlight"
             hue: 3
             lobes: 5
-            title: "Warmer screen"
-            description: Appearance.nightAvailable ? "Less blue light, easier on the eyes at night."
-                : "Needs the package “hyprsunset” (Hyprland) or “gammastep”."
+            title: Lang.t("Warmer screen")
+            description: Appearance.nightAvailable ? Lang.t("Less blue light, easier on the eyes at night.")
+                : Lang.t("Needs the package “hyprsunset” (Hyprland) or “gammastep”.")
             Toggle {
                 enabled: Appearance.nightAvailable
                 opacity: enabled ? 1 : 0.4
@@ -155,9 +155,9 @@ ColumnLayout {
                 Layout.fillWidth: true
                 value: Config.nightLightTemp
                 options: [
-                    { value: 5000, label: "Slightly warm" },
+                    { value: 5000, label: Lang.t("Slightly warm") },
                     { value: 4000, label: "Warm" },
-                    { value: 3200, label: "Very warm" }
+                    { value: 3200, label: Lang.t("Very warm") }
                 ]
                 onPicked: v => Config.nightLightTemp = v
             }
@@ -165,7 +165,7 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Start with the session"
+        title: Lang.t("Start with the session")
         Repeater {
             model: Autostart.entries
             SegItem {
@@ -184,8 +184,8 @@ ColumnLayout {
             icon: "add"
             hue: 0
             lobes: 4
-            title: "Add an app"
-            description: Autostart.entries.length === 0 ? "Nothing starts on its own yet." : ""
+            title: Lang.t("Add an app")
+            description: Autostart.entries.length === 0 ? Lang.t("Nothing starts on its own yet.") : ""
             clickable: true
             onClicked: page.adding = !page.adding
             MIcon { icon: page.adding ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }

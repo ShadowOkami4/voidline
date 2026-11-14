@@ -62,7 +62,7 @@ ColumnLayout {
     Process {
         id: change
         onExited: code => {
-            if (code !== 0) page.problem = "That was not changed. It needs your password."
+            if (code !== 0) page.problem = Lang.t("That was not changed. It needs your password.")
             else page.picking = false
             page.refresh()
         }
@@ -88,7 +88,7 @@ ColumnLayout {
                 color: Theme.inkOnPrimaryContainer
             }
             Label {
-                text: Qt.formatDateTime(clock.date, "dddd, d MMMM yyyy") + (page.zone.length > 0 ? "  ·  " + page.pretty(page.zone) : "")
+                text: Lang.date(clock.date, Lang.t("dddd, d MMMM yyyy")) + (page.zone.length > 0 ? "  ·  " + page.pretty(page.zone) : "")
                 font.weight: Font.DemiBold
                 color: Theme.inkOnPrimaryContainer
                 opacity: 0.85
@@ -112,22 +112,22 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Time"
+        title: Lang.t("Time")
         SegItem {
             visible: page.canNtp
             icon: "sync"
             hue: 0
             lobes: 8
-            title: "Set time automatically"
-            description: !page.ntp ? "The clock runs on its own." : (page.synced ? "In step with internet time." : "Waiting for internet time.")
+            title: Lang.t("Set time automatically")
+            description: !page.ntp ? Lang.t("The clock runs on its own.") : (page.synced ? Lang.t("In step with internet time.") : Lang.t("Waiting for internet time."))
             Toggle { checked: page.ntp; onToggled: v => page.run(["set-ntp", v ? "true" : "false"]) }
         }
         SegItem {
             icon: "public"
             hue: 1
             lobes: 0
-            title: "Time zone"
-            description: page.zone.length > 0 ? page.pretty(page.zone) : "Unknown"
+            title: Lang.t("Time zone")
+            description: page.zone.length > 0 ? page.pretty(page.zone) : Lang.t("Unknown")
             clickable: true
             onClicked: { page.picking = !page.picking; if (page.picking) filter.forceActiveFocus() }
             MIcon { icon: page.picking ? "expand_less" : "expand_more"; size: 24; color: Theme.inkMuted }
@@ -161,7 +161,7 @@ ColumnLayout {
                         Label {
                             visible: filter.text.length === 0
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "Search city or region"
+                            text: Lang.t("Search city or region")
                             color: Theme.inkMuted
                         }
                     }
@@ -208,7 +208,7 @@ ColumnLayout {
                 }
                 Label {
                     visible: page.matches.length === 0
-                    text: "No time zone matches"
+                    text: Lang.t("No time zone matches")
                     color: Theme.inkMuted
                 }
             }
@@ -216,34 +216,34 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Clock in the bar"
+        title: Lang.t("Clock in the bar")
         SegItem {
             icon: "schedule"
             hue: 2
             lobes: 4
-            title: "24-hour clock"
-            description: Config.clock24h ? "Shown as 19:30" : "Shown as 7:30 PM"
+            title: Lang.t("24-hour clock")
+            description: Config.clock24h ? Lang.t("Shown as 19:30") : Lang.t("Shown as 7:30 PM")
             Toggle { checked: Config.clock24h; onToggled: v => Config.clock24h = v }
         }
         SegItem {
             icon: "timer_10_select"
             hue: 3
             lobes: 5
-            title: "Show seconds"
-            description: "Updates the bar every second."
+            title: Lang.t("Show seconds")
+            description: Lang.t("Updates the bar every second.")
             Toggle { checked: Config.clockSeconds; onToggled: v => Config.clockSeconds = v }
         }
     }
 
     SegGroup {
-        title: "Weather"
+        title: Lang.t("Weather")
         SegItem {
             icon: "partly_cloudy_day"
             hue: 4
             lobes: 8
-            title: "Weather in the calendar"
-            description: Config.weatherPlace.length === 0 ? "Off. Type your town to switch it on; only its name is sent to open-meteo.com."
-                : (Weather.ready ? Weather.temperature + "°, " + Weather.words(Weather.code).toLowerCase() + " in " + Weather.where + "." : (Weather.problem || "Looking it up…"))
+            title: Lang.t("Weather in the calendar")
+            description: Config.weatherPlace.length === 0 ? Lang.t("Off. Type your town to switch it on; only its name is sent to open-meteo.com.")
+                : (Weather.ready ? Weather.temperature + "°, " + Weather.words(Weather.code) + " in " + Weather.where + "." : (Weather.problem || Lang.t("Looking it up…")))
             Rectangle {
                 width: 220
                 height: 46
@@ -265,7 +265,7 @@ ColumnLayout {
                     font.pixelSize: Theme.textBody
                     clip: true
                     onEditingFinished: Config.weatherPlace = text.trim()
-                    Label { visible: town.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "Town"; color: Theme.inkMuted }
+                    Label { visible: town.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: Lang.t("Town"); color: Theme.inkMuted }
                 }
             }
         }

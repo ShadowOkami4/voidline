@@ -24,7 +24,7 @@ Scope {
         pending = text
         wrong = false
         note = ""
-        if (!pam.start()) { pending = ""; note = "The password check could not be started." ; wrong = true }
+        if (!pam.start()) { pending = ""; note = Lang.t("The password check could not be started.") ; wrong = true }
     }
 
     PamContext {
@@ -39,10 +39,10 @@ Scope {
             if (result === PamResult.Success) { root.note = ""; Shell.locked = false }
             else {
                 root.wrong = true
-                root.note = result === PamResult.MaxTries ? "Too many attempts. Wait a moment and try again." : "Wrong password"
+                root.note = result === PamResult.MaxTries ? Lang.t("Too many attempts. Wait a moment and try again.") : Lang.t("Wrong password")
             }
         }
-        onError: error => { root.pending = ""; root.wrong = true; root.note = "The password check failed (" + PamError.toString(error) + ")." }
+        onError: error => { root.pending = ""; root.wrong = true; root.note = Lang.t("The password check failed (") + PamError.toString(error) + ")." }
     }
 
     WlSessionLock {
@@ -84,7 +84,7 @@ Scope {
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: -10
-                    text: Qt.formatDateTime(clock.date, "dddd, d MMMM")
+                    text: Lang.date(clock.date, Lang.t("dddd, d MMMM"))
                     font.pixelSize: 22
                     font.weight: Font.DemiBold
                     color: Theme.primary
@@ -152,7 +152,7 @@ Scope {
                         Label {
                             visible: secret.text.length === 0
                             anchors.verticalCenter: parent.verticalCenter
-                            text: root.busy ? "Checking…" : "Password"
+                            text: root.busy ? Lang.t("Checking…") : Lang.t("Password")
                             color: Theme.inkMuted
                         }
                     }

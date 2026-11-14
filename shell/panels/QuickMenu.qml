@@ -46,7 +46,7 @@ ColumnLayout {
         Label {
             Layout.fillWidth: true
             leftPadding: 6
-            text: root.wifiKind ? "Wi-Fi" : "Bluetooth"
+            text: root.wifiKind ? Lang.t("Wi-Fi") : "Bluetooth"
             font.pixelSize: Theme.textHeadline
             font.weight: Font.Black
         }
@@ -64,8 +64,8 @@ ColumnLayout {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.Wrap
         color: Theme.inkMuted
-        text: !root.switchedOn ? (root.wifiKind ? "Wi-Fi is off" : (Bt.switching ? "Switching on…" : "Bluetooth is off"))
-            : (root.wifiKind ? "Looking for networks…" : "No devices yet. Add one in Bluetooth settings.")
+        text: !root.switchedOn ? (root.wifiKind ? Lang.t("Wi-Fi is off") : (Bt.switching ? Lang.t("Switching on…") : Lang.t("Bluetooth is off")))
+            : (root.wifiKind ? Lang.t("Looking for networks…") : Lang.t("No devices yet. Add one in Bluetooth settings."))
     }
 
     ListView {
@@ -131,10 +131,10 @@ ColumnLayout {
                     elide: Text.ElideRight
                     font.pixelSize: Theme.textLabelS
                     color: row.live ? Theme.inkOnSecondaryContainer : Theme.inkMuted
-                    text: row.busy ? (row.wifiRow ? "Connecting…" : "Pairing…")
-                        : (row.live ? "Connected  ·  tap to disconnect"
-                            : (row.wifiRow ? (row.mine ? "Saved" : (row.secured ? "Needs a password" : "Open"))
-                                : (row.mine ? "Tap to connect" : "New  ·  tap to pair")))
+                    text: row.busy ? (row.wifiRow ? Lang.t("Connecting…") : Lang.t("Pairing…"))
+                        : (row.live ? Lang.t("Connected  ·  tap to disconnect")
+                            : (row.wifiRow ? (row.mine ? Lang.t("Saved") : (row.secured ? Lang.t("Needs a password") : Lang.t("Open")))
+                                : (row.mine ? Lang.t("Tap to connect") : Lang.t("New  ·  tap to pair"))))
                 }
             }
             MIcon {
@@ -180,7 +180,7 @@ ColumnLayout {
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight
                     width: parent.width
-                    text: root.asking ? "Password for " + root.asking.name : ""
+                    text: root.asking ? Lang.t("Password for ") + root.asking.name : ""
                     color: Theme.inkMuted
                 }
             }
@@ -198,7 +198,7 @@ ColumnLayout {
                 secret.text = ""
                 root.asking = null
             }
-            Label { anchors.centerIn: parent; text: "Join"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+            Label { anchors.centerIn: parent; text: Lang.t("Join"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
         }
     }
 
@@ -209,7 +209,7 @@ ColumnLayout {
         onClicked: Shell.openSettings(root.wifiKind ? "network" : "bluetooth")
         Label {
             anchors.centerIn: parent
-            text: root.wifiKind ? "Network settings" : "Bluetooth settings"
+            text: root.wifiKind ? Lang.t("Network settings") : Lang.t("Bluetooth settings")
             font.weight: Font.DemiBold
         }
     }

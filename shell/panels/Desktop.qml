@@ -276,17 +276,17 @@ Item {
 
             Repeater {
                 model: [
-                    { icon: "wallpaper", label: "Change wallpaper", run: () => Shell.openSettings("colours") },
-                    { icon: "monitor", label: "Display settings", run: () => Shell.openSettings("display") },
-                    { icon: "settings", label: "Settings", run: () => Shell.openSettings() },
+                    { icon: "wallpaper", label: Lang.t("Change wallpaper"), run: () => Shell.openSettings("colours") },
+                    { icon: "monitor", label: Lang.t("Display settings"), run: () => Shell.openSettings("display") },
+                    { icon: "settings", label: Lang.t("Settings"), run: () => Shell.openSettings() },
                     { line: true },
-                    { icon: "create_new_folder", label: "New folder", run: () => Quickshell.execDetached(["sh", "-c", "n='New folder'; i=1; while [ -e \"$1/$n\" ]; do i=$((i+1)); n=\"New folder $i\"; done; mkdir -p \"$1/$n\"", "sh", root.folder]) },
-                    { icon: "folder_open", label: "Open the Desktop folder", run: () => Apps.openUrl("file://" + root.folder) },
-                    { icon: "terminal", label: "Open terminal", run: () => Quickshell.execDetached({ command: ["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", Config.terminal], workingDirectory: root.folder }) },
+                    { icon: "create_new_folder", label: Lang.t("New folder"), run: () => Quickshell.execDetached(["sh", "-c", "n='New folder'; i=1; while [ -e \"$1/$n\" ]; do i=$((i+1)); n=\"New folder $i\"; done; mkdir -p \"$1/$n\"", "sh", root.folder]) },
+                    { icon: "folder_open", label: Lang.t("Open the Desktop folder"), run: () => Apps.openUrl("file://" + root.folder) },
+                    { icon: "terminal", label: Lang.t("Open terminal"), run: () => Quickshell.execDetached({ command: ["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", Config.terminal], workingDirectory: root.folder }) },
                     { line: true },
-                    { icon: "grid_view", label: "Tidy up icons", run: () => root.tidy() },
-                    { icon: Config.desktopIcons ? "visibility_off" : "visibility", label: Config.desktopIcons ? "Hide desktop icons" : "Show desktop icons", run: () => Config.desktopIcons = !Config.desktopIcons },
-                    { icon: "lock", label: "Lock", run: () => Shell.lock() }
+                    { icon: "grid_view", label: Lang.t("Tidy up icons"), run: () => root.tidy() },
+                    { icon: Config.desktopIcons ? "visibility_off" : "visibility", label: Config.desktopIcons ? Lang.t("Hide desktop icons") : Lang.t("Show desktop icons"), run: () => Config.desktopIcons = !Config.desktopIcons },
+                    { icon: "lock", label: Lang.t("Lock"), run: () => Shell.lock() }
                 ]
                 Item {
                     id: entry

@@ -21,8 +21,8 @@ ColumnLayout {
         return h > 0 ? h + " h " + m + " min" : m + " min"
     }
     readonly property string estimate: !hasBattery ? ""
-        : (Battery.charging ? (duration(battery.timeToFull) ? duration(battery.timeToFull) + " until full" : "Plugged in")
-            : (duration(battery.timeToEmpty) ? duration(battery.timeToEmpty) + " left" : "On battery"))
+        : (Battery.charging ? (duration(battery.timeToFull) ? duration(battery.timeToFull) + Lang.t(" until full") : Lang.t("Plugged in"))
+            : (duration(battery.timeToEmpty) ? duration(battery.timeToEmpty) + Lang.t(" left") : Lang.t("On battery")))
 
     Timer { id: disarm; interval: 3000; onTriggered: page.armed = "" }
     function power(action) {
@@ -92,25 +92,25 @@ ColumnLayout {
 
     // ---- power mode --------------------------------------------------------------------
     SegGroup {
-        title: "Power mode"
+        title: Lang.t("Power mode")
         SegItem {
             icon: "bolt"
             hue: 1
             lobes: 8
-            title: PowerProfiles.profile === PowerProfile.PowerSaver ? "Power saver"
-                : (PowerProfiles.profile === PowerProfile.Performance ? "Performance" : "Balanced")
-            description: PowerProfiles.profile === PowerProfile.PowerSaver ? "Longer battery life, lower speed."
-                : (PowerProfiles.profile === PowerProfile.Performance ? "Full speed, more heat and fan noise." : "A sensible mix for everyday use.")
+            title: PowerProfiles.profile === PowerProfile.PowerSaver ? Lang.t("Power saver")
+                : (PowerProfiles.profile === PowerProfile.Performance ? Lang.t("Performance") : Lang.t("Balanced"))
+            description: PowerProfiles.profile === PowerProfile.PowerSaver ? Lang.t("Longer battery life, lower speed.")
+                : (PowerProfiles.profile === PowerProfile.Performance ? Lang.t("Full speed, more heat and fan noise.") : Lang.t("A sensible mix for everyday use."))
             extra: Choice {
                 Layout.fillWidth: true
                 value: PowerProfiles.profile
                 options: PowerProfiles.hasPerformanceProfile ? [
-                    { value: PowerProfile.PowerSaver, label: "Power saver" },
-                    { value: PowerProfile.Balanced, label: "Balanced" },
-                    { value: PowerProfile.Performance, label: "Performance" }
+                    { value: PowerProfile.PowerSaver, label: Lang.t("Power saver") },
+                    { value: PowerProfile.Balanced, label: Lang.t("Balanced") },
+                    { value: PowerProfile.Performance, label: Lang.t("Performance") }
                 ] : [
-                    { value: PowerProfile.PowerSaver, label: "Power saver" },
-                    { value: PowerProfile.Balanced, label: "Balanced" }
+                    { value: PowerProfile.PowerSaver, label: Lang.t("Power saver") },
+                    { value: PowerProfile.Balanced, label: Lang.t("Balanced") }
                 ]
                 onPicked: v => PowerProfiles.profile = v
             }
@@ -119,50 +119,50 @@ ColumnLayout {
 
     SegGroup {
         visible: page.hasBattery
-        title: "Battery"
+        title: Lang.t("Battery")
         SegItem {
             visible: Battery.limitAvailable
             icon: "battery_saver"
             hue: 0
             lobes: 8
-            title: "Protect the battery"
-            description: "Stops charging at about 60 % so the battery lasts more years. Best when the laptop is mostly plugged in. Asks for your password."
+            title: Lang.t("Protect the battery")
+            description: Lang.t("Stops charging at about 60 % so the battery lasts more years. Best when the laptop is mostly plugged in. Asks for your password.")
             Toggle { checked: Battery.limitOn; onToggled: v => Battery.setLimit(v) }
         }
         SegItem {
             icon: "battery_alert"
             hue: 1
             lobes: 0
-            title: "Low battery warnings"
-            description: "A notification at 20 % and at 10 %."
+            title: Lang.t("Low battery warnings")
+            description: Lang.t("A notification at 20 % and at 10 %.")
             Toggle { checked: Config.batteryWarnings; onToggled: v => Config.batteryWarnings = v }
         }
         SegItem {
             icon: "battery_profile"
             hue: 2
             lobes: 4
-            title: "Battery health"
-            description: page.battery.healthSupported ? Math.round(page.battery.healthPercentage) + "% of original capacity" : "Not reported by this battery"
+            title: Lang.t("Battery health")
+            description: page.battery.healthSupported ? Math.round(page.battery.healthPercentage) + Lang.t("% of original capacity") : Lang.t("Not reported by this battery")
         }
         SegItem {
             icon: "electric_meter"
             hue: 3
             lobes: 0
-            title: Battery.charging ? "Charging at" : "Using"
+            title: Battery.charging ? Lang.t("Charging at") : Lang.t("Using")
             description: Math.abs(page.battery.changeRate).toFixed(1) + " W"
         }
     }
 
     // ---- session -----------------------------------------------------------------------
     SegGroup {
-        title: "Session"
+        title: Lang.t("Session")
         Repeater {
             model: [
-                { id: "lock", icon: "lock", label: "Lock", text: "Ask for your password to get back in.", hue: 2 },
-                { id: "suspend", icon: "bedtime", label: "Sleep", text: "Suspend to memory.", hue: 4 },
-                { id: "logout", icon: "logout", label: "Log out", text: "Close the session and all apps.", hue: 5 },
-                { id: "reboot", icon: "restart_alt", label: "Restart", text: "", hue: 0 },
-                { id: "poweroff", icon: "power_settings_new", label: "Shut down", text: "", hue: 3 }
+                { id: "lock", icon: "lock", label: Lang.t("Lock"), text: Lang.t("Ask for your password to get back in."), hue: 2 },
+                { id: "suspend", icon: "bedtime", label: Lang.t("Sleep"), text: Lang.t("Suspend to memory."), hue: 4 },
+                { id: "logout", icon: "logout", label: Lang.t("Log out"), text: Lang.t("Close the session and all apps."), hue: 5 },
+                { id: "reboot", icon: "restart_alt", label: Lang.t("Restart"), text: "", hue: 0 },
+                { id: "poweroff", icon: "power_settings_new", label: Lang.t("Shut down"), text: "", hue: 3 }
             ]
             SegItem {
                 required property var modelData
@@ -170,7 +170,7 @@ ColumnLayout {
                 icon: hot ? "check" : modelData.icon
                 hue: modelData.hue
                 lobes: 5
-                title: hot ? "Click again to " + modelData.label.toLowerCase() : modelData.label
+                title: hot ? Lang.t("Click again: %1", modelData.label) : modelData.label
                 description: modelData.text
                 clickable: true
                 color: hot ? Theme.errorContainer : Theme.surfaceContainerHigh

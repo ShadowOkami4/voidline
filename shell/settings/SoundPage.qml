@@ -16,22 +16,22 @@ ColumnLayout {
     readonly property PwNode sink: Pipewire.defaultAudioSink
     readonly property PwNode source: Pipewire.defaultAudioSource
 
-    function label(n) { return n.description || n.nickname || n.name || "Unknown device" }
+    function label(n) { return n.description || n.nickname || n.name || Lang.t("Unknown device") }
     function appName(n) {
         const p = n.properties || {}
-        return p["application.name"] || n.description || n.name || "Application"
+        return p["application.name"] || n.description || n.name || Lang.t("Application")
     }
 
     PwObjectTracker { objects: page.nodes }
 
     // ---- output ------------------------------------------------------------------
     SegGroup {
-        title: "Output"
+        title: Lang.t("Output")
 
         Label {
             Layout.margins: 18
             visible: !page.sink
-            text: "No output device found."
+            text: Lang.t("No output device found.")
             color: Theme.inkMuted
         }
 
@@ -40,7 +40,7 @@ ColumnLayout {
             node: page.sink
             hue: 0
             lobes: 8
-            title: "Volume"
+            title: Lang.t("Volume")
             description: page.sink ? page.label(page.sink) : ""
         }
 
@@ -54,7 +54,7 @@ ColumnLayout {
                 hue: 1
                 lobes: 4
                 title: page.label(modelData)
-                description: current ? "In use" : ""
+                description: current ? Lang.t("In use") : ""
                 clickable: !current
                 onClicked: Pipewire.preferredDefaultAudioSink = modelData
                 MIcon { visible: out.current; icon: "check_circle"; filled: true; size: 24; color: Theme.primary }
@@ -64,12 +64,12 @@ ColumnLayout {
 
     // ---- input -------------------------------------------------------------------
     SegGroup {
-        title: "Input"
+        title: Lang.t("Input")
 
         Label {
             Layout.margins: 18
             visible: !page.source
-            text: "No microphone found."
+            text: Lang.t("No microphone found.")
             color: Theme.inkMuted
         }
 
@@ -80,7 +80,7 @@ ColumnLayout {
             lobes: 0
             onIcon: "mic"
             offIcon: "mic_off"
-            title: "Microphone"
+            title: Lang.t("Microphone")
             description: page.source ? page.label(page.source) : ""
         }
 
@@ -94,7 +94,7 @@ ColumnLayout {
                 hue: 3
                 lobes: 5
                 title: page.label(modelData)
-                description: current ? "In use" : ""
+                description: current ? Lang.t("In use") : ""
                 clickable: !current
                 onClicked: Pipewire.preferredDefaultAudioSource = modelData
                 MIcon { visible: inp.current; icon: "check_circle"; filled: true; size: 24; color: Theme.primary }

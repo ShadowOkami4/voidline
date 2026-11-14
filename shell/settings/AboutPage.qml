@@ -82,12 +82,12 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "This computer"
+        title: Lang.t("This computer")
         SegItem { icon: "computer"; hue: 0; lobes: 8; title: page.facts.host || "Computer"; description: page.facts.model || "" }
-        SegItem { icon: "deployed_code"; hue: 1; lobes: 4; title: "Operating system"; description: (page.facts.os || "") + (page.facts.kernel ? "  ·  Linux " + page.facts.kernel : "") }
-        SegItem { icon: "memory"; hue: 2; lobes: 0; title: "Processor"; description: page.facts.cpu || "" }
-        SegItem { icon: "memory_alt"; hue: 3; lobes: 5; title: "Memory"; description: page.facts.mem ? page.facts.mem + " GB" : "" }
-        SegItem { icon: "developer_board"; hue: 4; lobes: 8; title: "Graphics"; description: page.facts.gpu || "" }
+        SegItem { icon: "deployed_code"; hue: 1; lobes: 4; title: Lang.t("Operating system"); description: (page.facts.os || "") + (page.facts.kernel ? "  ·  Linux " + page.facts.kernel : "") }
+        SegItem { icon: "memory"; hue: 2; lobes: 0; title: Lang.t("Processor"); description: page.facts.cpu || "" }
+        SegItem { icon: "memory_alt"; hue: 3; lobes: 5; title: Lang.t("Memory"); description: page.facts.mem ? page.facts.mem + " GB" : "" }
+        SegItem { icon: "developer_board"; hue: 4; lobes: 8; title: Lang.t("Graphics"); description: page.facts.gpu || "" }
     }
 
     // Counts pending updates without changing anything (pacman-contrib).
@@ -105,10 +105,10 @@ ColumnLayout {
             icon: "system_update_alt"
             hue: 0
             lobes: 5
-            title: page.checking ? "Checking…" : (page.updates === "" ? "Updates"
-                : (page.updates === "missing" ? "Updates" : (page.updates === "0" ? "Up to date" : page.updates + " updates available")))
-            description: page.updates === "missing" ? "Checking needs the package “pacman-contrib”."
-                : (parseInt(page.updates) > 0 ? "Install them in a terminal with:  sudo pacman -Syu" : "Looks for new package versions. Nothing is installed.")
+            title: page.checking ? Lang.t("Checking…") : (page.updates === "" ? "Updates"
+                : (page.updates === "missing" ? "Updates" : (page.updates === "0" ? Lang.t("Up to date") : page.updates + Lang.t(" updates available"))))
+            description: page.updates === "missing" ? Lang.t("Checking needs the package “pacman-contrib”.")
+                : (parseInt(page.updates) > 0 ? Lang.t("Install them in a terminal with:  sudo pacman -Syu") : Lang.t("Looks for new package versions. Nothing is installed."))
             clickable: !page.checking
             onClicked: check.running = true
             Row {
@@ -123,7 +123,7 @@ ColumnLayout {
                     // Runs in a terminal so you see what happens and can type the password.
                     onClicked: Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF",
                         Config.terminal, "-e", "sh", "-c", "sudo pacman -Syu; echo; echo 'Done. Press Enter to close.'; read _"])
-                    Label { anchors.centerIn: parent; text: "Install"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                    Label { anchors.centerIn: parent; text: Lang.t("Install"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
                 }
                 MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "refresh"; size: 22; color: Theme.inkMuted }
             }
@@ -136,32 +136,32 @@ ColumnLayout {
             icon: "window"
             hue: 1
             lobes: 4
-            title: "Window manager"
-            description: Compositor.name === "hyprland" ? "Hyprland" : (Compositor.name === "niri" ? "Niri" : "Not detected")
+            title: Lang.t("Window manager")
+            description: Compositor.name === "hyprland" ? "Hyprland" : (Compositor.name === "niri" ? "Niri" : Lang.t("Not detected"))
         }
         SegItem {
             icon: "widgets"
             hue: 2
             lobes: 8
-            title: "Built with"
-            description: "Quickshell and Material 3 Expressive"
+            title: Lang.t("Built with")
+            description: Lang.t("Quickshell and Material 3 Expressive")
         }
         SegItem {
             icon: "description"
             hue: 3
             lobes: 0
-            title: "Settings file"
+            title: Lang.t("Settings file")
             description: Config.path.replace(Quickshell.env("HOME"), "~")
         }
     }
 
     SegGroup {
-        title: "Project"
+        title: Lang.t("Project")
         SegItem {
             icon: "code"
             hue: 4
             lobes: 5
-            title: "Source code"
+            title: Lang.t("Source code")
             description: "github.com/ShadowOkami4/voidline"
             clickable: true
             onClicked: Apps.openUrl("https://github.com/ShadowOkami4/voidline")
@@ -171,7 +171,7 @@ ColumnLayout {
             icon: "public"
             hue: 5
             lobes: 8
-            title: "Website"
+            title: Lang.t("Website")
             description: "shadowokami.com/Voidline"
             clickable: true
             onClicked: Apps.openUrl("https://shadowokami.com/Voidline")

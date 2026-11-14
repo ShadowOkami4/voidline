@@ -50,7 +50,7 @@ ColumnLayout {
     Process {
         id: setLang
         onExited: code => {
-            page.problem = code === 0 ? "" : "The language was not changed. It needs your password."
+            page.problem = code === 0 ? "" : Lang.t("The language was not changed. It needs your password.")
             if (code === 0) page.pendingLang = setLang.command[setLang.command.length - 1].replace("LANG=", "")
             page.refresh()
         }
@@ -88,8 +88,8 @@ ColumnLayout {
                     color: Theme.inkOnPrimaryContainer
                 }
                 Label {
-                    text: (page.facts.user || "") + (page.facts.host ? " on " + page.facts.host : "")
-                        + (page.facts.admin === "1" ? "  ·  administrator" : "")
+                    text: (page.facts.user || "") + (page.facts.host ? Lang.t(" on ") + page.facts.host : "")
+                        + (page.facts.admin === "1" ? Lang.t("  ·  administrator") : "")
                     font.weight: Font.DemiBold
                     color: Theme.inkOnPrimaryContainer
                     opacity: 0.85
@@ -108,13 +108,13 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Account"
+        title: Lang.t("Account")
         SegItem {
             icon: "password"
             hue: 0
             lobes: 8
-            title: "Change password"
-            description: "Opens a terminal that asks for the old and the new password."
+            title: Lang.t("Change password")
+            description: Lang.t("Opens a terminal that asks for the old and the new password.")
             clickable: true
             onClicked: page.terminal("passwd")
             MIcon { icon: "arrow_outward"; size: 22; color: Theme.inkMuted }
@@ -123,8 +123,8 @@ ColumnLayout {
             icon: "lock"
             hue: 1
             lobes: 0
-            title: "Lock and sign-in"
-            description: "When the screen locks on its own."
+            title: Lang.t("Lock and sign-in")
+            description: Lang.t("When the screen locks on its own.")
             clickable: true
             onClicked: Shell.openSettings("lock")
             MIcon { icon: "chevron_right"; size: 22; color: Theme.inkMuted }
@@ -132,14 +132,27 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Language and region"
+        title: Lang.t("Language and region")
+        SegItem {
+            icon: "language"
+            hue: 1
+            lobes: 8
+            title: Lang.t("Language of Voidline")
+            description: Lang.t("Bar, menus and Settings. Changes at once.")
+            Dropdown {
+                width: 260
+                value: Config.language
+                options: [{ value: "", label: Lang.t("Same as the system") }].concat(Lang.languages)
+                onPicked: v => Config.language = v
+            }
+        }
         SegItem {
             icon: "translate"
             hue: 2
             lobes: 4
-            title: "Language of the system"
-            description: page.pendingLang.length > 0 ? "Changed. Log out and back in to see it everywhere."
-                : "Used by apps for text, dates and numbers. Voidline itself is English for now. Asks for your password."
+            title: Lang.t("Language of the system")
+            description: page.pendingLang.length > 0 ? Lang.t("Changed. Log out and back in to see it everywhere.")
+                : Lang.t("Used by apps for text, dates and numbers. Asks for your password.")
             Dropdown {
                 width: 260
                 value: page.pendingLang || page.facts.lang || ""
@@ -155,8 +168,8 @@ ColumnLayout {
             icon: "keyboard"
             hue: 3
             lobes: 5
-            title: "Keyboard layout"
-            description: "Set on the window manager page; switch layouts with Super + Alt + Space."
+            title: Lang.t("Keyboard layout")
+            description: Lang.t("Set on the window manager page; switch layouts with Super + Alt + Space.")
             clickable: true
             onClicked: Shell.openSettings("wm")
             MIcon { icon: "chevron_right"; size: 22; color: Theme.inkMuted }
@@ -165,7 +178,7 @@ ColumnLayout {
             icon: "schedule"
             hue: 4
             lobes: 8
-            title: "Date, time and time zone"
+            title: Lang.t("Date, time and time zone")
             clickable: true
             onClicked: Shell.openSettings("datetime")
             MIcon { icon: "chevron_right"; size: 22; color: Theme.inkMuted }
@@ -173,14 +186,14 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Printers and scanners"
+        title: Lang.t("Printers and scanners")
         SegItem {
             icon: "print"
             hue: 5
             lobes: 0
-            title: "Printers"
-            description: page.facts.printers !== "yes" ? "Needs the packages “cups” and “system-config-printer”."
-                : (page.facts.cups === "0" ? "The print service is not running. Start it with:  sudo systemctl enable --now cups.socket" : "Add and manage printers.")
+            title: Lang.t("Printers")
+            description: page.facts.printers !== "yes" ? Lang.t("Needs the packages “cups” and “system-config-printer”.")
+                : (page.facts.cups === "0" ? Lang.t("The print service is not running. Start it with:  sudo systemctl enable --now cups.socket") : Lang.t("Add and manage printers."))
             clickable: page.facts.printers === "yes"
             onClicked: Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", "system-config-printer"])
             MIcon { visible: page.facts.printers === "yes"; icon: "arrow_outward"; size: 22; color: Theme.inkMuted }

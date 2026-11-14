@@ -28,9 +28,9 @@ Singleton {
             : c <= 86 ? "weather_snowy" : "thunderstorm"
     }
     function words(c) {
-        return c === 0 ? "Clear" : c <= 2 ? "Partly cloudy" : c === 3 ? "Cloudy" : c <= 48 ? "Fog"
-            : c <= 57 ? "Drizzle" : c <= 67 ? "Rain" : c <= 77 ? "Snow" : c <= 82 ? "Showers"
-            : c <= 86 ? "Snow showers" : "Thunderstorm"
+        return c === 0 ? Lang.t("Clear") : c <= 2 ? Lang.t("Partly cloudy") : c === 3 ? Lang.t("Cloudy") : c <= 48 ? Lang.t("Fog")
+            : c <= 57 ? Lang.t("Drizzle") : c <= 67 ? Lang.t("Rain") : c <= 77 ? Lang.t("Snow") : c <= 82 ? Lang.t("Showers")
+            : c <= 86 ? Lang.t("Snow showers") : Lang.t("Thunderstorm")
     }
 
     function refresh() { if (wanted) fetch.running = true }
@@ -52,8 +52,8 @@ echo "name=$name"
 curl -fsS --max-time 10 "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4" || echo "error=offline"`, "sh", root.place]
         stdout: StdioCollector {
             onStreamFinished: {
-                if (text.includes("error=unknown")) { root.problem = "Place not found"; root.ready = false; return }
-                if (text.includes("error=offline")) { root.problem = "No connection"; return }
+                if (text.includes("error=unknown")) { root.problem = Lang.t("Place not found"); root.ready = false; return }
+                if (text.includes("error=offline")) { root.problem = Lang.t("No connection"); return }
                 try {
                     const nl = text.indexOf("\n")
                     const data = JSON.parse(text.slice(nl + 1))
@@ -61,14 +61,14 @@ curl -fsS --max-time 10 "https://api.open-meteo.com/v1/forecast?latitude=$lat&lo
                     root.temperature = Math.round(data.current.temperature_2m)
                     root.code = data.current.weather_code
                     root.days = data.daily.time.map((t, i) => ({
-                        day: Qt.formatDate(new Date(t), "ddd"),
+                        day: Lang.date(new Date(t), "ddd"),
                         min: Math.round(data.daily.temperature_2m_min[i]),
                         max: Math.round(data.daily.temperature_2m_max[i]),
                         code: data.daily.weather_code[i]
                     }))
                     root.problem = ""
                     root.ready = true
-                } catch (e) { root.problem = "No weather data" }
+                } catch (e) { root.problem = Lang.t("No weather data") }
             }
         }
     }

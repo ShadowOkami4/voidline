@@ -43,12 +43,12 @@ FloatingWindow {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 0
-                    Label { text: "Welcome to Voidline"; font.pixelSize: 36; font.weight: Font.Black; font.letterSpacing: -1 }
+                    Label { text: Lang.t("Welcome to Voidline"); font.pixelSize: 36; font.weight: Font.Black; font.letterSpacing: -1 }
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         color: Theme.inkMuted
-                        text: "A desktop around " + (Compositor.name === "niri" ? "Niri" : "Hyprland") + ". Choose how it should look; you can change all of this later in Settings."
+                        text: Lang.t("A desktop around ") + (Compositor.name === "niri" ? "Niri" : "Hyprland") + Lang.t(". Choose how it should look; you can change all of this later in Settings.")
                     }
                 }
             }
@@ -60,8 +60,8 @@ FloatingWindow {
                     hue: 0
                     lobes: 8
                     title: Config.style === "windows" ? "Windows" : (Config.style === "macos" ? "macOS" : "Voidline")
-                    description: Config.style === "windows" ? "Taskbar at the bottom with your open windows."
-                        : (Config.style === "macos" ? "Slim bar on top and a dock at the bottom." : "A bar that flows into a frame around the screen.")
+                    description: Config.style === "windows" ? Lang.t("Taskbar at the bottom with your open windows.")
+                        : (Config.style === "macos" ? Lang.t("Slim bar on top and a dock at the bottom.") : Lang.t("A bar that flows into a frame around the screen."))
                     extra: Choice {
                         Layout.fillWidth: true
                         value: Config.style
@@ -77,23 +77,23 @@ FloatingWindow {
                     icon: Config.dark ? "dark_mode" : "light_mode"
                     hue: 1
                     lobes: 0
-                    title: "Dark theme"
+                    title: Lang.t("Dark theme")
                     Toggle { checked: Config.dark; onToggled: v => Config.dark = v }
                 }
                 SegItem {
                     icon: "format_size"
                     hue: 2
                     lobes: 4
-                    title: "Size"
-                    description: "The shell restarts briefly when this changes."
+                    title: Lang.t("Size")
+                    description: Lang.t("The shell restarts briefly when this changes.")
                     extra: Choice {
                         Layout.fillWidth: true
                         value: Config.uiScale
                         options: [
-                            { value: 0.65, label: "Small" },
-                            { value: 0.75, label: "Default" },
-                            { value: 0.9, label: "Large" },
-                            { value: 1.0, label: "Huge" }
+                            { value: 0.65, label: Lang.t("Small") },
+                            { value: 0.75, label: Lang.t("Default") },
+                            { value: 0.9, label: Lang.t("Large") },
+                            { value: 1.0, label: Lang.t("Huge") }
                         ]
                         onPicked: v => Config.uiScale = v
                     }
@@ -101,7 +101,7 @@ FloatingWindow {
             }
 
             SegGroup {
-                title: "Good to know"
+                title: Lang.t("Good to know")
                 Repeater {
                     model: ["launcher", "quick", "settings", "lock"]
                     SegItem {
@@ -142,7 +142,7 @@ FloatingWindow {
                     implicitHeight: 54
                     color: Theme.surfaceContainerHighest
                     onClicked: { Config.welcomed = true; Shell.openSettings("colours") }
-                    Label { anchors.centerIn: parent; text: "Pick a wallpaper"; font.weight: Font.DemiBold }
+                    Label { anchors.centerIn: parent; text: Lang.t("Pick a wallpaper"); font.weight: Font.DemiBold }
                 }
                 Pressable {
                     Layout.fillWidth: true
@@ -151,7 +151,7 @@ FloatingWindow {
                     color: Theme.primary
                     tint: Theme.inkOnPrimary
                     onClicked: Config.welcomed = true
-                    Label { anchors.centerIn: parent; text: "Start using Voidline"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                    Label { anchors.centerIn: parent; text: Lang.t("Start using Voidline"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
                 }
             }
         }

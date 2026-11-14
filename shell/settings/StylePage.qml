@@ -14,9 +14,9 @@ ColumnLayout {
 
         Repeater {
             model: [
-                { id: "voidline", name: "Voidline", text: "Connected bar, screen frame and panels that grow out of it." },
-                { id: "windows", name: "Windows", text: "Taskbar at the bottom with a start menu and running apps." },
-                { id: "macos", name: "macOS", text: "Menu bar on top and a floating dock." }
+                { id: "voidline", name: "Voidline", text: Lang.t("Connected bar, screen frame and panels that grow out of it.") },
+                { id: "windows", name: "Windows", text: Lang.t("Taskbar at the bottom with a start menu and running apps.") },
+                { id: "macos", name: "macOS", text: Lang.t("Menu bar on top and a floating dock.") }
             ]
 
             Pressable {
@@ -142,20 +142,20 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: "Good to know"
+        title: Lang.t("Good to know")
         SegItem {
             icon: "keyboard"
             hue: 1
             lobes: 4
-            title: "Switch from the keyboard"
-            description: "Super + Alt + S moves to the next style."
+            title: Lang.t("Switch from the keyboard")
+            description: Lang.t("Super + Alt + S moves to the next style.")
         }
         SegItem {
             icon: "minimize"
             hue: 2
             lobes: 8
-            title: "Minimise windows"
-            description: "Super + N hides the focused window; it stays in the taskbar or dock. Super + Shift + N brings the last one back."
+            title: Lang.t("Minimise windows")
+            description: Lang.t("Super + N hides the focused window; it stays in the taskbar or dock. Super + Shift + N brings the last one back.")
         }
     }
 }
