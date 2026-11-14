@@ -44,6 +44,7 @@ ShellRoot {
     NotificationPopups { screen: Quickshell.screens[0] }
     AuthDialog {}
     PairDialog {}
+    OpenWithDialog {}
     LockScreen {}
     Osd {}
 
@@ -100,6 +101,8 @@ ShellRoot {
             return "ok"
         }
         function lock(): void { Shell.lock() }
+        // Ask which app should open a file.
+        function openWith(path: string): void { Shell.openWith(path) }
         // Tray icons, for scripts and testing:
         //   tray list            names of the icons
         //   tray menu <n>        open the menu of icon n (0 = first)

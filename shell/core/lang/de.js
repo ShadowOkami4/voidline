@@ -356,6 +356,12 @@ var words = {
 "PDF documents": "PDF-Dokumente",
 "Not set": "Nicht festgelegt",
 "Open with": "Öffnen mit",
+"Open with…": "Öffnen mit…",
+"Open##file": "Öffnen",
+"Search apps": "Apps suchen",
+"default": "Standard",
+"Always use for this kind of file": "Immer für diese Dateiart verwenden",
+"Other apps": "Andere Apps",
 "No app installed for this": "Keine App dafür installiert",
 ". Used for apps that run in a terminal.": ". Wird für Apps genutzt, die in einem Terminal laufen.",
 

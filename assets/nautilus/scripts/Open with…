@@ -1,0 +1,8 @@
+#!/bin/sh
+# Files > right-click a file > Scripts > Open with…
+# Shows Voidline's own "Open with" dialog for the file.
+file=$(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+[ -n "$file" ] || file=$1
+[ -n "$file" ] || exit 0
+qs -c voidline ipc call shell openWith "$file" >/dev/null 2>&1 \
+    || notify-send -a Voidline "Voidline is not running"

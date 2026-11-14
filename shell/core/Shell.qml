@@ -37,6 +37,10 @@ Singleton {
     }
     function close() { panel = "" }
 
+    // File the "Open with" dialog is asking about; empty = closed.
+    property string openWithPath: ""
+    function openWith(path) { openWithPath = String(path).replace(/^file:\/\//, "") }
+
     // Tray icon whose menu is open.
     property var trayItem: null
     function openTray(item, onScreen) {

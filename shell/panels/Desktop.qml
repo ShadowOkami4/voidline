@@ -124,6 +124,8 @@ Item {
     function tidy() { store.places = [] }
 
     property string selected: ""
+    // The icon the right-click menu was opened on, or null for the desktop itself.
+    property var menuFile: null
 
     // Click on empty desktop: close the menu. Right click: open it there.
     MouseArea {
@@ -131,6 +133,7 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onPressed: mouse => {
             root.selected = ""
+            root.menuFile = null
             if (mouse.button === Qt.RightButton) {
                 menu.x = Math.min(mouse.x, root.width - menu.width - 12)
                 menu.y = Math.min(mouse.y, root.height - menu.height - 12)
@@ -247,6 +250,19 @@ Item {
                 }
                 onDoubleClicked: Apps.openUrl("file://" + cell.modelData.path)
             }
+            // Right click: the menu, with entries for this file on top.
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.RightButton
+                onPressed: mouse => {
+                    root.selected = cell.modelData.name
+                    root.menuFile = cell.modelData
+                    const p = mapToItem(root, mouse.x, mouse.y)
+                    menu.x = Math.min(p.x, root.width - menu.width - 12)
+                    menu.y = Math.min(p.y, root.height - menu.height - 12)
+                    menu.visible = true
+                }
+            }
         }
     }
 
@@ -275,7 +291,11 @@ Item {
             spacing: 2
 
             Repeater {
-                model: [
+                model: (root.menuFile ? [
+                    { icon: "open_in_new", label: Lang.t("Open##file"), run: () => Apps.openUrl("file://" + root.menuFile.path) },
+                    { icon: "apps", label: Lang.t("Open with…"), run: () => Shell.openWith(root.menuFile.path) },
+                    { line: true }
+                ] : []).concat([
                     { icon: "wallpaper", label: Lang.t("Change wallpaper"), run: () => Shell.openSettings("colours") },
                     { icon: "monitor", label: Lang.t("Display settings"), run: () => Shell.openSettings("display") },
                     { icon: "settings", label: Lang.t("Settings"), run: () => Shell.openSettings() },
@@ -287,7 +307,7 @@ Item {
                     { icon: "grid_view", label: Lang.t("Tidy up icons"), run: () => root.tidy() },
                     { icon: Config.desktopIcons ? "visibility_off" : "visibility", label: Config.desktopIcons ? Lang.t("Hide desktop icons") : Lang.t("Show desktop icons"), run: () => Config.desktopIcons = !Config.desktopIcons },
                     { icon: "lock", label: Lang.t("Lock"), run: () => Shell.lock() }
-                ]
+                ])
                 Item {
                     id: entry
                     required property var modelData
