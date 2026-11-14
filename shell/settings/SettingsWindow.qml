@@ -19,7 +19,13 @@ FloatingWindow {
     minimumSize: Qt.size(820, 520)
 
     property alias page: state.page
+    // Follows Shell.settingsPage in both directions: a click in the list must
+    // not stop "open Settings on page X" from working afterwards.
     QtObject { id: state; property string page: Shell.settingsPage; onPageChanged: Shell.settingsPage = page }
+    Connections {
+        target: Shell
+        function onSettingsPageChanged() { if (state.page !== Shell.settingsPage) state.page = Shell.settingsPage }
+    }
     readonly property string wmName: Compositor.name === "niri" ? "Niri" : (Compositor.name === "hyprland" ? "Hyprland" : "Window manager")
     readonly property var pages: [
         { section: "Connections" },
@@ -30,6 +36,8 @@ FloatingWindow {
         { id: "sound", icon: "volume_up", lobes: 5, label: "Sound", hint: "Volume, devices, apps", words: "sound audio volume speaker microphone output input mute", view: "SoundPage.qml" },
         { id: "lock", icon: "lock", lobes: 0, label: "Lock & sleep", hint: "Auto lock, screen off", words: "lock screen sleep idle timeout suspend lid password automatic", view: "LockPage.qml" },
         { id: "power", icon: "battery_full", lobes: 8, label: "Battery & power", hint: "Power mode, sleep, shut down", words: "battery power mode performance saver sleep suspend restart shutdown logout", view: "PowerPage.qml" },
+        { id: "drives", icon: "hard_drive", lobes: 5, label: "Storage & drives", hint: "Disk space, USB drives", words: "storage disk drive usb stick mount eject unmount space free removable sd card", view: "DrivesPage.qml" },
+        { id: "games", icon: "sports_esports", lobes: 4, label: "Games", hint: "Game mode, library", words: "games gaming game mode steam library performance fps", view: "GamesPage.qml" },
         { section: "Personalisation" },
         { id: "style", icon: "dashboard_customize", lobes: 8, label: "Style", hint: "Voidline, Windows, macOS", words: "style layout taskbar dock bar windows macos voidline", view: "StylePage.qml" },
         { id: "colours", icon: "palette", lobes: 4, label: "Wallpaper & colours", hint: "Theme, accent, wallpaper", words: "wallpaper colour color accent dark light theme palette", view: "ColoursPage.qml" },

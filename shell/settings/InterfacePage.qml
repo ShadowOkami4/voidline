@@ -64,6 +64,45 @@ ColumnLayout {
     }
 
     SegGroup {
+        title: "Text"
+        SegItem {
+            icon: "font_download"
+            hue: 1
+            lobes: 0
+            title: "Font"
+            description: "Used everywhere in the shell: " + Theme.font
+            extra: Flow {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: [""].concat(["Roboto Flex", "Roboto", "Inter", "Noto Sans", "Adwaita Sans", "Cantarell", "Open Sans", "Ubuntu", "DejaVu Sans", "Liberation Sans"]
+                        .filter(f => Theme.families.includes(f)))
+                    Pressable {
+                        id: face
+                        required property string modelData
+                        readonly property bool current: Config.font === modelData
+                        width: faceLabel.implicitWidth + 34
+                        height: 42
+                        color: current ? Theme.primary : Theme.surfaceContainerHighest
+                        tint: current ? Theme.inkOnPrimary : Theme.ink
+                        restRadius: current ? Theme.cornerFull : Theme.cornerM
+                        Behavior on color { Tint {} }
+                        onClicked: Config.font = modelData
+                        Label {
+                            id: faceLabel
+                            anchors.centerIn: parent
+                            text: face.modelData || "Automatic"
+                            font.family: face.modelData || Theme.font
+                            font.weight: Font.DemiBold
+                            color: face.current ? Theme.inkOnPrimary : Theme.ink
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    SegGroup {
         visible: Compositor.name === "hyprland"
         title: "Bar"
         SegItem {

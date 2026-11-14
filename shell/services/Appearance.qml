@@ -87,6 +87,15 @@ exit 0`]
         }
     }
 
+    // Light by day, dark at night.
+    function followClock() {
+        if (!Config.loaded || !Config.autoTheme) return
+        const h = new Date().getHours()
+        const dark = !(h >= 7 && h < 19)
+        if (Config.dark !== dark) Config.dark = dark
+    }
+    Timer { interval: 60000; running: Config.autoTheme; repeat: true; triggeredOnStart: true; onTriggered: root.followClock() }
+
     // Night light: a warmer screen. The tool runs only while it is on.
     readonly property bool nightAvailable: nightTool.length > 0
     readonly property int nightTemp: Math.max(2500, Math.min(6000, Config.nightLightTemp))

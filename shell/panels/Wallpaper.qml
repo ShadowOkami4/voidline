@@ -20,7 +20,7 @@ PanelWindow {
     readonly property var activeWorkspace: Compositor.workspaces.find(w => w.active) ?? null
     readonly property bool covered: !!activeWorkspace
         && Compositor.windows.some(w => !w.minimized && w.workspace === activeWorkspace.id)
-    readonly property bool paused: (Config.livePauseOnBattery && Battery.onBattery)
+    readonly property bool paused: Config.gameMode || (Config.livePauseOnBattery && Battery.onBattery)
         || (Config.livePauseWhenCovered && covered)
 
     anchors { top: true; bottom: true; left: true; right: true }

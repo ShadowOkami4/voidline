@@ -58,7 +58,7 @@ Open **Voidline Settings** from the launcher or the gear in quick settings.
 | Section | Pages |
 | --- | --- |
 | Connections | Network (Wi-Fi and wired, needs NetworkManager), Bluetooth |
-| Device | Display (resolution, refresh rate, scale, brightness), Sound (devices and per-app volume), Lock & sleep, Battery & power |
+| Device | Display (resolution, refresh rate, scale, brightness, arrangement of extra screens), Sound (devices and per-app volume), Lock & sleep, Battery & power, Storage & drives, Games (game mode, library) |
 | Personalisation | Style, Wallpaper & colours, Hyprland or Niri, Apps & startup (app theme, icons, pointer, night light, autostart), Interface |
 | System | Notifications, Keyboard shortcuts, Default apps, Date & time, About |
 
@@ -168,8 +168,8 @@ of them): `swayidle` (automatic lock and screen off), `cliphist` and
 `wf-recorder` (recording), `hyprsunset` or `gammastep` (night light),
 `pacman-contrib` (update check).
 
-Not rewritten yet (present in 0.3.0): SDDM theme, hotspot page, games page,
-overview, translations. The Lyra assistant and the Voidline terminal are
+Not written yet: translations, Bluetooth pairing prompts, users, printers,
+language and accessibility settings. The Lyra assistant and the Voidline terminal are
 not planned for 0.4.
 
 Known limits:

@@ -174,7 +174,7 @@ PanelSurface {
                 font.weight: Font.Bold
             }
             IconBtn {
-                visible: Notifs.list.length > 0
+                visible: Notifs.list.length > 0 || Notifs.earlier.length > 0
                 icon: "clear_all"
                 size: 32
                 onClicked: Notifs.clear()
@@ -185,7 +185,7 @@ PanelSurface {
             Layout.fillWidth: true
             Layout.topMargin: 6
             Layout.bottomMargin: 10
-            visible: Notifs.list.length === 0
+            visible: Notifs.list.length === 0 && Notifs.earlier.length === 0
             horizontalAlignment: Text.AlignHCenter
             text: "All quiet"
             color: Theme.inkMuted
@@ -204,6 +204,64 @@ PanelSurface {
                 width: ListView.view.width
                 notification: modelData
                 onDismissed: modelData.dismiss()
+            }
+        }
+
+        Label {
+            visible: Notifs.earlier.length > 0
+            Layout.topMargin: 2
+            leftPadding: 4
+            text: "Earlier"
+            font.pixelSize: Theme.textLabel
+            font.weight: Font.Bold
+            color: Theme.inkMuted
+        }
+        ListView {
+            Layout.fillWidth: true
+            implicitHeight: Math.min(contentHeight, 190)
+            visible: count > 0
+            clip: true
+            spacing: 4
+            boundsBehavior: Flickable.StopAtBounds
+            model: Notifs.earlier
+            delegate: Rectangle {
+                id: old
+                required property var modelData
+                width: ListView.view.width
+                height: 52
+                radius: Theme.cornerL
+                color: Theme.surfaceContainer
+                Column {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 14
+                    anchors.right: gone.left
+                    anchors.rightMargin: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    Label {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        text: old.modelData.title || old.modelData.app
+                        font.weight: Font.DemiBold
+                        font.pixelSize: Theme.textLabel + 1
+                    }
+                    Label {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        maximumLineCount: 1
+                        text: Qt.formatDateTime(new Date(old.modelData.time), "ddd HH:mm") + (old.modelData.text ? "  ·  " + old.modelData.text.replace(/\s+/g, " ") : "")
+                        font.pixelSize: Theme.textLabelS
+                        color: Theme.inkMuted
+                    }
+                }
+                IconBtn {
+                    id: gone
+                    anchors.right: parent.right
+                    anchors.rightMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    icon: "close"
+                    size: 28
+                    onClicked: Notifs.forget(old.modelData.key)
+                }
             }
         }
     }

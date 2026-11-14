@@ -54,7 +54,8 @@ Singleton {
 
     // --- type --------------------------------------------------------------
     readonly property var families: Qt.fontFamilies()
-    readonly property string font: families.includes("Roboto Flex") ? "Roboto Flex"
+    readonly property string font: Config.font.length > 0 && families.includes(Config.font) ? Config.font
+        : families.includes("Roboto Flex") ? "Roboto Flex"
         : (families.includes("Roboto") ? "Roboto"
             : (families.includes("Inter") ? "Inter" : "Noto Sans"))
     readonly property string iconFont: families.includes("Material Symbols Rounded")

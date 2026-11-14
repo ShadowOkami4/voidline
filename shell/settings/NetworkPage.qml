@@ -254,4 +254,115 @@ ColumnLayout {
             }
         }
     }
+
+    // ---- hotspot and VPN, through nmcli -----------------------------------------------
+    property var vpns: []           // [{ name, active }]
+    property bool hotspotOn: false
+    property string hotspotName: Quickshell.env("USER") + "-hotspot"
+    property string hotspotNote: ""
+
+    function refreshExtras() { if (page.available) extras.running = true }
+    onAvailableChanged: refreshExtras()
+    Process {
+        id: extras
+        running: page.available
+        command: ["nmcli", "-t", "-f", "NAME,TYPE,ACTIVE,802-11-wireless.mode", "connection", "show"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const vpns = []
+                let hot = false
+                for (const line of text.split("\n")) {
+                    const p = line.split(":")
+                    if (p.length < 3) continue
+                    if (p[1] === "vpn" || p[1] === "wireguard") vpns.push({ name: p[0], active: p[2] === "yes" })
+                    if (p[0] === "Hotspot" && p[2] === "yes") hot = true
+                }
+                page.vpns = vpns
+                page.hotspotOn = hot
+            }
+        }
+    }
+    Process {
+        id: nm
+        stderr: StdioCollector { id: nmErrors }
+        onExited: code => {
+            page.hotspotNote = code === 0 ? "" : (nmErrors.text.trim().split("\n").pop() || "That did not work.")
+            page.refreshExtras()
+        }
+    }
+    function nmcli(args) { hotspotNote = ""; nm.command = ["nmcli"].concat(args); nm.running = true }
+
+    SegGroup {
+        visible: page.available && !!page.wifi
+        title: "Hotspot"
+        SegItem {
+            icon: "wifi_tethering"
+            hue: 3
+            lobes: 5
+            title: "Share this connection"
+            description: page.hotspotNote.length > 0 ? page.hotspotNote
+                : (page.hotspotOn ? "Other devices can join “" + page.hotspotName + "”." : "Turns this computer's Wi-Fi into a network others can join. Wi-Fi itself disconnects while it is on.")
+            Toggle {
+                checked: page.hotspotOn
+                onToggled: v => {
+                    if (!v) page.nmcli(["connection", "down", "Hotspot"])
+                    else if (hotPass.text.length >= 8) page.nmcli(["device", "wifi", "hotspot", "con-name", "Hotspot", "ssid", page.hotspotName, "password", hotPass.text])
+                    else page.hotspotNote = "Choose a password of at least 8 characters first."
+                }
+            }
+            extra: Rectangle {
+                visible: !page.hotspotOn
+                Layout.fillWidth: true
+                implicitHeight: 48
+                radius: hotPass.activeFocus ? Theme.cornerM : height / 2
+                color: Theme.surfaceContainerHighest
+                border.width: hotPass.activeFocus ? 2 : 0
+                border.color: Theme.primary
+                Behavior on radius { Spring {} }
+                MIcon { id: keyIcon; x: 16; anchors.verticalCenter: parent.verticalCenter; icon: "key"; size: 20; color: Theme.inkMuted }
+                TextInput {
+                    id: hotPass
+                    anchors.left: keyIcon.right
+                    anchors.leftMargin: 12
+                    anchors.right: parent.right
+                    anchors.rightMargin: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    echoMode: TextInput.Password
+                    color: Theme.ink
+                    selectionColor: Theme.primaryContainer
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textBody
+                    clip: true
+                    Label {
+                        visible: hotPass.text.length === 0
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Password for the hotspot"
+                        color: Theme.inkMuted
+                    }
+                }
+            }
+        }
+    }
+
+    SegGroup {
+        visible: page.available && page.vpns.length > 0
+        title: "VPN"
+        Repeater {
+            model: page.vpns
+            SegItem {
+                id: tunnel
+                required property var modelData
+                required property int index
+                icon: "vpn_lock"
+                hue: index + 4
+                lobes: [8, 0, 4, 5][index % 4]
+                title: modelData.name
+                description: modelData.active ? "Connected" : "Off"
+                Toggle {
+                    checked: tunnel.modelData.active
+                    onToggled: v => page.nmcli(["connection", v ? "up" : "down", "id", tunnel.modelData.name])
+                }
+            }
+        }
+    }
 }

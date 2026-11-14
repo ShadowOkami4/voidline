@@ -115,6 +115,49 @@ ColumnLayout {
         color: Theme.inkMuted
     }
 
+    // ---- arrangement (more than one screen) -----------------------------------------
+    function placeOf(name) {
+        const e = Config.displayPlaces.find(p => p.startsWith(name + "="))
+        return e ? e.split("=")[1] : "auto"
+    }
+    function setPlace(name, place) {
+        const rest = Config.displayPlaces.filter(p => !p.startsWith(name + "="))
+        Config.displayPlaces = place === "auto" ? rest : rest.concat([name + "=" + place])
+        later.restart()
+    }
+    Timer { id: later; interval: 1200; onTriggered: Compositor.refreshOutputs() }
+
+    SegGroup {
+        visible: Compositor.outputs.length > 1 && Compositor.name === "hyprland"
+        title: "Arrangement"
+        Repeater {
+            model: Compositor.outputs.filter(o => o.name !== WmConfig.primary)
+            SegItem {
+                id: seat
+                required property var modelData
+                required property int index
+                icon: "desktop_windows"
+                hue: index + 1
+                lobes: [4, 8, 0, 5][index % 4]
+                title: modelData.name + (modelData.description ? "  ·  " + modelData.description : "")
+                description: "Where this screen sits next to " + WmConfig.primary + "."
+                extra: Choice {
+                    Layout.fillWidth: true
+                    value: page.placeOf(seat.modelData.name)
+                    options: [
+                        { value: "auto", label: "Automatic" },
+                        { value: "left", label: "Left" },
+                        { value: "right", label: "Right" },
+                        { value: "up", label: "Above" },
+                        { value: "down", label: "Below" },
+                        { value: "mirror", label: "Same picture" }
+                    ]
+                    onPicked: v => page.setPlace(seat.modelData.name, v)
+                }
+            }
+        }
+    }
+
     // ---- one group per display ---------------------------------------------------------
     Repeater {
         model: Compositor.outputs

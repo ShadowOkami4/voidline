@@ -46,6 +46,14 @@ Singleton {
     // Keep GTK/libadwaita apps in step with the shell's dark or light theme.
     property alias syncAppTheme: data.syncAppTheme
     property alias welcomed: data.welcomed
+    // Light during the day (7:00 to 19:00), dark at night.
+    property alias autoTheme: data.autoTheme
+    // Font for the shell; "" picks the best one installed.
+    property alias font: data.font
+    // Game mode: effects off, live wallpaper paused, no popups.
+    property alias gameMode: data.gameMode
+    // Where extra screens sit, one "name=left|right|up|down|mirror" entry each.
+    property alias displayPlaces: data.displayPlaces
 
     // Window-manager settings. `desktop` is shared by every compositor so the
     // look carries over when you switch; `hyprland` and `niri` hold extras.
@@ -135,6 +143,10 @@ Singleton {
             property int nightLightTemp: 4000
             property bool syncAppTheme: true
             property bool welcomed: false
+            property bool autoTheme: false
+            property string font: ""
+            property bool gameMode: false
+            property list<string> displayPlaces: []
             property list<string> pinnedApps: []
             property int workspaceCount: 5
             property real uiScale: 0.75

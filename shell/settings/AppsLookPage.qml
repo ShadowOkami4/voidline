@@ -46,6 +46,14 @@ ColumnLayout {
         visible: Appearance.available
         title: "Apps"
         SegItem {
+            icon: "routine"
+            hue: 5
+            lobes: 5
+            title: "Dark at night"
+            description: "Light theme from 7:00, dark theme from 19:00."
+            Toggle { checked: Config.autoTheme; onToggled: v => Config.autoTheme = v }
+        }
+        SegItem {
             icon: "contrast"
             hue: 0
             lobes: 8
