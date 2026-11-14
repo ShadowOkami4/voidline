@@ -132,7 +132,10 @@ Item {
                             description: ((o.make || "") + " " + (o.model || "")).trim(),
                             mode: o.current_mode !== null && o.modes[o.current_mode] ? fmt(o.modes[o.current_mode]) : "",
                             scale: o.logical ? o.logical.scale : 1,
-                            modes: o.modes.map(fmt)
+                            modes: o.modes.map(fmt),
+                            x: o.logical ? o.logical.x : 0, y: o.logical ? o.logical.y : 0,
+                            w: o.logical ? o.logical.width : 0, h: o.logical ? o.logical.height : 0,
+                            mirror: false
                         }
                     })
                 } catch (e) { console.warn("niri outputs:", e) }

@@ -60,7 +60,8 @@ QtObject {
 
     property Timer refreshLater: Timer { interval: 900; onTriggered: root.refreshOutputs() }
     property Process monitors: Process {
-        command: ["hyprctl", "-j", "monitors"]
+        // "all" also lists screens that mirror another one.
+        command: ["hyprctl", "-j", "monitors", "all"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -69,7 +70,11 @@ QtObject {
                         description: (m.make + " " + m.model).trim(),
                         mode: `${m.width}x${m.height}@${m.refreshRate.toFixed(2)}`,
                         scale: m.scale,
-                        modes: m.availableModes.map(s => s.replace("Hz", ""))
+                        modes: m.availableModes.map(s => s.replace("Hz", "")),
+                        x: m.x, y: m.y,
+                        w: Math.round((m.transform % 2 === 1 ? m.height : m.width) / m.scale),
+                        h: Math.round((m.transform % 2 === 1 ? m.width : m.height) / m.scale),
+                        mirror: !!m.mirrorOf && m.mirrorOf !== "none"
                     }))
                 } catch (e) { console.warn("hyprctl monitors:", e) }
             }
