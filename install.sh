@@ -130,20 +130,24 @@ done < "$here/assets/icons/Voidline/aliases.txt"
 command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -f "$pointer" 2>/dev/null || true
 say "Mouse pointer and icon theme installed to $pointer"
 
-# --- Files (Nautilus): right-click scripts ------------------------------------
+# --- Files (Nautilus): right-click menu ----------------------------------------
+# With nautilus-python there is one "Voidline" entry in the menu. Without it
+# the same things go under "Scripts". Never both: the menu is long enough.
 if command -v nautilus >/dev/null; then
     scripts=${XDG_DATA_HOME:-$HOME/.local/share}/nautilus/scripts
-    mkdir -p "$scripts"
-    cp "$here"/assets/nautilus/scripts/* "$scripts/"
-    chmod +x "$scripts"/*
-    say "Files: added Scripts > Set as Voidline wallpaper, Open terminal here, Copy path, Open with…"
-    # With nautilus-python installed, "Open with Voidline…" sits in the
-    # right-click menu itself.
     ext=${XDG_DATA_HOME:-$HOME/.local/share}/nautilus-python/extensions
-    mkdir -p "$ext"
-    cp "$here"/assets/nautilus/extensions/voidline.py "$ext/"
-    pacman -Q nautilus-python >/dev/null 2>&1 \
-        || say "Files: install nautilus-python to get \"Open with Voidline…\" in the right-click menu"
+    if pacman -Q nautilus-python >/dev/null 2>&1; then
+        mkdir -p "$ext"
+        cp "$here"/assets/nautilus/extensions/voidline.py "$ext/"
+        for f in "$here"/assets/nautilus/scripts/*; do rm -f "$scripts/$(basename "$f")"; done
+        say "Files: added \"Voidline\" to the right-click menu (restart Files with: nautilus -q)"
+    else
+        mkdir -p "$scripts"
+        cp "$here"/assets/nautilus/scripts/* "$scripts/"
+        chmod +x "$scripts"/*
+        rm -f "$ext/voidline.py"
+        say "Files: added Scripts > Set as Voidline wallpaper, Open terminal here, Copy path, Open with…"
+    fi
 fi
 
 # --- launcher entry for Settings ------------------------------------------------

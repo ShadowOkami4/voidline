@@ -1,29 +1,63 @@
 # Files (Nautilus) extension for Voidline. Needs the package nautilus-python.
-# Adds "Open with Voidline…" to the right-click menu of a file; it shows the
-# shell's own "Open with" dialog. Nautilus's built-in entry stays as it is.
+# Puts one "Voidline" entry into the right-click menu of a file, with what
+# the shell can do with it inside. One entry, so the menu stays short; it
+# replaces the entries Voidline otherwise adds under "Scripts".
 import locale
 import subprocess
 
 from gi.repository import GObject, Nautilus
 
 GERMAN = (locale.getlocale()[0] or "").lower().startswith("de")
-LABEL = "Mit Voidline öffnen…" if GERMAN else "Open with Voidline…"
+TEXT = {
+    "open": ("Open with…", "Öffnen mit…"),
+    "wallpaper": ("Set as wallpaper", "Als Hintergrundbild"),
+    "path": ("Copy path", "Pfad kopieren"),
+}
 
 
-class VoidlineOpenWith(GObject.GObject, Nautilus.MenuProvider):
+def label(key):
+    return TEXT[key][1 if GERMAN else 0]
+
+
+def run(*command, text=None):
+    try:
+        p = subprocess.Popen(command, stdin=subprocess.PIPE if text is not None else subprocess.DEVNULL,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if text is not None:
+            p.stdin.write(text.encode())
+            p.stdin.close()
+    except OSError:
+        pass
+
+
+def shell(*args):
+    run("qs", "-c", "voidline", "ipc", "call", "shell", *args)
+
+
+class VoidlineMenu(GObject.GObject, Nautilus.MenuProvider):
     def get_file_items(self, *args):
         # Older versions pass (window, files), newer ones only (files).
         files = args[-1]
-        if len(files) != 1 or files[0].is_directory():
+        paths = []
+        for f in files:
+            location = f.get_location()
+            if location and location.get_path():
+                paths.append(location.get_path())
+        if not paths or len(paths) != len(files):
             return []
-        location = files[0].get_location()
-        path = location.get_path() if location else None
-        if not path:
-            return []
-        item = Nautilus.MenuItem(name="Voidline::OpenWith", label=LABEL)
-        item.connect("activate", self.open, path)
-        return [item]
 
-    def open(self, item, path):
-        subprocess.Popen(["qs", "-c", "voidline", "ipc", "call", "shell", "openWith", path],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        entries = []
+        if len(files) == 1 and not files[0].is_directory():
+            entries.append(("open", lambda *_: shell("openWith", paths[0])))
+            if (files[0].get_mime_type() or "").startswith("image/"):
+                entries.append(("wallpaper", lambda *_: shell("set", "wallpaper", paths[0])))
+        entries.append(("path", lambda *_: run("wl-copy", text="\n".join(paths))))
+
+        top = Nautilus.MenuItem(name="Voidline::Menu", label="Voidline")
+        menu = Nautilus.Menu()
+        top.set_submenu(menu)
+        for key, action in entries:
+            item = Nautilus.MenuItem(name="Voidline::" + key, label=label(key))
+            item.connect("activate", action)
+            menu.append_item(item)
+        return [top]
