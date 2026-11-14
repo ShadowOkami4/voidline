@@ -135,7 +135,7 @@ Item {
                             modes: o.modes.map(fmt),
                             x: o.logical ? o.logical.x : 0, y: o.logical ? o.logical.y : 0,
                             w: o.logical ? o.logical.width : 0, h: o.logical ? o.logical.height : 0,
-                            mirror: false
+                            mirror: false, disabled: false
                         }
                     })
                 } catch (e) { console.warn("niri outputs:", e) }

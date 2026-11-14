@@ -20,6 +20,32 @@ ColumnLayout {
 
     // Network waiting for a password, and what the user typed.
     property var asking: null
+    // Name of the network whose last attempt failed.
+    property string failed: ""
+
+    // Joins with a password. A saved network keeps its old (wrong) password,
+    // so it is forgotten first and joined fresh a moment later.
+    function join(network, password) {
+        failed = ""
+        if (network.known) {
+            again.name = network.name
+            again.password = password
+            network.forget()
+            again.restart()
+        } else network.connectWithPsk(password)
+    }
+    Timer {
+        id: again
+        property string name: ""
+        property string password: ""
+        interval: 900
+        onTriggered: {
+            const n = page.networks.find(x => x.name === name)
+            if (n) n.connectWithPsk(password)
+            else page.failed = name
+            password = ""
+        }
+    }
 
     // Scan only while this page is open.
     Component.onCompleted: if (wifi) wifi.scannerEnabled = true
@@ -143,12 +169,26 @@ ColumnLayout {
                 hue: modelData.connected ? 0 : 2
                 lobes: modelData.connected ? 8 : 0
                 title: modelData.name || "Hidden network"
+                readonly property bool failed: page.failed === modelData.name && !modelData.connected
                 description: modelData.stateChanging ? "Connecting..."
-                    : (modelData.connected ? "Connected" : (modelData.known ? "Saved" : (open ? "Open" : "Secured")))
+                    : (modelData.connected ? "Connected"
+                        : (failed ? "Could not connect. Check the password and try again."
+                            : (modelData.known ? "Saved" : (open ? "Open" : "Secured"))))
                 clickable: !modelData.connected && !asking
                 onClicked: {
-                    if (modelData.known || open) modelData.connect()
+                    page.failed = ""
+                    if (failed && !open) page.asking = modelData
+                    else if (modelData.known || open) modelData.connect()
                     else page.asking = modelData
+                }
+                // A failed attempt (wrong password) opens the password field again.
+                Connections {
+                    target: net.modelData
+                    ignoreUnknownSignals: true
+                    function onConnectionFailed(reason) {
+                        page.failed = net.modelData.name
+                        if (!net.open) page.asking = net.modelData
+                    }
                 }
 
                 Row {
@@ -159,6 +199,12 @@ ColumnLayout {
                         icon: "lock"
                         size: 18
                         color: Theme.inkMuted
+                    }
+                    IconBtn {
+                        visible: net.modelData.known && !net.modelData.connected && !net.open
+                        icon: "key"
+                        size: 38
+                        onClicked: page.asking = net.modelData
                     }
                     IconBtn {
                         visible: net.modelData.known && !net.modelData.connected
@@ -227,7 +273,7 @@ ColumnLayout {
                         color: Theme.primary
                         tint: Theme.inkOnPrimary
                         onClicked: {
-                            net.modelData.connectWithPsk(psk.text)
+                            page.join(net.modelData, psk.text)
                             psk.text = ""
                             page.asking = null
                         }

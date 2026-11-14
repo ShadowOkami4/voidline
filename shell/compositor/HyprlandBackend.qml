@@ -74,7 +74,8 @@ QtObject {
                         x: m.x, y: m.y,
                         w: Math.round((m.transform % 2 === 1 ? m.height : m.width) / m.scale),
                         h: Math.round((m.transform % 2 === 1 ? m.width : m.height) / m.scale),
-                        mirror: !!m.mirrorOf && m.mirrorOf !== "none"
+                        mirror: !!m.mirrorOf && m.mirrorOf !== "none",
+                        disabled: !!m.disabled
                     }))
                 } catch (e) { console.warn("hyprctl monitors:", e) }
             }

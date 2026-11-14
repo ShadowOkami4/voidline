@@ -31,6 +31,74 @@ ColumnLayout {
     function saveMode(name, mode, scale) {
         Config.displays = Config.displays.filter(e => e.split("|")[0] !== name).concat([name + "|" + mode + "|" + scale])
     }
+    // Every screen needs its mode written down before it can be placed,
+    // mirrored or switched off. A screen that is off reports no mode, so its
+    // best one is used.
+    function rememberModes() {
+        for (const o of outputs) {
+            if (Config.displays.some(e => e.split("|")[0] === o.name)) continue
+            const mode = /^[1-9]\d*x[1-9]\d*@/.test(o.mode) ? o.mode : (o.modes[0] ?? "")
+            if (mode) saveMode(o.name, mode, o.scale > 0 ? o.scale : 1)
+        }
+    }
+
+    // ---- how the screens are used: extend, duplicate, or only one -----------------------
+    function nice(o) { return o.name.startsWith("eDP") || o.name.startsWith("LVDS") ? "Laptop screen" : o.name }
+    function stateOf(o) { return o.disabled ? "off" : (o.mirror ? "mirror" : "on") }
+    // "extend" | "duplicate" | "only:<name>" | "custom"
+    readonly property string layout: {
+        if (outputs.length < 2) return "extend"
+        const on = outputs.filter(o => stateOf(o) === "on"), off = outputs.filter(o => stateOf(o) === "off")
+        if (on.length === outputs.length) return "extend"
+        if (on.length === 1 && off.length === outputs.length - 1) return "only:" + on[0].name
+        if (on.length === 1 && off.length === 0) return "duplicate"
+        return "custom"
+    }
+    readonly property var layouts: {
+        const list = [
+            { value: "extend", icon: "view_column_2", label: "Extend", hint: "One big desktop across all screens" },
+            { value: "duplicate", icon: "content_copy", label: "Duplicate", hint: "The same picture on every screen" }
+        ]
+        for (const o of outputs)
+            list.push({ value: "only:" + o.name, icon: nice(o) === o.name ? "desktop_windows" : "laptop_chromebook",
+                label: "Only " + (nice(o) === o.name ? o.name : "laptop"), hint: "Other screens are switched off" })
+        return list
+    }
+
+    // Writes one state per screen: { name: "on" | "mirror" | "off" }. Positions
+    // of screens that stay on are kept. Asks to be confirmed, like a new mode.
+    function useScreens(states) {
+        if (!Object.values(states).includes("on")) return        // never all off
+        rememberModes()
+        const old = Config.displayPlaces.slice()
+        const entries = []
+        for (const o of outputs) {
+            const want = states[o.name] ?? stateOf(o)
+            if (want === "mirror" || want === "off") { entries.push(o.name + "=" + want); continue }
+            const saved = Config.displayPlaces.find(e => e.startsWith(o.name + "=") && /=-?\d+,-?\d+$/.test(e))
+            if (saved && stateOf(o) === "on") entries.push(saved)
+        }
+        // Screens that come back are placed next to the others by the window manager.
+        Config.displayPlaces = entries.some(e => e.endsWith("=mirror") || e.endsWith("=off")) || entries.length === outputs.length ? entries : []
+        pending = { layout: true, old: old }
+        secondsLeft = 15
+        countdown.restart()
+        reread.restart()
+    }
+    function setLayout(kind) {
+        const states = {}
+        const main = kind.startsWith("only:") ? kind.slice(5) : (outputs.find(o => nice(o) !== o.name) ?? outputs[0]).name
+        for (const o of outputs)
+            states[o.name] = kind === "extend" ? "on" : (o.name === main ? "on" : (kind === "duplicate" ? "mirror" : "off"))
+        useScreens(states)
+    }
+    function setState(name, state) {
+        const states = {}
+        for (const o of outputs) states[o.name] = o.name === name ? state : stateOf(o)
+        // The screen the others copy cannot disappear: they go back to normal.
+        if (state !== "on" && !Object.values(states).includes("on")) return
+        useScreens(states)
+    }
 
     function apply(output, mode, scale) {
         pending = { name: output.name, mode: mode, scale: scale, oldMode: output.mode, oldScale: output.scale }
@@ -40,12 +108,13 @@ ColumnLayout {
     }
     function keep() {
         countdown.stop()
-        saveMode(pending.name, pending.mode, pending.scale)
+        if (!pending.layout) saveMode(pending.name, pending.mode, pending.scale)
         pending = null
     }
     function revert() {
         countdown.stop()
-        if (pending) Compositor.applyOutput(pending.name, pending.oldMode, pending.oldScale)
+        if (pending && pending.layout) { Config.displayPlaces = pending.old; reread.restart() }
+        else if (pending) Compositor.applyOutput(pending.name, pending.oldMode, pending.oldScale)
         pending = null
     }
     Timer {
@@ -65,7 +134,7 @@ ColumnLayout {
         const d = draft[o.name]
         return { x: d ? d.x : o.x, y: d ? d.y : o.y, w: Math.max(1, o.w), h: Math.max(1, o.h) }
     }
-    readonly property var placed: outputs.filter(o => !o.mirror)
+    readonly property var placed: outputs.filter(o => !o.mirror && !o.disabled)
     readonly property bool mirrorable: Compositor.name === "hyprland" && several
 
     // Finds the nearest spot where screen `name` touches another one without
@@ -108,22 +177,14 @@ ColumnLayout {
             entries.push(n + "=" + next[n].x + "," + next[n].y)
         }
         for (const o of outputs) {
-            if (o.mirror) entries.push(o.name + "=mirror")
-            // A position needs the screen's mode written next to it.
-            if (!Config.displays.some(e => e.split("|")[0] === o.name) && o.mode) saveMode(o.name, o.mode, o.scale)
+            if (o.disabled) entries.push(o.name + "=off")
+            else if (o.mirror) entries.push(o.name + "=mirror")
         }
+        rememberModes()
         draft = next
         Config.displayPlaces = entries
         reread.restart()
     }
-    function setMirror(name, on) {
-        const rest = Config.displayPlaces.filter(e => !e.startsWith(name + "="))
-        for (const o of outputs)
-            if (!Config.displays.some(e => e.split("|")[0] === o.name) && o.mode) saveMode(o.name, o.mode, o.scale)
-        Config.displayPlaces = on ? rest.concat([name + "=mirror"]) : rest
-        reread.restart()
-    }
-
     // ---- keep / revert banner ----------------------------------------------------------
     Rectangle {
         Layout.fillWidth: true
@@ -142,7 +203,7 @@ ColumnLayout {
                 spacing: 2
                 Label {
                     Layout.fillWidth: true
-                    text: "Keep these display settings?"
+                    text: page.pending && page.pending.layout ? "Keep this screen setup?" : "Keep these display settings?"
                     font.pixelSize: Theme.textTitle + 4
                     font.weight: Font.Black
                     color: Theme.inkOnTertiaryContainer
@@ -168,6 +229,64 @@ ColumnLayout {
                 tint: Theme.surface
                 onClicked: page.keep()
                 Label { anchors.centerIn: parent; text: "Keep"; font.weight: Font.Bold; color: Theme.surface }
+            }
+        }
+    }
+
+    // ---- extend / duplicate / only one --------------------------------------------------
+    GridLayout {
+        Layout.fillWidth: true
+        visible: page.several
+        columns: Math.min(4, page.layouts.length)
+        columnSpacing: 8
+        rowSpacing: 8
+
+        Repeater {
+            model: page.layouts
+            Pressable {
+                id: tile
+                required property var modelData
+                readonly property bool current: page.layout === modelData.value
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                implicitHeight: 108
+                enabledInput: !page.pending
+                color: current ? Theme.primary : Theme.surfaceContainerHigh
+                tint: current ? Theme.inkOnPrimary : Theme.ink
+                restRadius: current ? Theme.cornerXXL : Theme.cornerXL
+                pressedRadius: Theme.cornerL
+                Behavior on color { Tint {} }
+                onClicked: if (!current) page.setLayout(modelData.value)
+
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - 20
+                    spacing: 4
+                    MIcon {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        icon: tile.modelData.icon
+                        filled: tile.current
+                        size: 30
+                        color: tile.current ? Theme.inkOnPrimary : Theme.primary
+                    }
+                    Label {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
+                        text: tile.modelData.label
+                        font.weight: Font.Bold
+                        color: tile.current ? Theme.inkOnPrimary : Theme.ink
+                    }
+                    Label {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
+                        text: tile.modelData.hint
+                        font.pixelSize: Theme.textLabelS
+                        color: tile.current ? Theme.inkOnPrimary : Theme.inkMuted
+                        opacity: 0.9
+                    }
+                }
             }
         }
     }
@@ -282,7 +401,7 @@ ColumnLayout {
             anchors.bottomMargin: 14
             visible: page.outputs.length > 0
             text: page.placed.length > 1 ? "Drag a screen to where it stands on your desk. Click one to change its settings."
-                : (page.several ? "The other screen shows the same picture." : "One screen connected.")
+                : (page.several ? "Only this screen carries the desktop. The others are listed below." : "One screen connected.")
             font.pixelSize: Theme.textLabel
             color: Theme.inkMuted
         }
@@ -405,30 +524,40 @@ ColumnLayout {
             }
         }
         SegItem {
-            // Not on the main screen: that is the one the others copy.
-            visible: page.mirrorable && (group.output.mirror || (page.placed.length > 1 && group.output.name !== WmConfig.primary))
-            icon: "content_copy"
+            visible: page.several
+            icon: "tv_options_input_settings"
             hue: 3
             lobes: 5
-            title: "Same picture as the main screen"
-            description: "Shows a copy instead of extending the desktop. Good for presenting."
-            Toggle { checked: !!group.output.mirror; onToggled: v => page.setMirror(group.output.name, v) }
+            title: "Use this screen"
+            description: page.stateOf(group.output) === "off" ? "Switched off."
+                : (page.stateOf(group.output) === "mirror" ? "Shows a copy of the main screen." : "Part of the desktop.")
+            Dropdown {
+                width: 230
+                enabledInput: !page.pending
+                value: page.stateOf(group.output)
+                options: [
+                    { value: "on", label: "On" },
+                    { value: "mirror", label: "Same picture" },
+                    { value: "off", label: "Off" }
+                ]
+                onPicked: v => page.setState(group.output.name, v)
+            }
         }
     }
 
     // A mirrored screen is not in the picture above; this is how to select it.
     SegGroup {
-        visible: page.outputs.some(o => o.mirror)
-        title: "Showing the same picture"
+        visible: page.outputs.some(o => o.mirror || o.disabled)
+        title: "Other screens"
         Repeater {
-            model: page.outputs.filter(o => o.mirror)
+            model: page.outputs.filter(o => o.mirror || o.disabled)
             SegItem {
                 required property var modelData
-                icon: "content_copy"
+                icon: modelData.disabled ? "desktop_access_disabled" : "content_copy"
                 hue: 5
                 lobes: 0
-                title: modelData.name
-                description: modelData.description || ""
+                title: modelData.name + (modelData.description ? "  ·  " + modelData.description : "")
+                description: (modelData.disabled ? "Switched off" : "Shows the same picture") + ". Click to change its settings."
                 clickable: true
                 onClicked: page.selected = modelData.name
             }

@@ -42,13 +42,7 @@ PanelSurface {
             Layout.fillWidth: true
             spacing: 6
 
-            Label {
-                Layout.fillWidth: true
-                leftPadding: 4
-                text: "Voidline"
-                font.pixelSize: Theme.textHeadline
-                font.weight: Font.Black
-            }
+            Item { Layout.fillWidth: true }
 
             IconBtn {
                 icon: "settings"
