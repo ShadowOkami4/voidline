@@ -43,6 +43,7 @@ ShellRoot {
 
     NotificationPopups { screen: Quickshell.screens[0] }
     AuthDialog {}
+    PairDialog {}
     LockScreen {}
     Osd {}
 
@@ -115,6 +116,9 @@ ShellRoot {
         }
         // bluetooth on | off
         function bluetooth(state: string): void { Bt.setOn(state !== "off") }
+        // Shows a pairing question without a device, to look at the dialog:
+        //   pairing confirm | show | pin | passkey | accept | service | none
+        function pairing(kind: string): void { Bt.ask = kind === "none" ? null : { kind: kind, code: "482913" } }
         function switcher(): void { Shell.switcher() }
         // screenshot screen | region
         function screenshot(mode: string): void { Capture.shoot(mode) }

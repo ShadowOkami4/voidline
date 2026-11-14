@@ -284,6 +284,17 @@ var words = {
 "Searching... Put the device you want to add into pairing mode.": "Suche läuft... Versetze das Gerät, das du hinzufügen willst, in den Kopplungsmodus.",
 "Pairing...": "Wird gekoppelt...",
 "Pair": "Koppeln",
+"this device": "Bluetooth-Gerät",
+"Pair with %1?": "Mit %1 koppeln?",
+"Type this on %1": "Auf %1 eintippen",
+"Code for %1": "Code für %1",
+"Allow %1 to connect?": "%1 verbinden lassen?",
+"Check that the device shows the same number.": "Prüf, ob das Gerät dieselbe Zahl zeigt.",
+"Type the number on the device, then press Enter there.": "Tippe die Zahl auf dem Gerät ein und drück dort die Eingabetaste.",
+"The code is shown on the device or printed in its manual. Often it is 0000 or 1234.": "Der Code steht auf dem Gerät oder in seiner Anleitung. Oft ist er 0000 oder 1234.",
+"It is asking to use this computer.": "Es möchte diesen Computer nutzen.",
+"The device is asking to pair with this computer.": "Das Gerät möchte sich mit diesem Computer koppeln.",
+"Allow": "Erlauben",
 
 // ---- settings: wallpaper & colours ------------------------------------------------
 "Light": "Hell",

@@ -14,7 +14,7 @@ qs kill -c voidline >/dev/null 2>&1 && sleep 0.3
 # The launcher process ("qs") goes first and without a chance to react:
 # stopped any other way it takes its shell for crashed and starts it again.
 sleep 0.4
-for p in $(pgrep -x qs) $(pgrep -x quickshell) $(pgrep -x dbus-monitor) $(pgrep -x wl-paste); do
+for p in $(pgrep -x qs) $(pgrep -x quickshell) $(pgrep -x dbus-monitor) $(pgrep -x wl-paste) $(pgrep -x bluetoothctl); do
     [ "$p" = "$$" ] && continue
     grep -qz '^VOIDLINE_UI_SCALE=' "/proc/$p/environ" 2>/dev/null && kill -9 "$p" 2>/dev/null
 done
