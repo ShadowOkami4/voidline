@@ -136,7 +136,14 @@ if command -v nautilus >/dev/null; then
     mkdir -p "$scripts"
     cp "$here"/assets/nautilus/scripts/* "$scripts/"
     chmod +x "$scripts"/*
-    say "Files: added Scripts > Set as Voidline wallpaper, Open terminal here, Copy path"
+    say "Files: added Scripts > Set as Voidline wallpaper, Open terminal here, Copy path, Open with…"
+    # With nautilus-python installed, "Open with Voidline…" sits in the
+    # right-click menu itself.
+    ext=${XDG_DATA_HOME:-$HOME/.local/share}/nautilus-python/extensions
+    mkdir -p "$ext"
+    cp "$here"/assets/nautilus/extensions/voidline.py "$ext/"
+    pacman -Q nautilus-python >/dev/null 2>&1 \
+        || say "Files: install nautilus-python to get \"Open with Voidline…\" in the right-click menu"
 fi
 
 # --- launcher entry for Settings ------------------------------------------------
