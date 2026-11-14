@@ -1,0 +1,9 @@
+#!/bin/sh
+# Files > right-click a picture > Scripts > Set as Voidline wallpaper
+file=$(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+[ -n "$file" ] || file=$1
+case "$(file --brief --mime-type -- "$file" 2>/dev/null)" in
+    image/*) qs -c voidline ipc call shell set wallpaper "$file" >/dev/null 2>&1 \
+                 || notify-send -a Voidline "Voidline is not running" ;;
+    *) notify-send -a Voidline "Not a picture" "$file" ;;
+esac

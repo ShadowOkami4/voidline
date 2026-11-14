@@ -1,0 +1,5 @@
+#!/bin/sh
+# Files > right-click > Scripts > Copy path
+paths=$(printf '%s' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed '/^$/d')
+[ -n "$paths" ] || paths=$PWD
+printf '%s' "$paths" | wl-copy && notify-send -a Voidline "Path copied" "$paths"

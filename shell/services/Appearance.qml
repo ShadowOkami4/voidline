@@ -116,15 +116,87 @@ exit 0`]
             + d("thumbnail_bg_color", t.surfaceContainerHigh) + d("thumbnail_fg_color", t.ink)
             // GTK 3 names, for older apps
             + d("theme_selected_bg_color", t.primary) + d("theme_selected_fg_color", t.inkOnPrimary)
-            // The rounder shapes of the shell, kept to a few safe places.
-            + ".navigation-sidebar row, .sidebar-row, listview row, columnview row { border-radius: 14px; }\n"
-            + ".navigation-sidebar row:selected { background-color: alpha(@accent_bg_color, 0.26); }\n"
-            + "gridview child { border-radius: 16px; }\n"
-            + "button, entry, .linked > button { border-radius: 14px; }\n"
-            + "button.circular, button.pill, entry.search, searchbar entry { border-radius: 9999px; }\n"
-            + "popover > contents, .card, menu, .menu { border-radius: 18px; }\n"
-            + "window.csd { border-radius: 18px; }\n"
+            + d("voidline_container", t.surfaceContainerHigh) + d("voidline_container_high", t.surfaceContainerHighest)
+            + d("voidline_selected", t.secondaryContainer) + d("voidline_on_selected", t.inkOnSecondaryContainer)
+            + d("voidline_tonal", t.primaryContainer) + d("voidline_on_tonal", t.inkOnPrimaryContainer)
+            + d("voidline_muted", t.inkMuted) + d("voidline_outline", t.outlineVariant)
+            + shapes
     }
+
+    // Shapes and details, the same for every colour scheme. The first part
+    // applies to all GTK 4 apps, the second is written for Files (Nautilus)
+    // and uses the names from its own stylesheet.
+    readonly property string shapes: `
+/* ---- every app ---------------------------------------------------------- */
+window.csd { border-radius: 20px; }
+headerbar { min-height: 52px; }
+button, entry, spinbutton, dropdown > button, .linked > button { border-radius: 14px; }
+button.circular, button.pill, button.image-button, headerbar button, menubutton > button,
+entry.search, searchbar entry, .search-entry { border-radius: 9999px; }
+button.suggested-action, button.destructive-action { border-radius: 9999px; font-weight: 700; }
+popover > contents, menu, .menu { border-radius: 20px; padding: 6px; }
+popover modelbutton, popover .model, menu menuitem { border-radius: 12px; min-height: 34px; }
+.card, list.boxed-list, .boxed-list { border-radius: 20px; }
+tooltip, tooltip.background { border-radius: 12px; background-color: @voidline_container_high; color: @window_fg_color; }
+scrollbar slider { border-radius: 9999px; min-width: 6px; min-height: 6px; background-color: alpha(@accent_bg_color, 0.55); }
+scrollbar slider:hover { background-color: @accent_bg_color; }
+rubberband, .rubberband { border-radius: 10px; border: 1px solid @accent_bg_color; background-color: alpha(@accent_bg_color, 0.18); }
+switch { border-radius: 9999px; }
+switch:checked { background-color: @accent_bg_color; }
+progressbar trough, progressbar progress, levelbar trough, levelbar block, scale trough, scale highlight { border-radius: 9999px; min-height: 8px; }
+progressbar progress, levelbar block.filled, scale highlight { background-color: @accent_bg_color; }
+tabbar tab, .tab-bar tab { border-radius: 14px; }
+tabbar tab:selected { background-color: @voidline_selected; color: @voidline_on_selected; }
+dialog.background, window.dialog, window.messagedialog { border-radius: 26px; }
+
+/* sidebars: pill rows, the selected one filled */
+.navigation-sidebar { padding: 6px; }
+.navigation-sidebar row, .sidebar-row { border-radius: 9999px; min-height: 42px; margin: 1px 2px; }
+.navigation-sidebar row:hover { background-color: alpha(@window_fg_color, 0.07); }
+.navigation-sidebar row:selected { background-color: @voidline_selected; color: @voidline_on_selected; font-weight: 700; }
+
+/* ---- Files (Nautilus) --------------------------------------------------- */
+/* where you are: one pill, the current folder filled */
+.nautilus-pathbar { background-color: @voidline_container; border-radius: 9999px; padding: 3px 5px; min-height: 38px; }
+.nautilus-path-button { border-radius: 9999px; padding: 4px 12px; margin: 0 1px; font-weight: 600; color: @voidline_muted; }
+.nautilus-path-button:hover { background-color: alpha(@window_fg_color, 0.08); color: @window_fg_color; }
+.nautilus-path-button.current-dir, .nautilus-path-button.current-dir:not(:drop(active)) {
+    background-color: @voidline_tonal; color: @voidline_on_tonal; font-weight: 800; }
+
+/* icon view: roomy tiles with a soft selection */
+.nautilus-grid-view gridview { padding: 14px; }
+.nautilus-grid-view gridview > child { border-radius: 24px; padding: 8px 4px; margin: 3px; transition: background-color 140ms ease-out; }
+.nautilus-grid-view gridview > child:hover { background-color: alpha(@window_fg_color, 0.06); }
+.nautilus-grid-view gridview > child:selected { background-color: @voidline_selected; color: @voidline_on_selected; }
+.nautilus-grid-view gridview > child:selected:hover { background-color: shade(@voidline_selected, 1.12); }
+.nautilus-grid-view .nautilus-view-cell { border-radius: 20px; }
+.nautilus-grid-view:drop(active), .nautilus-list-view .nautilus-view-cell:drop(active) {
+    border-radius: 20px; box-shadow: inset 0 0 0 2px @accent_bg_color; background-color: alpha(@accent_bg_color, 0.12); }
+
+/* list view */
+.nautilus-list-view columnview > listview > row { border-radius: 16px; }
+.nautilus-list-view columnview > listview > row:hover { background-color: alpha(@window_fg_color, 0.06); }
+.nautilus-list-view columnview > listview > row:selected { background-color: @voidline_selected; color: @voidline_on_selected; }
+.nautilus-list-view columnview > header > button { border-radius: 12px; font-weight: 700; color: @voidline_muted; }
+
+/* pictures get soft corners, hidden files step back */
+.nautilus-image.file-thumbnail { border-radius: 12px; }
+.view .hidden-file { opacity: 0.5; }
+button.star:hover, button.star.interacted.starred image { color: @accent_color; }
+
+/* the little status bubble in the corner */
+.floating-bar { background-color: @voidline_tonal; color: @voidline_on_tonal; border: none; border-radius: 9999px;
+    padding: 6px 16px; margin: 12px; font-weight: 600; box-shadow: 0 4px 14px alpha(black, 0.3); }
+.floating-bar:backdrop { background-color: @voidline_container; color: @voidline_muted; }
+.floating-bar button { border-radius: 9999px; }
+
+/* disk space in properties and the sidebar */
+.disk-space-used { color: @accent_bg_color; }
+.disk-space-free { color: @voidline_container_high; }
+.batch-rename-preview { border-radius: 14px; }
+.nautilus-network-view listview, placesview list { border-radius: 20px; }
+`
+
     readonly property bool gtkWanted: Config.loaded && Config.appColors
     onGtkCssChanged: gtkWrite.restart()
     onGtkWantedChanged: gtkWrite.restart()

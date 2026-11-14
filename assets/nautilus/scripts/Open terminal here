@@ -1,0 +1,9 @@
+#!/bin/sh
+# Files > right-click > Scripts > Open terminal here
+# Uses the terminal chosen in Voidline Settings; opens in the folder on show,
+# or in the selected folder.
+dir=$(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
+[ -d "$dir" ] || dir=$PWD
+cfg="${XDG_CONFIG_HOME:-$HOME/.config}/voidline/config.json"
+term=$(sed -n 's/.*"terminal": *"\([^"]*\)".*/\1/p' "$cfg" 2>/dev/null | head -n 1)
+cd "$dir" && exec env -u QT_SCALE_FACTOR -u MALLOC_CONF "${term:-kitty}"

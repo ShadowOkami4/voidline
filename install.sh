@@ -130,6 +130,15 @@ done < "$here/assets/icons/Voidline/aliases.txt"
 command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -f "$pointer" 2>/dev/null || true
 say "Mouse pointer and icon theme installed to $pointer"
 
+# --- Files (Nautilus): right-click scripts ------------------------------------
+if command -v nautilus >/dev/null; then
+    scripts=${XDG_DATA_HOME:-$HOME/.local/share}/nautilus/scripts
+    mkdir -p "$scripts"
+    cp "$here"/assets/nautilus/scripts/* "$scripts/"
+    chmod +x "$scripts"/*
+    say "Files: added Scripts > Set as Voidline wallpaper, Open terminal here, Copy path"
+fi
+
 # --- launcher entry for Settings ------------------------------------------------
 apps=${XDG_DATA_HOME:-$HOME/.local/share}/applications
 mkdir -p "$apps"
