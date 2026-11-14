@@ -14,8 +14,19 @@ ColumnLayout {
             hue: 0
             lobes: 8
             title: "Do not disturb"
-            description: Config.doNotDisturb ? "Notifications are collected quietly." : "Notifications pop up as they arrive."
-            Toggle { checked: Config.doNotDisturb; onToggled: v => Config.doNotDisturb = v }
+            description: !Config.doNotDisturb ? "Notifications pop up as they arrive."
+                : (Config.dndUntil > 0 ? "Quiet until " + Qt.formatDateTime(new Date(Config.dndUntil), "ddd HH:mm") + "." : "Notifications are collected quietly.")
+            Toggle { checked: Config.doNotDisturb; onToggled: v => { Config.dndUntil = 0; Config.doNotDisturb = v } }
+            extra: Choice {
+                Layout.fillWidth: true
+                value: -99
+                options: [
+                    { value: 1, label: "For 1 hour" },
+                    { value: 3, label: "For 3 hours" },
+                    { value: -1, label: "Until tomorrow 7:00" }
+                ]
+                onPicked: v => Notifs.quiet(v)
+            }
         }
     }
 
@@ -96,6 +107,26 @@ ColumnLayout {
             clickable: true
             onClicked: Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "preferences-system",
                 "Test notification", "This is what a notification looks like."])
+        }
+    }
+
+    SegGroup {
+        visible: Notifs.apps.length > 0
+        title: "Apps"
+        Repeater {
+            model: Notifs.apps
+            SegItem {
+                id: appRow
+                required property string modelData
+                required property int index
+                readonly property bool muted: Config.notifMuted.includes(modelData)
+                icon: muted ? "notifications_off" : "notifications"
+                hue: index
+                lobes: [8, 0, 4, 5][index % 4]
+                title: modelData
+                description: muted ? "Collected quietly, no popups." : "Popups allowed."
+                Toggle { checked: !appRow.muted; onToggled: v => Notifs.setMuted(appRow.modelData, !v) }
+            }
         }
     }
 }

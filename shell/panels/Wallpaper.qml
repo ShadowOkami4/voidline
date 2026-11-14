@@ -80,4 +80,7 @@ PanelWindow {
         onLoaded: feed()
         onStatusChanged: if (status === Loader.Error) console.warn("live wallpaper", paper.liveId, "failed to load")
     }
+
+    // Desktop icons and the right-click menu.
+    Desktop {}
 }

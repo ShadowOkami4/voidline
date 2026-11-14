@@ -121,6 +121,23 @@ ColumnLayout {
         visible: page.hasBattery
         title: "Battery"
         SegItem {
+            visible: Battery.limitAvailable
+            icon: "battery_saver"
+            hue: 0
+            lobes: 8
+            title: "Protect the battery"
+            description: "Stops charging at about 60 % so the battery lasts more years. Best when the laptop is mostly plugged in. Asks for your password."
+            Toggle { checked: Battery.limitOn; onToggled: v => Battery.setLimit(v) }
+        }
+        SegItem {
+            icon: "battery_alert"
+            hue: 1
+            lobes: 0
+            title: "Low battery warnings"
+            description: "A notification at 20 % and at 10 %."
+            Toggle { checked: Config.batteryWarnings; onToggled: v => Config.batteryWarnings = v }
+        }
+        SegItem {
             icon: "battery_profile"
             hue: 2
             lobes: 4

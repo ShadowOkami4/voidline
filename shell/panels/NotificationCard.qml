@@ -65,6 +65,33 @@ Rectangle {
                 font.pixelSize: Theme.textLabel
                 color: Theme.inkMuted
             }
+            // What the app offers to do (Reply, Open, Mark as read, ...).
+            Flow {
+                Layout.fillWidth: true
+                Layout.topMargin: 6
+                visible: root.notification.actions.length > 0
+                spacing: 6
+                Repeater {
+                    model: root.notification.actions
+                    Pressable {
+                        id: act
+                        required property var modelData
+                        width: actLabel.implicitWidth + 28
+                        height: 34
+                        color: Theme.secondaryContainer
+                        tint: Theme.inkOnSecondaryContainer
+                        onClicked: { act.modelData.invoke(); root.dismissed() }
+                        Label {
+                            id: actLabel
+                            anchors.centerIn: parent
+                            text: act.modelData.text
+                            font.pixelSize: Theme.textLabel + 1
+                            font.weight: Font.DemiBold
+                            color: Theme.inkOnSecondaryContainer
+                        }
+                    }
+                }
+            }
         }
 
         IconBtn {

@@ -15,6 +15,38 @@ Singleton {
     property var popupIds: []
     readonly property var popups: list.filter(n => popupIds.includes(n.id)).slice(0, Math.max(1, Config.notifMaxPopups))
 
+    // Do not disturb with an end time switches itself off.
+    Timer {
+        interval: 20000
+        running: Config.doNotDisturb && Config.dndUntil > 0
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: if (Date.now() >= Config.dndUntil) { Config.doNotDisturb = false; Config.dndUntil = 0 }
+    }
+    // hours > 0: for that long; hours === -1: until 7:00 tomorrow; 0: until switched off
+    function quiet(hours) {
+        if (hours === 0) Config.dndUntil = 0
+        else if (hours > 0) Config.dndUntil = Date.now() + hours * 3600000
+        else {
+            const t = new Date()
+            t.setDate(t.getDate() + 1)
+            t.setHours(7, 0, 0, 0)
+            Config.dndUntil = t.getTime()
+        }
+        Config.doNotDisturb = true
+    }
+    // Apps seen so far, for the per-app switches in Settings.
+    readonly property var apps: {
+        const names = []
+        for (const e of history) if (e.app && !names.includes(e.app)) names.push(e.app)
+        for (const m of Config.notifMuted) if (!names.includes(m)) names.push(m)
+        return names.sort((a, b) => a.localeCompare(b))
+    }
+    function setMuted(app, muted) {
+        const rest = Config.notifMuted.filter(a => a !== app)
+        Config.notifMuted = muted ? rest.concat([app]) : rest
+    }
+
     function dismissPopup(id) { popupIds = popupIds.filter(i => i !== id) }
     function clear() { for (const n of list) n.dismiss(); store.entries = [] }
 
@@ -60,6 +92,7 @@ Singleton {
             n.tracked = true
             root.remember(n)
             if (Config.doNotDisturb || Config.gameMode) return
+            if (Config.notifMuted.includes(n.appName || "")) return
             root.popupIds = root.popupIds.concat([n.id])
             if (Config.notifKeepUrgent && n.urgency === NotificationUrgency.Critical) return
             const timeout = n.expireTimeout > 0 ? n.expireTimeout : Math.max(1, Config.notifTimeout) * 1000

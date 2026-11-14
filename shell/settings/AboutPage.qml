@@ -111,7 +111,22 @@ ColumnLayout {
                 : (parseInt(page.updates) > 0 ? "Install them in a terminal with:  sudo pacman -Syu" : "Looks for new package versions. Nothing is installed.")
             clickable: !page.checking
             onClicked: check.running = true
-            MIcon { icon: "refresh"; size: 22; color: Theme.inkMuted }
+            Row {
+                spacing: 8
+                Pressable {
+                    visible: parseInt(page.updates) > 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 104
+                    height: 42
+                    color: Theme.primary
+                    tint: Theme.inkOnPrimary
+                    // Runs in a terminal so you see what happens and can type the password.
+                    onClicked: Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF",
+                        Config.terminal, "-e", "sh", "-c", "sudo pacman -Syu; echo; echo 'Done. Press Enter to close.'; read _"])
+                    Label { anchors.centerIn: parent; text: "Install"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                }
+                MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "refresh"; size: 22; color: Theme.inkMuted }
+            }
         }
     }
 

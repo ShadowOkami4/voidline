@@ -52,6 +52,17 @@ notify-send -a Voidline -i "$file" "Screenshot saved" "$file"
         onTriggered: Quickshell.execDetached(["sh", "-c", root.shootScript, "sh", mode])
     }
 
+    // Click any pixel: its colour is copied as #RRGGBB.
+    function pickColour() {
+        Shell.close()
+        Quickshell.execDetached(["sh", "-c", `sleep 0.3
+p=$(slurp -p 2>/dev/null) || exit 0
+hex=$(grim -g "$p" -t ppm - | tail -c 3 | od -An -tx1 | tr -d ' \\n' | tr a-f A-F)
+[ -n "$hex" ] || exit 1
+command -v wl-copy >/dev/null && printf '#%s' "$hex" | wl-copy
+notify-send -a Voidline "Colour copied" "#$hex"`])
+    }
+
     function toggleRecording() {
         if (recorder.running) { recorder.signal(2); return }       // SIGINT lets it finish the file
         if (!canRecord) { Quickshell.execDetached(["notify-send", "-a", "Voidline", "Screen recording needs the package wf-recorder"]); return }

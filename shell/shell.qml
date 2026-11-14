@@ -104,6 +104,9 @@ ShellRoot {
         // screenshot screen | region
         function screenshot(mode: string): void { Capture.shoot(mode) }
         function record(): void { Capture.toggleRecording() }
+        function colour(): void { Capture.pickColour() }
+        // quiet 1 | 3 | -1 (until tomorrow 7:00) | 0 (until switched off)
+        function quiet(hours: string): void { Notifs.quiet(Number(hours) || 0) }
         // screen on | off
         function screen(state: string): void { Compositor.screenPower(state !== "off") }
         // media toggle | next | previous

@@ -18,7 +18,7 @@ PanelSurface {
     // "" is the normal view; "wifi" and "bluetooth" are the mini menus.
     property string view: ""
 
-    onOpenChanged: { armed = ""; view = "" }
+    onOpenChanged: { armed = ""; view = ""; Sys.watching = open }
     Timer { id: disarm; interval: 3000; onTriggered: root.armed = "" }
 
     // Power actions need a second click within three seconds.
@@ -166,6 +166,43 @@ PanelSurface {
             value: Brightness.value
             accent: Theme.tertiary
             onMoved: v => Brightness.set(v)
+        }
+
+        // Processor, memory and temperature, read only while this panel is open.
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Repeater {
+                model: [
+                    { icon: "memory", label: "CPU", value: Math.round(Sys.cpu * 100) + "%", level: Sys.cpu },
+                    { icon: "memory_alt", label: "Memory", value: Sys.memoryGb.toFixed(1) + " GB", level: Sys.memory },
+                    { icon: "device_thermostat", label: "Heat", value: Sys.temperature > 0 ? Sys.temperature + "°" : "–", level: Math.max(0, Math.min(1, (Sys.temperature - 30) / 65)) }
+                ]
+                Rectangle {
+                    id: gauge
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    implicitHeight: 54
+                    radius: Theme.cornerL
+                    color: Theme.surfaceContainerHighest
+                    clip: true
+                    Rectangle {
+                        width: parent.width * gauge.modelData.level
+                        height: parent.height
+                        color: Theme.alpha(gauge.modelData.level > 0.85 ? Theme.error : Theme.primary, 0.22)
+                        Behavior on width { Spring { duration: Motion.spatialSlow } }
+                    }
+                    MIcon { id: gIcon; x: 12; anchors.verticalCenter: parent.verticalCenter; icon: gauge.modelData.icon; size: 20; color: Theme.inkMuted }
+                    Column {
+                        anchors.left: gIcon.right
+                        anchors.leftMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        Label { text: gauge.modelData.value; font.weight: Font.Black; font.pixelSize: Theme.textBody }
+                        Label { text: gauge.modelData.label; font.pixelSize: Theme.textLabelS; color: Theme.inkMuted }
+                    }
+                }
+            }
         }
 
         MediaCard {

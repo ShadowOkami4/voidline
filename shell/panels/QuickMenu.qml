@@ -22,6 +22,9 @@ ColumnLayout {
     readonly property var networks: wifi ? wifi.networks.values.slice().sort((a, b) =>
         (b.connected - a.connected) || (b.known - a.known) || (b.signalStrength - a.signalStrength)).filter(n => n.name.length > 0) : []
     readonly property bool switchedOn: wifiKind ? Networking.wifiEnabled : Bt.on
+    // Network waiting for its password.
+    property var asking: null
+    onKindChanged: asking = null
 
     // Scan only while the menu is open.
     onVisibleChanged: {
@@ -94,7 +97,7 @@ ColumnLayout {
                 if (live) { modelData.disconnect(); return }
                 if (wifiRow) {
                     if (mine || !secured) modelData.connect()
-                    else { Shell.openSettings("network") }        // needs a password
+                    else { root.asking = modelData; secret.forceActiveFocus() }
                 } else {
                     if (mine) modelData.connect()
                     else modelData.pair()
@@ -144,6 +147,58 @@ ColumnLayout {
                 size: 18
                 color: row.live ? Theme.inkOnSecondaryContainer : Theme.inkMuted
             }
+        }
+    }
+
+    RowLayout {
+        Layout.fillWidth: true
+        visible: !!root.asking && root.wifiKind
+        spacing: 6
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: 48
+            radius: Theme.cornerM
+            color: Theme.surfaceContainerHighest
+            border.width: 2
+            border.color: Theme.primary
+            TextInput {
+                id: secret
+                anchors.fill: parent
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                verticalAlignment: TextInput.AlignVCenter
+                echoMode: TextInput.Password
+                color: Theme.ink
+                selectionColor: Theme.primaryContainer
+                font.family: Theme.font
+                font.pixelSize: Theme.textBody
+                clip: true
+                Keys.onEscapePressed: { text = ""; root.asking = null }
+                onAccepted: if (text.length >= 8) join.clicked(null)
+                Label {
+                    visible: secret.text.length === 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    elide: Text.ElideRight
+                    width: parent.width
+                    text: root.asking ? "Password for " + root.asking.name : ""
+                    color: Theme.inkMuted
+                }
+            }
+        }
+        Pressable {
+            id: join
+            implicitWidth: 76
+            implicitHeight: 48
+            enabledInput: secret.text.length >= 8
+            opacity: enabledInput ? 1 : 0.5
+            color: Theme.primary
+            tint: Theme.inkOnPrimary
+            onClicked: {
+                if (root.asking) root.asking.connectWithPsk(secret.text)
+                secret.text = ""
+                root.asking = null
+            }
+            Label { anchors.centerIn: parent; text: "Join"; font.weight: Font.Bold; color: Theme.inkOnPrimary }
         }
     }
 
