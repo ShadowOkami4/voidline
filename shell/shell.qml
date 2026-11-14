@@ -2,6 +2,7 @@
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.SystemTray
 import QtQuick
 import qs.core
 import qs.compositor
@@ -98,6 +99,20 @@ ShellRoot {
             return "ok"
         }
         function lock(): void { Shell.lock() }
+        // Tray icons, for scripts and testing:
+        //   tray list            names of the icons
+        //   tray menu <n>        open the menu of icon n (0 = first)
+        //   tray click <n>       what a left click does
+        //   tray entries         the entries of the open menu
+        function tray(what: string, index: string): string {
+            const items = SystemTray.items.values
+            if (what === "list") return items.map((t, i) => i + ": " + (t.title || t.id) + (t.hasMenu ? " [menu]" : "")).join("\n") || "no tray icons"
+            const item = items[Number(index) || 0]
+            if (!item) return "no such icon"
+            if (what === "menu") { Shell.trayItem = null; Shell.openTray(item, null); return "ok" }
+            if (what === "click") { item.activate(); return "ok" }
+            return "unknown command"
+        }
         // bluetooth on | off
         function bluetooth(state: string): void { Bt.setOn(state !== "off") }
         function switcher(): void { Shell.switcher() }

@@ -21,13 +21,14 @@ Row {
             width: 28
             height: 28
             acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+            selected: Shell.panel === "tray" && Shell.trayItem === modelData
+            // Scrolling over an icon is passed on (volume for players, for example).
+            wheelEnabled: true
+            onWheel: wheel => modelData.scroll(wheel.angleDelta.y, false)
 
             onClicked: mouse => {
                 if (mouse.button === Qt.RightButton || modelData.onlyMenu) {
-                    if (modelData.hasMenu) {
-                        const p = item.mapToItem(null, 0, item.height)
-                        modelData.display(root.window, p.x, p.y)
-                    }
+                    if (modelData.hasMenu) Shell.openTray(modelData, root.window.screen)
                 } else if (mouse.button === Qt.MiddleButton) {
                     modelData.secondaryActivate()
                 } else {

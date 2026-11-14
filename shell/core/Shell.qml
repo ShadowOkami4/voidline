@@ -7,7 +7,7 @@ import QtQuick
 Singleton {
     id: root
 
-    // "" | "launcher" | "quick" | "calendar" | "clipboard" | "switcher" | "emoji"
+    // "" | "launcher" | "quick" | "calendar" | "clipboard" | "switcher" | "emoji" | "tray"
     property string panel: ""
     property var screen: null
     property bool settingsOpen: false
@@ -36,6 +36,15 @@ Singleton {
         panel = name
     }
     function close() { panel = "" }
+
+    // Tray icon whose menu is open.
+    property var trayItem: null
+    function openTray(item, onScreen) {
+        if (panel === "tray" && trayItem === item) { panel = ""; return }
+        trayItem = item
+        screen = onScreen || screen || Quickshell.screens[0]
+        panel = "tray"
+    }
 
     // Window switcher: the first call opens it, further calls move on.
     signal switcherStep()
