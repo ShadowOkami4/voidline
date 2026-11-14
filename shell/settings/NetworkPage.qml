@@ -47,6 +47,36 @@ ColumnLayout {
         }
     }
 
+    // Company and campus networks (WPA-Enterprise, eduroam) sign in with a user
+    // name and a password. Quickshell cannot join those, so nmcli does it, with
+    // the usual method (PEAP with MSCHAPv2). The password reaches nmcli through
+    // the environment and its input, never on a command line that other
+    // programs could read.
+    function company(network) {
+        const s = network.security
+        return s === WifiSecurityType.Wpa2Eap || s === WifiSecurityType.WpaEap || s === WifiSecurityType.Wpa3SuiteB192
+    }
+    property string companyBusy: ""
+    function joinCompany(name, user, password) {
+        failed = ""
+        companyBusy = name
+        eap.environment = { VL_SECRET: password }
+        eap.command = ["sh", "-c", "nmcli connection delete id \"$1\" >/dev/null 2>&1; "
+            + "nmcli connection add type wifi con-name \"$1\" ssid \"$1\" wifi-sec.key-mgmt wpa-eap 802-1x.eap peap "
+            + "802-1x.phase2-auth mschapv2 802-1x.identity \"$2\" >/dev/null || exit 1; "
+            + "printf '802-1x.identity:%s\\n802-1x.password:%s\\n' \"$2\" \"$VL_SECRET\" | nmcli --wait 30 connection up id \"$1\" passwd-file /dev/stdin "
+            + "|| { nmcli connection delete id \"$1\" >/dev/null 2>&1; exit 1; }", "sh", name, user]
+        eap.running = true
+    }
+    Process {
+        id: eap
+        onExited: code => {
+            if (code !== 0) page.failed = page.companyBusy
+            page.companyBusy = ""
+            eap.environment = ({})
+        }
+    }
+
     // Scan only while this page is open.
     Component.onCompleted: if (wifi) wifi.scannerEnabled = true
     Component.onDestruction: if (wifi) wifi.scannerEnabled = false
@@ -164,16 +194,17 @@ ColumnLayout {
                 required property var modelData
                 readonly property bool open: modelData.security === WifiSecurityType.Open
                 readonly property bool asking: page.asking === modelData
+                readonly property bool company: page.company(modelData)
 
                 icon: page.bars(modelData.signalStrength)
                 hue: modelData.connected ? 0 : 2
                 lobes: modelData.connected ? 8 : 0
                 title: modelData.name || Lang.t("Hidden network")
                 readonly property bool failed: page.failed === modelData.name && !modelData.connected
-                description: modelData.stateChanging ? Lang.t("Connecting...")
+                description: modelData.stateChanging || page.companyBusy === modelData.name ? Lang.t("Connecting...")
                     : (modelData.connected ? Lang.t("Connected")
-                        : (failed ? Lang.t("Could not connect. Check the password and try again.")
-                            : (modelData.known ? Lang.t("Saved") : (open ? Lang.t("Open") : Lang.t("Secured")))))
+                        : (failed ? (company ? Lang.t("Could not sign in. Check the user name and password.") : Lang.t("Could not connect. Check the password and try again."))
+                            : (modelData.known ? Lang.t("Saved") : (open ? Lang.t("Open") : (company ? Lang.t("Sign in with user name and password") : Lang.t("Secured"))))))
                 clickable: !modelData.connected && !asking
                 onClicked: {
                     page.failed = ""
@@ -228,11 +259,41 @@ ColumnLayout {
                     spacing: 8
 
                     Rectangle {
+                        visible: net.company
                         Layout.fillWidth: true
                         implicitHeight: 48
                         radius: Theme.cornerM
                         color: Theme.surfaceContainerHighest
-                        border.width: 2
+                        border.width: who.activeFocus ? 2 : 0
+                        border.color: Theme.primary
+                        TextInput {
+                            id: who
+                            anchors.fill: parent
+                            anchors.leftMargin: 16
+                            anchors.rightMargin: 16
+                            verticalAlignment: TextInput.AlignVCenter
+                            color: Theme.ink
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textBody
+                            clip: true
+                            onVisibleChanged: if (visible) forceActiveFocus()
+                            Keys.onEscapePressed: page.asking = null
+                            KeyNavigation.tab: psk
+                            onAccepted: psk.forceActiveFocus()
+                            Label {
+                                visible: who.text.length === 0
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Lang.t("User name")
+                                color: Theme.inkMuted
+                            }
+                        }
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 48
+                        radius: Theme.cornerM
+                        color: Theme.surfaceContainerHighest
+                        border.width: !net.company || psk.activeFocus ? 2 : 0
                         border.color: Theme.primary
                         TextInput {
                             id: psk
@@ -245,8 +306,8 @@ ColumnLayout {
                             font.family: Theme.font
                             font.pixelSize: Theme.textBody
                             clip: true
-                            focus: net.asking
-                            onVisibleChanged: if (visible) forceActiveFocus()
+                            focus: net.asking && !net.company
+                            onVisibleChanged: if (visible && !net.company) forceActiveFocus()
                             Keys.onEscapePressed: page.asking = null
                             onAccepted: join.clicked(null)
                             Label {
@@ -268,12 +329,14 @@ ColumnLayout {
                         id: join
                         implicitWidth: 92
                         implicitHeight: 48
-                        enabledInput: psk.text.length >= 8
+                        enabledInput: net.company ? who.text.trim().length > 0 && psk.text.length > 0 : psk.text.length >= 8
                         opacity: enabledInput ? 1 : 0.5
                         color: Theme.primary
                         tint: Theme.inkOnPrimary
                         onClicked: {
-                            page.join(net.modelData, psk.text)
+                            if (!enabledInput) return
+                            if (net.company) page.joinCompany(net.modelData.name, who.text.trim(), psk.text)
+                            else page.join(net.modelData, psk.text)
                             psk.text = ""
                             page.asking = null
                         }

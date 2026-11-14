@@ -96,7 +96,9 @@ ColumnLayout {
             onClicked: {
                 if (live) { modelData.disconnect(); return }
                 if (wifiRow) {
+                    const s = modelData.security
                     if (mine || !secured) modelData.connect()
+                    else if (s === WifiSecurityType.Wpa2Eap || s === WifiSecurityType.WpaEap || s === WifiSecurityType.Wpa3SuiteB192) Shell.openSettings("network")
                     else { root.asking = modelData; secret.forceActiveFocus() }
                 } else {
                     if (mine) modelData.connect()
