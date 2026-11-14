@@ -42,7 +42,7 @@ Singleton {
     }
 
     function openUrl(url) {
-        Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "xdg-open", url])
+        Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", "xdg-open", url])
     }
 
     // Started apps must not inherit the shell's own UI scale, and entries
@@ -51,7 +51,7 @@ Singleton {
         let cmd = entry.command.slice()
         if (cmd.length === 0) { entry.execute(); return }
         if (entry.runInTerminal) cmd = [Config.terminal, "-e"].concat(cmd)
-        const context = { command: ["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE"].concat(cmd) }
+        const context = { command: ["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF"].concat(cmd) }
         if (entry.workingDirectory) context.workingDirectory = entry.workingDirectory
         Quickshell.execDetached(context)
     }

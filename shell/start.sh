@@ -10,4 +10,8 @@ qs kill -c voidline >/dev/null 2>&1 && sleep 0.3
 
 export VOIDLINE_UI_SCALE="$scale"
 export QT_SCALE_FACTOR="$scale"
+# Quickshell's allocator (jemalloc) keeps a separate pool per CPU core and holds
+# on to freed memory. For a shell that is all cost: one pool, returned at once,
+# roughly halves memory use on a many-core machine with no measurable CPU cost.
+export MALLOC_CONF="${MALLOC_CONF:-narenas:1,dirty_decay_ms:0,muzzy_decay_ms:0}"
 exec qs -c voidline
