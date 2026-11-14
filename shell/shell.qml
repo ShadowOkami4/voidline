@@ -45,6 +45,7 @@ ShellRoot {
     AuthDialog {}
     PairDialog {}
     OpenWithDialog {}
+    Keyboard {}
     LockScreen {}
     Osd {}
 
@@ -54,7 +55,7 @@ ShellRoot {
     }
 
     // Background services start by being mentioned once.
-    readonly property var services: [Idle.hasSwayidle, Clipboard.available, Appearance.available, Autostart.launched, Capture.canShoot]
+    readonly property var services: [Idle.hasSwayidle, Clipboard.available, Appearance.available, Autostart.launched, Capture.canShoot, Access.ready]
 
     LazyLoader {
         active: Shell.settingsOpen
@@ -127,6 +128,8 @@ ShellRoot {
         function screenshot(mode: string): void { Capture.shoot(mode) }
         function record(): void { Capture.toggleRecording() }
         function colour(): void { Capture.pickColour() }
+        // Show or hide the on-screen keyboard.
+        function keyboard(): void { Access.toggleKeyboard() }
         // quiet 1 | 3 | -1 (until tomorrow 7:00) | 0 (until switched off)
         function quiet(hours: string): void { Notifs.quiet(Number(hours) || 0) }
         // screen on | off

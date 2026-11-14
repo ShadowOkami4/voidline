@@ -247,8 +247,15 @@ var words = {
 "No window animations, blur or shadows (the same switch as game mode).": "Keine Fensteranimationen, Unschärfe oder Schatten (derselbe Schalter wie der Spielmodus).",
 "Notifications stay longer": "Benachrichtigungen bleiben länger",
 "Popups remain for 15 seconds.": "Popups bleiben 15 Sekunden.",
-"Not available yet": "Noch nicht verfügbar",
-"Screen reader and on-screen keyboard": "Bildschirmleser und Bildschirmtastatur",
+"Without keyboard or sight": "Ohne Tastatur oder Sicht",
+"On-screen keyboard": "Bildschirmtastatur",
+"Keys to tap or click at the bottom of the screen. Also on Super + Alt + K.": "Tasten zum Tippen oder Klicken am unteren Bildschirmrand. Auch mit Super + Alt + K.",
+"Needs the package “wtype”.": "Braucht das Paket „wtype“.",
+"Typing needs the package “wtype”.": "Zum Tippen fehlt das Paket „wtype“.",
+"Screen reader": "Bildschirmleser",
+"Orca reads apps aloud. Voidline's own bar and menus are not read yet.": "Orca liest Apps vor. Voidlines eigene Leiste und Menüs werden noch nicht vorgelesen.",
+"Needs the package “orca”.": "Braucht das Paket „orca“.",
+"Show or hide the on-screen keyboard": "Bildschirmtastatur ein- oder ausblenden",
 "Voidline has neither of its own yet. The screen reader Orca and the keyboard wvkbd work with it when installed.": "Voidline hat beides noch nicht selbst. Der Bildschirmleser Orca und die Tastatur wvkbd funktionieren damit, wenn sie installiert sind.",
 
 // ---- settings: apps & startup -----------------------------------------------------

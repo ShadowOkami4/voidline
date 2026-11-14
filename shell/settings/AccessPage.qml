@@ -122,13 +122,34 @@ ColumnLayout {
     }
 
     SegGroup {
-        title: Lang.t("Not available yet")
+        title: Lang.t("Without keyboard or sight")
         SegItem {
-            icon: "info"
+            icon: "keyboard"
             hue: 1
             lobes: 4
-            title: Lang.t("Screen reader and on-screen keyboard")
-            description: Lang.t("Voidline has neither of its own yet. The screen reader Orca and the keyboard wvkbd work with it when installed.")
+            title: Lang.t("On-screen keyboard")
+            description: Access.canType ? Lang.t("Keys to tap or click at the bottom of the screen. Also on Super + Alt + K.")
+                : Lang.t("Needs the package “wtype”.")
+            Toggle {
+                enabled: Access.canType
+                opacity: enabled ? 1 : 0.5
+                checked: Config.onScreenKeyboard
+                onToggled: v => Config.onScreenKeyboard = v
+            }
+        }
+        SegItem {
+            icon: "record_voice_over"
+            hue: 2
+            lobes: 8
+            title: Lang.t("Screen reader")
+            description: Access.hasReader ? Lang.t("Orca reads apps aloud. Voidline's own bar and menus are not read yet.")
+                : Lang.t("Needs the package “orca”.")
+            Toggle {
+                enabled: Access.hasReader
+                opacity: enabled ? 1 : 0.5
+                checked: Config.screenReader
+                onToggled: v => Config.screenReader = v
+            }
         }
     }
 }

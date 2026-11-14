@@ -55,6 +55,9 @@ Singleton {
     property alias batteryWarnings: data.batteryWarnings
     // Stronger text and outlines.
     property alias highContrast: data.highContrast
+    // On-screen keyboard on show, and the screen reader (Orca) running.
+    property alias onScreenKeyboard: data.onScreenKeyboard
+    property alias screenReader: data.screenReader
     // Open a screenshot in the editor (swappy) before saving, when installed.
     property alias screenshotEdit: data.screenshotEdit
     // Town for the weather in the calendar; empty = no weather, nothing is requested.
@@ -180,6 +183,8 @@ Singleton {
             property bool desktopIcons: true
             property bool batteryWarnings: true
             property bool highContrast: false
+            property bool onScreenKeyboard: false
+            property bool screenReader: false
             property bool screenshotEdit: false
             property string weatherPlace: ""
             property string language: ""

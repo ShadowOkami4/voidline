@@ -25,6 +25,7 @@ Singleton {
         { id: "colour", icon: "colorize", label: Lang.t("Pick a colour from the screen"), combo: "SUPER+SHIFT+C", ipc: ["colour"] },
         { id: "layout", icon: "language", label: Lang.t("Switch keyboard layout"), combo: "SUPER+ALT+space", ipc: [],
           hypr: 'hl.dsp.exec_cmd("hyprctl switchxkblayout all next")', niri: 'switch-layout "next"' },
+        { id: "osk", icon: "keyboard", label: Lang.t("Show or hide the on-screen keyboard"), combo: "SUPER+ALT+K", ipc: ["keyboard"] },
         { id: "lock", icon: "lock", label: Lang.t("Lock the screen"), combo: "SUPER+L", ipc: ["lock"] },
         { id: "minimize", icon: "minimize", label: Lang.t("Minimise the window"), combo: "SUPER+N", ipc: ["minimize"] },
         { id: "restore", icon: "open_in_full", label: Lang.t("Bring back the last minimised window"), combo: "SUPER+SHIFT+N", ipc: ["restore"] },
