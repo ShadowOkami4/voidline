@@ -24,7 +24,7 @@ PanelWindow {
         || (Config.livePauseWhenCovered && covered)
 
     anchors { top: true; bottom: true; left: true; right: true }
-    exclusionMode: ExclusionMode.Ignore
+    exclusiveZone: Shell.coverZone
     color: Theme.surface
     WlrLayershell.namespace: "voidline-wallpaper"
     WlrLayershell.layer: WlrLayer.Background

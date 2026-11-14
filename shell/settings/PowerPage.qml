@@ -26,6 +26,7 @@ ColumnLayout {
 
     Timer { id: disarm; interval: 3000; onTriggered: page.armed = "" }
     function power(action) {
+        if (action === "lock") { Shell.lock(); return }
         if (armed !== action) { armed = action; disarm.restart(); return }
         armed = ""
         if (action === "logout") Compositor.quit()
@@ -140,6 +141,7 @@ ColumnLayout {
         title: "Session"
         Repeater {
             model: [
+                { id: "lock", icon: "lock", label: "Lock", text: "Ask for your password to get back in.", hue: 2 },
                 { id: "suspend", icon: "bedtime", label: "Sleep", text: "Suspend to memory.", hue: 4 },
                 { id: "logout", icon: "logout", label: "Log out", text: "Close the session and all apps.", hue: 5 },
                 { id: "reboot", icon: "restart_alt", label: "Restart", text: "", hue: 0 },

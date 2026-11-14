@@ -8,6 +8,10 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("sh ~/.config/quickshell/voidline/start.sh")
 end)
 
+-- If the shell ever stops while the screen is locked, a restarted shell may
+-- take the lock over again instead of leaving the session stuck.
+hl.config({ misc = { allow_session_lock_restore = true } })
+
 -- Gaps, borders, input and Voidline's keyboard shortcuts come from Voidline
 -- Settings (Keyboard shortcuts page).
 pcall(require, "voidline-settings")

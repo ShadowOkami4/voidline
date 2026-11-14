@@ -16,6 +16,7 @@ Singleton {
         { id: "launcher", icon: "apps", label: "Open the launcher", combo: "SUPER+space", ipc: ["toggle", "launcher"] },
         { id: "quick", icon: "tune", label: "Open quick settings", combo: "SUPER+A", ipc: ["toggle", "quick"] },
         { id: "settings", icon: "settings", label: "Open Settings", combo: "SUPER+I", ipc: ["settings"] },
+        { id: "lock", icon: "lock", label: "Lock the screen", combo: "SUPER+L", ipc: ["lock"] },
         { id: "minimize", icon: "minimize", label: "Minimise the window", combo: "SUPER+N", ipc: ["minimize"] },
         { id: "restore", icon: "open_in_full", label: "Bring back the last minimised window", combo: "SUPER+SHIFT+N", ipc: ["restore"] },
         { id: "peek", icon: "stacks", label: "Show minimised windows", combo: "SUPER+CTRL+N", ipc: [],

@@ -15,7 +15,8 @@ QtObject {
         id: t.address,
         appId: (t.wayland && t.wayland.appId) || (t.lastIpcObject && t.lastIpcObject.class) || "",
         title: t.title || "",
-        focused: t.activated,
+        // Hyprland keeps the last window "activated" on an empty workspace.
+        focused: t.activated && (!Hyprland.focusedWorkspace || !t.workspace || t.workspace.id < 0 || t.workspace.id === Hyprland.focusedWorkspace.id),
         minimized: !!t.workspace && t.workspace.name === root.stashName,
         workspace: t.workspace ? t.workspace.id : 0
     }))

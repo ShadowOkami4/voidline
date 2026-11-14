@@ -42,6 +42,7 @@ ShellRoot {
 
     NotificationPopups { screen: Quickshell.screens[0] }
     AuthDialog {}
+    LockScreen {}
 
     LazyLoader {
         active: Shell.settingsOpen
@@ -86,6 +87,13 @@ ShellRoot {
             else if (typeof old === "number") { if (isNaN(Number(value))) return "not a number: " + value; target[name] = Number(value) }
             else target[name] = value
             return "ok"
+        }
+        function lock(): void { Shell.lock() }
+        // media toggle | next | previous
+        function media(action: string): void {
+            if (action === "next") Media.next()
+            else if (action === "previous") Media.previous()
+            else Media.toggle()
         }
         function minimize(): void { Compositor.minimizeFocused() }
         function restore(): void { Compositor.restoreLast() }

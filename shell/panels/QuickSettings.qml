@@ -56,6 +56,12 @@ PanelSurface {
                 tonal: true
                 onClicked: Shell.openSettings()
             }
+            IconBtn {
+                icon: "lock"
+                size: 44
+                tonal: true
+                onClicked: Shell.lock()
+            }
 
             Repeater {
                 model: [
@@ -74,18 +80,6 @@ PanelSurface {
                     onClicked: root.power(modelData.id)
                 }
             }
-        }
-
-        // Style switcher (connected button group)
-        Choice {
-            Layout.fillWidth: true
-            value: Config.style
-            options: [
-                { value: "voidline", label: "Voidline" },
-                { value: "windows", label: "Windows" },
-                { value: "macos", label: "macOS" }
-            ]
-            onPicked: v => Config.style = v
         }
 
         GridLayout {
@@ -145,6 +139,11 @@ PanelSurface {
             value: Brightness.value
             accent: Theme.tertiary
             onMoved: v => Brightness.set(v)
+        }
+
+        MediaCard {
+            Layout.fillWidth: true
+            visible: Media.available
         }
 
         // Notifications

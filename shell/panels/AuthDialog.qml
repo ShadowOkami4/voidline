@@ -22,7 +22,7 @@ Scope {
         PanelWindow {
             id: win
             anchors { top: true; bottom: true; left: true; right: true }
-            exclusionMode: ExclusionMode.Ignore
+            exclusiveZone: Shell.coverZone
             color: Theme.alpha("#000000", 0.5)
             WlrLayershell.namespace: "voidline-auth"
             WlrLayershell.layer: WlrLayer.Overlay

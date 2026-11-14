@@ -41,6 +41,7 @@ Then log out and back in, or start it right away with `sh ~/.config/quickshell/v
 | Super + Shift + N | Restore the last minimised window |
 | Super + Alt + S | Next style |
 | Super + I | Settings |
+| Super + L | Lock the screen |
 | Super + Ctrl + N | Show minimised windows |
 
 Change them in Settings under Keyboard shortcuts.
@@ -148,10 +149,12 @@ brightness, power), notifications, wallpaper with palette extraction, minimise,
 live style switching, and a settings app with network, Bluetooth, display,
 sound, power, style, wallpaper and colours, window manager, interface,
 notifications, keyboard shortcuts, default apps, date and time and about pages,
-and a password dialog (polkit agent) for changes that need administrator rights.
+a password dialog (polkit agent) for changes that need administrator rights,
+a lock screen (session lock, unlocked through PAM) and media controls in quick
+settings (any MPRIS player).
 
-Not rewritten yet (present in 0.3.0): lock screen, SDDM theme,
-hotspot page, games page, media controls, overview, translations. The Lyra assistant and the Voidline terminal are
+Not rewritten yet (present in 0.3.0): SDDM theme, hotspot page, games page,
+overview, translations. The Lyra assistant and the Voidline terminal are
 not planned for 0.4.
 
 Known limits:
