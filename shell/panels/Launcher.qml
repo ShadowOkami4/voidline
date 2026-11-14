@@ -12,10 +12,10 @@ PanelSurface {
 
     open: Shell.panel === "launcher"
     anchor: Style.launcherAnchor
-    panelWidth: 680
-    panelHeight: 540
+    panelWidth: Style.launcherWidth
+    panelHeight: Style.launcherHeight
 
-    readonly property int columns: 6
+    readonly property int columns: Style.launcherColumns
     // "> something" runs it as a command instead of searching apps.
     readonly property bool commandMode: search.text.startsWith(">")
     readonly property string commandText: commandMode ? search.text.slice(1).trim() : ""

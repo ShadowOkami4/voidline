@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
 import qs.core
@@ -13,12 +12,13 @@ PanelSurface {
     open: Shell.panel === "quick"
     anchor: Style.quickAnchor
     panelWidth: 420
-    panelHeight: column.implicitHeight + 40
+    panelHeight: (view === "" ? column.implicitHeight : menu.implicitHeight) + 40
 
-    readonly property var adapter: Bluetooth.defaultAdapter
     property string armed: ""
+    // "" is the normal view; "wifi" and "bluetooth" are the mini menus.
+    property string view: ""
 
-    onOpenChanged: armed = ""
+    onOpenChanged: { armed = ""; view = "" }
     Timer { id: disarm; interval: 3000; onTriggered: root.armed = "" }
 
     // Power actions need a second click within three seconds.
@@ -30,12 +30,23 @@ PanelSurface {
         else Quickshell.execDetached(["systemctl", action])
     }
 
+    QuickMenu {
+        id: menu
+        x: 20
+        y: 20
+        width: parent.width - 40
+        visible: root.view !== ""
+        kind: root.view === "bluetooth" ? "bluetooth" : "wifi"
+        onBack: root.view = ""
+    }
+
     ColumnLayout {
         id: column
         x: 20
         y: 20
         width: parent.width - 40
         spacing: 14
+        visible: root.view === ""
 
         // Header: title + settings and power
         RowLayout {
@@ -90,17 +101,22 @@ PanelSurface {
                 active: Network.connected
                 enabledInput: Network.available
                 opacity: Network.available ? 1 : 0.5
+                hasMore: Network.available
+                onMore: root.view = "wifi"
                 onClicked: Network.setWifi(!Network.wifiEnabled)
             }
             Tile {
                 Layout.fillWidth: true
-                icon: root.adapter && root.adapter.enabled ? "bluetooth" : "bluetooth_disabled"
+                icon: Bt.on ? (Bt.connected.length > 0 ? "bluetooth_connected" : "bluetooth") : "bluetooth_disabled"
                 title: "Bluetooth"
-                subtitle: !root.adapter ? "Unavailable" : (root.adapter.enabled ? "On" : "Off")
-                active: !!root.adapter && root.adapter.enabled
-                enabledInput: !!root.adapter
-                opacity: root.adapter ? 1 : 0.5
-                onClicked: root.adapter.enabled = !root.adapter.enabled
+                subtitle: !Bt.available ? "Unavailable" : (Bt.switching ? "Switching on…"
+                    : (!Bt.on ? "Off" : (Bt.connected.length > 0 ? Bt.connected[0].name : "On")))
+                active: Bt.on
+                enabledInput: Bt.available
+                opacity: Bt.available ? 1 : 0.5
+                hasMore: Bt.available
+                onMore: root.view = "bluetooth"
+                onClicked: Bt.setOn(!Bt.on)
             }
             Tile {
                 Layout.fillWidth: true

@@ -12,6 +12,9 @@ Pressable {
     property string title: ""
     property string subtitle: ""
     property bool active: false
+    // Shows an arrow on the right; clicking it emits more() instead of clicked().
+    property bool hasMore: false
+    signal more()
 
     implicitHeight: 64
     color: active ? Theme.primary : Theme.surfaceContainerHighest
@@ -23,7 +26,7 @@ Pressable {
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: 18
-        anchors.rightMargin: 16
+        anchors.rightMargin: root.hasMore ? 50 : 16
         spacing: 12
 
         MIcon {
@@ -50,6 +53,31 @@ Pressable {
                 color: root.active ? Theme.inkOnPrimary : Theme.inkMuted
                 opacity: 0.85
             }
+        }
+    }
+
+    Rectangle {
+        visible: root.hasMore
+        anchors.right: parent.right
+        anchors.rightMargin: 8
+        anchors.verticalCenter: parent.verticalCenter
+        width: 40
+        height: 40
+        radius: moreArea.pressed ? Theme.cornerM : 20
+        color: Theme.alpha(root.active ? Theme.inkOnPrimary : Theme.ink, moreArea.pressed ? 0.22 : (moreArea.containsMouse ? 0.14 : 0.08))
+        Behavior on radius { Spring {} }
+        MIcon {
+            anchors.centerIn: parent
+            icon: "chevron_right"
+            size: 22
+            color: root.active ? Theme.inkOnPrimary : Theme.ink
+        }
+        MouseArea {
+            id: moreArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.more()
         }
     }
 }

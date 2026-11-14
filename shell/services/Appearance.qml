@@ -80,6 +80,9 @@ exit 0`]
                     else if (k === "c" && !cursors.includes(v)) cursors.push(v)
                     else if (k === "night" && (night === "" || (v === "hyprsunset" && Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")))) night = v
                 }
+                // Hyprland forgets the pointer between sessions; set it again.
+                if (root.cursorTheme.length > 0 && root.cursorTheme !== "default" && Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE"))
+                    Quickshell.execDetached(["hyprctl", "setcursor", root.cursorTheme, String(root.cursorSize)])
                 root.iconThemes = icons.sort()
                 root.cursorThemes = cursors.sort()
                 root.nightTool = night

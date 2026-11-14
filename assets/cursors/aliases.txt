@@ -1,0 +1,15 @@
+# Other names apps use for the same pointer:  <real pointer> <alias> <alias> ...
+# The installer turns each alias into a link in the theme's cursors folder.
+default left_ptr arrow top_left_arrow context-menu help question_arrow whats_this copy alias dnd-ask dnd-copy dnd-link zoom-in zoom-out X_cursor
+pointer hand hand1 hand2 pointing_hand grab openhand
+grabbing closedhand dnd-move
+text xterm ibeam vertical-text
+crosshair cross tcross cross_reverse diamond_cross cell plus
+move fleur all-scroll all-resize size_all
+ew-resize e-resize w-resize col-resize sb_h_double_arrow left_side right_side h_double_arrow size_hor split_h
+ns-resize n-resize s-resize row-resize sb_v_double_arrow top_side bottom_side v_double_arrow size_ver split_v
+nwse-resize nw-resize se-resize top_left_corner bottom_right_corner bd_double_arrow size_fdiag
+nesw-resize ne-resize sw-resize top_right_corner bottom_left_corner fd_double_arrow size_bdiag
+not-allowed no-drop forbidden crossed_circle dnd-none circle
+wait watch
+progress left_ptr_watch half-busy

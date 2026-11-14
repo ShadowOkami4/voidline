@@ -32,6 +32,10 @@ Singleton {
     // "bottom-right" | "center"
     readonly property string launcherAnchor: voidline ? "top-center" : (windows ? "bottom-center" : "center")
     readonly property string quickAnchor: windows ? "bottom-right" : "top-right"
+    // Launcher size: the Windows style gets a narrower, taller start menu.
+    readonly property int launcherWidth: windows ? 520 : 680
+    readonly property int launcherHeight: windows ? 600 : 540
+    readonly property int launcherColumns: windows ? 5 : 6
     readonly property string calendarAnchor: voidline ? "top-center" : quickAnchor
     readonly property string notificationAnchor: windows ? "bottom-right" : "top-right"
     readonly property int panelGap: 10

@@ -54,7 +54,7 @@ if [[ ${1:-} == --uninstall ]]; then
     unhook "$hypr_main" "$hypr_line"
     unhook "$niri_main" "$niri_line"
     rm -f "$config/hypr/voidline.lua" "$config/niri/voidline.kdl" "$config/hypr/voidline-settings.lua" "$config/niri/voidline-settings.kdl" "$HOME/.local/bin/voidlinectl" "${XDG_DATA_HOME:-$HOME/.local/share}/applications/voidline-settings.desktop"
-    rm -rf "$shell_dir"
+    rm -rf "$shell_dir" "${XDG_DATA_HOME:-$HOME/.local/share}/icons/Voidline"
     say "Voidline removed. Your settings in $config/voidline were kept."
     exit 0
 fi
@@ -110,6 +110,18 @@ done
 mkdir -p "$papers/live"
 cp -r "$here"/assets/wallpapers/live/. "$papers/live/"
 say "Wallpapers copied to $papers"
+
+# --- mouse pointer ------------------------------------------------------------
+# The Voidline pointer theme; pick it in Settings > Apps & startup > Mouse pointer.
+pointer=${XDG_DATA_HOME:-$HOME/.local/share}/icons/Voidline
+rm -rf "$pointer"
+mkdir -p "$pointer"
+cp -r "$here"/assets/cursors/Voidline/. "$pointer/"
+while read -r real aliases; do
+    [[ -z $real || $real == \#* ]] && continue
+    for a in $aliases; do ln -sf "$real" "$pointer/cursors/$a"; done
+done < "$here/assets/cursors/aliases.txt"
+say "Mouse pointer theme installed to $pointer"
 
 # --- launcher entry for Settings ------------------------------------------------
 apps=${XDG_DATA_HOME:-$HOME/.local/share}/applications

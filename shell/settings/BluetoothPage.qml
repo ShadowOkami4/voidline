@@ -3,36 +3,24 @@ import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
 import qs.core
+import qs.services
 import qs.widgets
 
 ColumnLayout {
     id: page
     spacing: 24
 
-    readonly property var adapter: Bluetooth.defaultAdapter
-    readonly property bool btOn: !!adapter && adapter.enabled
-    readonly property var all: adapter ? adapter.devices.values : []
-    readonly property var mine: all.filter(d => d.paired || d.bonded || d.connected)
-        .sort((a, b) => (b.connected - a.connected) || a.name.localeCompare(b.name))
-    readonly property var nearby: all.filter(d => !(d.paired || d.bonded || d.connected) && d.name.length > 0)
-        .sort((a, b) => a.name.localeCompare(b.name))
+    readonly property var adapter: Bt.adapter
+    readonly property bool btOn: Bt.on
+    readonly property var mine: Bt.mine
+    readonly property var nearby: Bt.nearby
 
     // Search for new devices only while this page is open.
     Component.onCompleted: if (btOn) adapter.discovering = true
     Component.onDestruction: if (adapter && adapter.discovering) adapter.discovering = false
     onBtOnChanged: if (btOn) adapter.discovering = true
 
-    function glyph(d) {
-        const i = d.icon || ""
-        if (i.includes("headset") || i.includes("headphone")) return "headphones"
-        if (i.includes("audio")) return "speaker"
-        if (i.includes("mouse")) return "mouse"
-        if (i.includes("keyboard")) return "keyboard"
-        if (i.includes("phone")) return "smartphone"
-        if (i.includes("gaming")) return "sports_esports"
-        if (i.includes("computer")) return "computer"
-        return "bluetooth"
-    }
+    function glyph(d) { return Bt.glyph(d) }
 
     Label {
         visible: !page.adapter
@@ -47,8 +35,8 @@ ColumnLayout {
             hue: 0
             lobes: 8
             title: "Bluetooth"
-            description: !page.btOn ? "Off" : (page.adapter.discovering ? "On  ·  searching for devices" : "On")
-            Toggle { checked: page.btOn; onToggled: v => page.adapter.enabled = v }
+            description: Bt.switching ? "Switching on…" : (!page.btOn ? "Off" : (page.adapter.discovering ? "On  ·  searching for devices" : "On"))
+            Toggle { checked: page.btOn; onToggled: v => Bt.setOn(v) }
         }
         SegItem {
             visible: page.btOn

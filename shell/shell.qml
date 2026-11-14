@@ -98,6 +98,8 @@ ShellRoot {
             return "ok"
         }
         function lock(): void { Shell.lock() }
+        // bluetooth on | off
+        function bluetooth(state: string): void { Bt.setOn(state !== "off") }
         function switcher(): void { Shell.switcher() }
         // screenshot screen | region
         function screenshot(mode: string): void { Capture.shoot(mode) }
