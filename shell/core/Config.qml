@@ -57,6 +57,18 @@ Singleton {
     property alias highContrast: data.highContrast
     // Open a screenshot in the editor (swappy) before saving, when installed.
     property alias screenshotEdit: data.screenshotEdit
+    // Town for the weather in the calendar; empty = no weather, nothing is requested.
+    property alias weatherPlace: data.weatherPlace
+    // A different picture on single screens, one "screen name=path" entry each.
+    property alias screenWallpapers: data.screenWallpapers
+    function screenWallpaper(name) {
+        const e = screenWallpapers.find(x => x.startsWith(name + "="))
+        return e ? e.slice(name.length + 1) : ""
+    }
+    function setScreenWallpaper(name, path) {
+        const rest = screenWallpapers.filter(x => !x.startsWith(name + "="))
+        screenWallpapers = path.length > 0 ? rest.concat([name + "=" + path]) : rest
+    }
     property alias welcomed: data.welcomed
     // Light during the day (7:00 to 19:00), dark at night.
     property alias autoTheme: data.autoTheme
@@ -106,6 +118,12 @@ Singleton {
     // composition made for that screen's aspect ratio.
     function wallpaperFor(screen) {
         const dir = wallpaperDir + "/" + aspectDir(screen) + "/"
+        // A picture chosen for this screen alone wins.
+        const own = screen ? screenWallpaper(screen.name) : ""
+        if (own.length > 0) {
+            const mine = own.match(/\/voidline\/wallpapers\/16x(?:9|10)\/([^\/]+)$/)
+            return mine ? dir + mine[1] : own
+        }
         if (wallpaper === "default") return dir + "voidline-orbit.png"
         // Live wallpapers: the still preview stands in while loading and
         // provides the colours for the palette.
@@ -161,6 +179,8 @@ Singleton {
             property bool batteryWarnings: true
             property bool highContrast: false
             property bool screenshotEdit: false
+            property string weatherPlace: ""
+            property list<string> screenWallpapers: []
             property bool welcomed: false
             property bool autoTheme: false
             property string font: ""

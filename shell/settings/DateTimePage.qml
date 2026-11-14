@@ -3,6 +3,7 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import qs.core
+import qs.services
 import qs.widgets
 
 // Date and time. Reads and changes system time settings through timedatectl;
@@ -231,6 +232,42 @@ ColumnLayout {
             title: "Show seconds"
             description: "Updates the bar every second."
             Toggle { checked: Config.clockSeconds; onToggled: v => Config.clockSeconds = v }
+        }
+    }
+
+    SegGroup {
+        title: "Weather"
+        SegItem {
+            icon: "partly_cloudy_day"
+            hue: 4
+            lobes: 8
+            title: "Weather in the calendar"
+            description: Config.weatherPlace.length === 0 ? "Off. Type your town to switch it on; only its name is sent to open-meteo.com."
+                : (Weather.ready ? Weather.temperature + "°, " + Weather.words(Weather.code).toLowerCase() + " in " + Weather.where + "." : (Weather.problem || "Looking it up…"))
+            Rectangle {
+                width: 220
+                height: 46
+                radius: town.activeFocus ? Theme.cornerM : height / 2
+                color: Theme.surfaceContainerHighest
+                border.width: town.activeFocus ? 2 : 0
+                border.color: Theme.primary
+                Behavior on radius { Spring {} }
+                TextInput {
+                    id: town
+                    anchors.fill: parent
+                    anchors.leftMargin: 18
+                    anchors.rightMargin: 18
+                    verticalAlignment: TextInput.AlignVCenter
+                    text: Config.weatherPlace
+                    color: Theme.ink
+                    selectionColor: Theme.primaryContainer
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textBody
+                    clip: true
+                    onEditingFinished: Config.weatherPlace = text.trim()
+                    Label { visible: town.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "Town"; color: Theme.inkMuted }
+                }
+            }
         }
     }
 }

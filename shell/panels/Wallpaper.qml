@@ -42,7 +42,7 @@ PanelWindow {
     Loader {
         id: live
         anchors.fill: parent
-        active: paper.liveId.length > 0
+        active: paper.liveId.length > 0 && Config.screenWallpaper(paper.screen ? paper.screen.name : "").length === 0
         asynchronous: true
         source: active ? "file://" + Config.liveDir + "/" + paper.liveId + "/wallpaper.qml" : ""
 

@@ -1,3 +1,5 @@
+import Quickshell
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import qs.core
@@ -6,7 +8,43 @@ import qs.widgets
 
 // Lock and sleep: what happens when the computer is left alone.
 ColumnLayout {
+    id: page
     spacing: 24
+
+    // What the system does when the lid closes or the power button is
+    // pressed. These are system-wide settings (systemd-logind); changing
+    // them asks for the administrator password.
+    property string lid: ""
+    property string button: ""
+    property string buttonsNote: ""
+    function readButtons() { buttonsRead.running = true }
+    function setButtons(lidValue, buttonValue) {
+        const ok = ["suspend", "lock", "ignore", "poweroff", "hibernate"]
+        if (!ok.includes(lidValue) || !ok.includes(buttonValue)) return
+        buttonsNote = ""
+        buttonsWrite.command = ["pkexec", "sh", "-c",
+            "mkdir -p /etc/systemd/logind.conf.d && printf '# Written by Voidline Settings\\n[Login]\\nHandleLidSwitch=%s\\nHandleLidSwitchExternalPower=%s\\nHandlePowerKey=%s\\n' \"$1\" \"$1\" \"$2\" > /etc/systemd/logind.conf.d/50-voidline.conf && systemctl kill -s HUP systemd-logind",
+            "sh", lidValue, buttonValue]
+        buttonsWrite.running = true
+    }
+    Process {
+        id: buttonsRead
+        running: true
+        command: ["sh", "-c", "for p in HandleLidSwitch HandlePowerKey; do busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager $p 2>/dev/null | sed 's/^s \"\\(.*\\)\"$/'\"$p\"'=\\1/'; done"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                for (const line of text.split("\n")) {
+                    const p = line.split("=")
+                    if (p[0] === "HandleLidSwitch") page.lid = p[1]
+                    else if (p[0] === "HandlePowerKey") page.button = p[1]
+                }
+            }
+        }
+    }
+    Process {
+        id: buttonsWrite
+        onExited: code => { page.buttonsNote = code === 0 ? "" : "Not changed. It needs your password."; page.readButtons() }
+    }
 
     component Minutes: Choice {
         Layout.fillWidth: true
@@ -89,6 +127,47 @@ ColumnLayout {
             title: "Lock before sleep"
             description: "Ask for your password after closing the lid or waking up."
             Toggle { checked: Config.lockOnSleep; onToggled: v => Config.lockOnSleep = v }
+        }
+    }
+
+    SegGroup {
+        visible: page.lid.length > 0
+        title: "Lid and power button"
+        SegItem {
+            icon: "laptop_chromebook"
+            hue: 5
+            lobes: 0
+            title: "When the lid closes"
+            description: page.buttonsNote || "Asks for your password to change."
+            Dropdown {
+                width: 220
+                value: page.lid
+                options: [
+                    { value: "suspend", label: "Sleep" },
+                    { value: "lock", label: "Lock" },
+                    { value: "ignore", label: "Do nothing" },
+                    { value: "poweroff", label: "Shut down" }
+                ]
+                onPicked: v => page.setButtons(v, page.button || "poweroff")
+            }
+        }
+        SegItem {
+            icon: "power_settings_new"
+            hue: 0
+            lobes: 5
+            title: "Power button"
+            description: "A short press. Holding it for several seconds always switches off."
+            Dropdown {
+                width: 220
+                value: page.button
+                options: [
+                    { value: "poweroff", label: "Shut down" },
+                    { value: "suspend", label: "Sleep" },
+                    { value: "lock", label: "Lock" },
+                    { value: "ignore", label: "Do nothing" }
+                ]
+                onPicked: v => page.setButtons(page.lid || "suspend", v)
+            }
         }
     }
 }

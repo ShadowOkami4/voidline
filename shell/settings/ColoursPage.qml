@@ -1,3 +1,4 @@
+import Quickshell
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
@@ -69,6 +70,27 @@ ColumnLayout {
             color: Theme.primary
         }
 
+        // With more than one screen: choose which one the next pick is for.
+        Choice {
+            id: aim
+            visible: Quickshell.screens.length > 1
+            Layout.fillWidth: true
+            property string screenName: ""
+            value: screenName
+            options: [{ value: "", label: "All screens" }].concat(Quickshell.screens.map(s => ({ value: s.name, label: s.name })))
+            onPicked: v => screenName = v
+        }
+        Label {
+            visible: aim.visible && aim.screenName.length > 0
+            Layout.leftMargin: 8
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            color: Theme.inkMuted
+            font.pixelSize: Theme.textLabel + 1
+            text: Config.screenWallpaper(aim.screenName).length > 0 ? "This screen has its own picture. Pick “none” (the first tile) to follow the others again."
+                : "This screen follows the others. Pick a picture to give it its own."
+        }
+
         ListView {
             id: carousel
             Layout.fillWidth: true
@@ -138,7 +160,10 @@ ColumnLayout {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Config.wallpaper = paper.modelData
+                    onClicked: {
+                        if (aim.screenName.length > 0) Config.setScreenWallpaper(aim.screenName, paper.modelData)
+                        else { Config.wallpaper = paper.modelData; Config.screenWallpapers = [] }
+                    }
                 }
             }
         }

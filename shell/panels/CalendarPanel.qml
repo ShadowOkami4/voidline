@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import qs.core
+import qs.services
 import qs.widgets
 
 // Month calendar, opened by clicking the clock.
@@ -60,6 +61,52 @@ PanelSurface {
                 font.pixelSize: 30
                 font.weight: Font.Black
                 font.letterSpacing: -0.5
+            }
+        }
+
+        // Weather, when a place is set in Settings > Date & time.
+        Rectangle {
+            Layout.fillWidth: true
+            visible: Weather.wanted
+            implicitHeight: 92
+            radius: Theme.cornerXL
+            color: Theme.secondaryContainer
+
+            Label {
+                visible: !Weather.ready
+                anchors.centerIn: parent
+                text: Weather.problem || "Getting the weather…"
+                color: Theme.inkOnSecondaryContainer
+            }
+            Row {
+                visible: Weather.ready
+                x: 16
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 12
+                MIcon { anchors.verticalCenter: parent.verticalCenter; icon: Weather.icon(Weather.code); filled: true; size: 40; color: Theme.inkOnSecondaryContainer }
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter
+                    Label { text: Weather.temperature + "°"; font.pixelSize: 30; font.weight: Font.Black; color: Theme.inkOnSecondaryContainer }
+                    Label { width: 110; elide: Text.ElideRight; text: Weather.words(Weather.code) + ", " + Weather.where; font.pixelSize: Theme.textLabelS; color: Theme.inkOnSecondaryContainer; opacity: 0.85 }
+                }
+            }
+            Row {
+                visible: Weather.ready
+                anchors.right: parent.right
+                anchors.rightMargin: 14
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 10
+                Repeater {
+                    model: Weather.days.slice(1, 4)
+                    Column {
+                        id: day
+                        required property var modelData
+                        spacing: 1
+                        Label { anchors.horizontalCenter: parent.horizontalCenter; text: day.modelData.day; font.pixelSize: Theme.textLabelS; font.weight: Font.Bold; color: Theme.inkOnSecondaryContainer }
+                        MIcon { anchors.horizontalCenter: parent.horizontalCenter; icon: Weather.icon(day.modelData.code); size: 22; color: Theme.inkOnSecondaryContainer }
+                        Label { anchors.horizontalCenter: parent.horizontalCenter; text: day.modelData.max + "° " + day.modelData.min + "°"; font.pixelSize: Theme.textLabelS; color: Theme.inkOnSecondaryContainer; opacity: 0.85 }
+                    }
+                }
             }
         }
 

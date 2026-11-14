@@ -11,9 +11,12 @@ qs kill -c voidline >/dev/null 2>&1 && sleep 0.3
 # started can outlive it. Anything still running from an earlier start is
 # recognised by the variable set below and stopped, so there is never a second
 # bar on screen.
-for p in $(pgrep -x quickshell) $(pgrep -x qs) $(pgrep -x dbus-monitor) $(pgrep -x wl-paste); do
+# The launcher process ("qs") goes first and without a chance to react:
+# stopped any other way it takes its shell for crashed and starts it again.
+sleep 0.4
+for p in $(pgrep -x qs) $(pgrep -x quickshell) $(pgrep -x dbus-monitor) $(pgrep -x wl-paste); do
     [ "$p" = "$$" ] && continue
-    grep -qz '^VOIDLINE_UI_SCALE=' "/proc/$p/environ" 2>/dev/null && kill "$p" 2>/dev/null
+    grep -qz '^VOIDLINE_UI_SCALE=' "/proc/$p/environ" 2>/dev/null && kill -9 "$p" 2>/dev/null
 done
 sleep 0.2
 
