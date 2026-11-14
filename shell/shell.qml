@@ -41,6 +41,7 @@ ShellRoot {
     }
 
     NotificationPopups { screen: Quickshell.screens[0] }
+    AuthDialog {}
 
     LazyLoader {
         active: Shell.settingsOpen

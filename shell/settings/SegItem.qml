@@ -62,7 +62,7 @@ Rectangle {
         x: 18
         y: 14
         width: parent.width - 36
-        spacing: 14
+        spacing: 0
 
         RowLayout {
             Layout.fillWidth: true
@@ -115,8 +115,10 @@ Rectangle {
 
         ColumnLayout {
             id: below
+            // Always present, so it notices content that appears later; the
+            // gap above it exists only while it has something to show.
             Layout.fillWidth: true
-            visible: visibleChildren.length > 0
+            Layout.topMargin: implicitHeight > 0 ? 14 : 0
             spacing: 10
         }
     }

@@ -145,4 +145,4 @@ else
 fi
 
 say "Done. Log out and back in, or start it now with:  sh $shell_dir/start.sh"
-say "Keys: Super+Space launcher, Super+A quick settings, Super+N minimise, Super+Shift+N restore, Super+Alt+S next style"
+say "Keys: Super+Space launcher, Super+A quick settings, Super+N minimise, Super+Shift+N restore, Super+Alt+S next style (change them in Settings > Keyboard shortcuts)"

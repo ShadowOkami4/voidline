@@ -12,7 +12,7 @@ Singleton {
     readonly property var list: server.trackedNotifications.values.slice().reverse()
     // Ids currently shown as popups.
     property var popupIds: []
-    readonly property var popups: list.filter(n => popupIds.includes(n.id))
+    readonly property var popups: list.filter(n => popupIds.includes(n.id)).slice(0, Math.max(1, Config.notifMaxPopups))
 
     function dismissPopup(id) { popupIds = popupIds.filter(i => i !== id) }
     function clear() { for (const n of list) n.dismiss() }
@@ -27,7 +27,8 @@ Singleton {
             n.tracked = true
             if (Config.doNotDisturb) return
             root.popupIds = root.popupIds.concat([n.id])
-            const timeout = n.expireTimeout > 0 ? n.expireTimeout : 5000
+            if (Config.notifKeepUrgent && n.urgency === NotificationUrgency.Critical) return
+            const timeout = n.expireTimeout > 0 ? n.expireTimeout : Math.max(1, Config.notifTimeout) * 1000
             expire.createObject(root, { nid: n.id, interval: timeout })
         }
     }

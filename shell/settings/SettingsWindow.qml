@@ -33,8 +33,12 @@ FloatingWindow {
         { id: "style", icon: "dashboard_customize", lobes: 8, label: "Style", hint: "Voidline, Windows, macOS", words: "style layout taskbar dock bar windows macos voidline", view: "StylePage.qml" },
         { id: "colours", icon: "palette", lobes: 4, label: "Wallpaper & colours", hint: "Theme, accent, wallpaper", words: "wallpaper colour color accent dark light theme palette", view: "ColoursPage.qml" },
         { id: "wm", icon: "select_window", lobes: 0, label: wmName, hint: "Windows, layout, input", words: "window manager hyprland niri gaps border rounding corner keyboard layout touchpad mouse pointer blur shadow animation vrr focus", view: "WmPage.qml" },
-        { id: "interface", icon: "tune", lobes: 5, label: "Interface", hint: "Size, bar, behaviour", words: "interface size scale clock workspaces notifications motion terminal bar do not disturb", view: "InterfacePage.qml" },
+        { id: "interface", icon: "tune", lobes: 5, label: "Interface", hint: "Size, bar, motion", words: "interface size scale workspaces motion animation bar", view: "InterfacePage.qml" },
         { section: "System" },
+        { id: "notifications", icon: "notifications", lobes: 8, label: "Notifications", hint: "Popups, do not disturb", words: "notifications popup do not disturb dnd urgent bell alert", view: "NotificationsPage.qml" },
+        { id: "shortcuts", icon: "keyboard", lobes: 0, label: "Keyboard shortcuts", hint: "Launcher, minimise, styles", words: "keyboard shortcuts keybinds hotkeys keys bind launcher minimise minimize restore", view: "ShortcutsPage.qml" },
+        { id: "apps", icon: "apps", lobes: 4, label: "Default apps", hint: "Browser, files, terminal", words: "default apps applications browser file manager terminal editor image video music pdf mail open with", view: "DefaultAppsPage.qml" },
+        { id: "datetime", icon: "schedule", lobes: 5, label: "Date & time", hint: "Time zone, clock", words: "date time clock timezone zone ntp automatic seconds 24 hour", view: "DateTimePage.qml" },
         { id: "about", icon: "info", lobes: 4, label: "About", hint: "Version " + Shell.version, words: "about version system computer processor memory graphics kernel", view: "AboutPage.qml" }
     ]
     readonly property var current: pages.find(p => p.id === page) ?? pages[1]

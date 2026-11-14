@@ -10,12 +10,12 @@ Item {
     id: root
 
     property string layout: "split"
-    readonly property string timeText: Qt.formatDateTime(clock.date, Config.clock24h ? "HH:mm" : "h:mm AP")
+    readonly property string timeText: Qt.formatDateTime(clock.date, Config.clock24h ? (Config.clockSeconds ? "HH:mm:ss" : "HH:mm") : (Config.clockSeconds ? "h:mm:ss AP" : "h:mm AP"))
 
     implicitWidth: loader.implicitWidth
     implicitHeight: loader.implicitHeight
 
-    SystemClock { id: clock; precision: SystemClock.Minutes }
+    SystemClock { id: clock; precision: Config.clockSeconds ? SystemClock.Seconds : SystemClock.Minutes }
 
     Loader {
         id: loader

@@ -64,17 +64,9 @@ ColumnLayout {
     }
 
     SegGroup {
+        visible: Compositor.name === "hyprland"
         title: "Bar"
         SegItem {
-            icon: "schedule"
-            hue: 1
-            lobes: 0
-            title: "24-hour clock"
-            description: Config.clock24h ? "Shown as 19:30" : "Shown as 7:30 PM"
-            Toggle { checked: Config.clock24h; onToggled: v => Config.clock24h = v }
-        }
-        SegItem {
-            visible: Compositor.name === "hyprland"
             icon: "workspaces"
             hue: 2
             lobes: 4
@@ -99,50 +91,12 @@ ColumnLayout {
     SegGroup {
         title: "Behaviour"
         SegItem {
-            icon: "notifications_off"
-            hue: 3
-            lobes: 8
-            title: "Do not disturb"
-            description: "Collect notifications without showing popups."
-            Toggle { checked: Config.doNotDisturb; onToggled: v => Config.doNotDisturb = v }
-        }
-        SegItem {
             icon: "animation"
             hue: 4
             lobes: 5
             title: "Reduce motion"
             description: "Turn animations off."
             Toggle { checked: Config.reduceMotion; onToggled: v => Config.reduceMotion = v }
-        }
-        SegItem {
-            icon: "terminal"
-            hue: 5
-            lobes: 4
-            title: "Terminal"
-            description: "Used for apps that run in a terminal."
-            Rectangle {
-                width: 190
-                height: 44
-                radius: term.activeFocus ? Theme.cornerM : height / 2
-                color: Theme.surfaceContainerHighest
-                border.width: term.activeFocus ? 2 : 0
-                border.color: Theme.primary
-                Behavior on radius { Spring {} }
-                TextInput {
-                    id: term
-                    anchors.fill: parent
-                    anchors.leftMargin: 16
-                    anchors.rightMargin: 16
-                    verticalAlignment: TextInput.AlignVCenter
-                    text: Config.terminal
-                    color: Theme.ink
-                    selectionColor: Theme.primaryContainer
-                    font.family: Theme.font
-                    font.pixelSize: Theme.textBody
-                    clip: true
-                    onEditingFinished: if (text.trim().length > 0) Config.terminal = text.trim()
-                }
-            }
         }
     }
 }

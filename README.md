@@ -40,8 +40,10 @@ Then log out and back in, or start it right away with `sh ~/.config/quickshell/v
 | Super + N | Minimise the focused window |
 | Super + Shift + N | Restore the last minimised window |
 | Super + Alt + S | Next style |
+| Super + I | Settings |
+| Super + Ctrl + N | Show minimised windows |
 
-Change them in `~/.config/hypr/voidline.lua` or `~/.config/niri/voidline.kdl`.
+Change them in Settings under Keyboard shortcuts.
 In the taskbar and dock: click focuses a window, clicking the focused window
 minimises it, clicking a minimised window restores it, middle click closes it.
 
@@ -54,7 +56,7 @@ Open **Voidline Settings** from the launcher or the gear in quick settings.
 | Connections | Network (Wi-Fi and wired, needs NetworkManager), Bluetooth |
 | Device | Display (resolution, refresh rate, scale, brightness), Sound (devices and per-app volume), Battery & power |
 | Personalisation | Style, Wallpaper & colours, Hyprland or Niri, Interface |
-| System | About |
+| System | Notifications, Keyboard shortcuts, Default apps, Date & time, About |
 
 Display changes are applied first and saved only after you confirm them; without
 confirmation they revert after 15 seconds.
@@ -144,12 +146,12 @@ Working in 0.4: bar, screen frame, dock, task list, workspaces, tray, clock,
 launcher, quick settings (network, Bluetooth, do not disturb, theme, volume,
 brightness, power), notifications, wallpaper with palette extraction, minimise,
 live style switching, and a settings app with network, Bluetooth, display,
-sound, power, style, wallpaper and colours, window manager, interface and about
-pages.
+sound, power, style, wallpaper and colours, window manager, interface,
+notifications, keyboard shortcuts, default apps, date and time and about pages,
+and a password dialog (polkit agent) for changes that need administrator rights.
 
 Not rewritten yet (present in 0.3.0): lock screen, SDDM theme,
-hotspot page, games page, media controls, overview,
-polkit dialog, translations. The Lyra assistant and the Voidline terminal are
+hotspot page, games page, media controls, overview, translations. The Lyra assistant and the Voidline terminal are
 not planned for 0.4.
 
 Known limits:

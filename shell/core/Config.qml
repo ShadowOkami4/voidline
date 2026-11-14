@@ -21,6 +21,13 @@ Singleton {
     property alias clock24h: data.clock24h
     property alias reduceMotion: data.reduceMotion
     property alias doNotDisturb: data.doNotDisturb
+    // Popups: seconds on screen, how many at once, urgent ones stay until dismissed.
+    property alias notifTimeout: data.notifTimeout
+    property alias notifMaxPopups: data.notifMaxPopups
+    property alias notifKeepUrgent: data.notifKeepUrgent
+    property alias clockSeconds: data.clockSeconds
+    // Changed shortcuts, one "action=SUPER+SHIFT+N" entry each ("action=" is off).
+    property alias keybinds: data.keybinds
     property alias pinnedApps: data.pinnedApps
     property alias workspaceCount: data.workspaceCount
     // Whole-shell size factor (0.5 - 1.5). Applied at start by start.sh.
@@ -104,6 +111,11 @@ Singleton {
             property bool clock24h: true
             property bool reduceMotion: false
             property bool doNotDisturb: false
+            property int notifTimeout: 5
+            property int notifMaxPopups: 3
+            property bool notifKeepUrgent: true
+            property bool clockSeconds: false
+            property list<string> keybinds: []
             property list<string> pinnedApps: []
             property int workspaceCount: 5
             property real uiScale: 0.75
@@ -140,6 +152,7 @@ Singleton {
                 property bool hideTitleBars: true
                 property string centerColumn: "never"
                 property real columnWidth: 0.5
-            }        }
+            }
+        }
     }
 }

@@ -11,7 +11,8 @@ import qs.compositor
 //   Hyprland: ~/.config/hypr/voidline-settings.lua  (also evaluated live)
 //   Niri:     ~/.config/niri/voidline-settings.kdl  (Niri reloads on change)
 // Both files are loaded from the Voidline hook file, after the user's own
-// config, so these values win while "managed" is on.
+// config, so these values win while "managed" is on. Voidline's keyboard
+// shortcuts are always written, managed or not.
 Singleton {
     id: root
 
@@ -26,7 +27,11 @@ Singleton {
     readonly property string active: String(Theme.primary).substring(0, 7)
     readonly property string inactive: String(Theme.outlineVariant).substring(0, 7)
 
-    readonly property string text: !Config.loaded ? "" : (wm === "hyprland" ? hyprland() : (wm === "niri" ? niri() : ""))
+    // Settings and shortcuts are kept apart: settings can be applied live on
+    // Hyprland, changed shortcuts need a config reload.
+    readonly property string settings: !Config.loaded ? "" : (wm === "hyprland" ? hyprland() : (wm === "niri" ? niri() : ""))
+    readonly property string binds: !Config.loaded ? "" : (wm === "hyprland" ? Keybinds.hyprland() : (wm === "niri" ? Keybinds.niri() : ""))
+    readonly property string text: settings.length > 0 ? settings + binds : ""
 
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
     function word(s) { return String(s).replace(/[^A-Za-z0-9_,:+ -]/g, "") }
@@ -105,7 +110,10 @@ Singleton {
         return out + "input {\n" + input + "}\n"
     }
 
+    // What is in the file: read once at start, so an unchanged config costs
+    // nothing and does not reload the compositor.
     property string written: ""
+    property bool primed: false
     onTextChanged: if (text.length > 0) debounce.restart()
     onManagedChanged: if (!managed && wm === "hyprland" && Config.loaded) handBack.restart()
 
@@ -113,16 +121,24 @@ Singleton {
         id: debounce
         interval: 250
         onTriggered: {
-            if (root.path.length === 0 || root.text === root.written) return
+            if (root.path.length === 0) return
+            if (!root.primed) { root.primed = true; root.written = file.text() }
+            if (root.text === root.written) return
+            const bindsChanged = !root.written.endsWith(root.binds) || (root.binds.length === 0 && root.written.includes("hl.bind("))
             root.written = root.text
             file.setText(root.text)
-            // Hyprland: apply right away instead of reloading the whole config.
-            if (root.wm === "hyprland" && root.managed) {
-                const lua = root.text.split("\n").filter(l => !l.startsWith("--")).join(" ")
+            if (root.wm !== "hyprland") return
+            // Shortcuts cannot be replaced one by one, so reload the config;
+            // plain settings are applied right away without a reload.
+            if (bindsChanged) reload.restart()
+            else if (root.managed) {
+                const lua = root.settings.split("
+").filter(l => !l.startsWith("--")).join(" ")
                 Quickshell.execDetached(["hyprctl", "eval", lua])
             }
         }
     }
+    Timer { id: reload; interval: 150; onTriggered: Quickshell.execDetached(["hyprctl", "reload"]) }
 
     // Managing switched off on Hyprland: reload so the user's own values return.
     Timer { id: handBack; interval: 600; onTriggered: Quickshell.execDetached(["hyprctl", "reload"]) }
@@ -130,6 +146,7 @@ Singleton {
     FileView {
         id: file
         path: root.path
+        blockLoading: true
         printErrors: false
     }
 }
