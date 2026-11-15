@@ -134,7 +134,10 @@ Singleton {
             const what = a.action ? `"${a.action}"` : `function() hl.exec_cmd("qs -c voidline ipc call shell ${a.ipc}") end`
             out += `hl.gesture({ fingers = ${n}, direction = "${dir}", action = ${what} })\n`
         }
-        if (Config.tabletMode) out += "hl.config({ gestures = { workspace_swipe_touch = true } })\n"
+        // Swipe through the workspaces by number, empty ones included, the way
+        // the dots in the bar show them. Hyprland's default skips empty ones,
+        // which makes a swipe do nothing as soon as the neighbour is empty.
+        out += `hl.config({ gestures = { workspace_swipe_use_r = true, workspace_swipe_touch = ${Config.tabletMode} } })\n`
         return out
     }
 
