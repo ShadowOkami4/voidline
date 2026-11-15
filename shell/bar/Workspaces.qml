@@ -28,20 +28,36 @@ Item {
             Rectangle {
                 id: dot
                 required property var modelData
-                width: modelData.active ? 26 : 8
-                height: 8
-                radius: 4
+                // A named workspace shows its name while it is the active one.
+                readonly property string label: modelData.active ? Config.workspaceName(modelData.index) : ""
+                width: label.length > 0 ? caption.implicitWidth + 16 : (modelData.active ? 26 : 8)
+                height: label.length > 0 ? 18 : 8
+                radius: height / 2
                 anchors.verticalCenter: parent.verticalCenter
                 color: modelData.active ? Theme.primary
                     : (modelData.occupied ? Theme.inkMuted : Theme.outlineVariant)
                 Behavior on width { Spring {} }
                 Behavior on color { Tint {} }
+                Label {
+                    id: caption
+                    anchors.centerIn: parent
+                    visible: dot.label.length > 0
+                    text: dot.label
+                    font.pixelSize: 11
+                    font.weight: Font.Bold
+                    color: Theme.inkOnPrimary
+                }
 
                 MouseArea {
                     anchors.fill: parent
                     anchors.margins: -8
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Compositor.focusWorkspace(dot.modelData)
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    // Right click: the window overview, where workspaces are named.
+                    onClicked: mouse => {
+                        if (mouse.button === Qt.RightButton) Shell.toggle("switcher", null)
+                        else Compositor.focusWorkspace(dot.modelData)
+                    }
                 }
             }
         }

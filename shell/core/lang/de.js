@@ -79,6 +79,7 @@ var words = {
 "All quiet": "Alles ruhig",
 "Earlier": "Früher",
 "No windows open": "Keine Fenster geöffnet",
+"Name": "Name",
 "Loading…": "Wird geladen…",
 "This icon has no menu": "Dieses Symbol hat kein Menü",
 

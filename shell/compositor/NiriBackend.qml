@@ -67,6 +67,8 @@ Item {
         act(["move-window-to-workspace", "--window-id", String(id), "--focus", "false", Compositor.stash])
     }
 
+    function moveToWorkspace(id, ws) { act(["move-window-to-workspace", "--window-id", String(id), "--focus", "false", String(ws.index)]) }
+
     function restore(id) {
         const target = focusedWs && focusedWs.name !== Compositor.stash ? String(focusedWs.idx) : "1"
         Quickshell.execDetached(["sh", "-c",

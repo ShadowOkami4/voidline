@@ -119,6 +119,17 @@ ShellRoot {
             else return "unknown place"
             return "ok"
         }
+        // Send the active window to workspace n (1 = first); the view stays.
+        function moveWindow(workspace: string): string {
+            const win = Compositor.focusedWindow
+            const ws = Compositor.workspaces[Number(workspace) - 1]
+            if (!win) return "no active window"
+            if (!ws) return "no such workspace"
+            Compositor.moveToWorkspace(win.id, ws)
+            return "ok"
+        }
+        // Name workspace n; an empty name removes it.
+        function nameWorkspace(workspace: string, name: string): void { Config.setWorkspaceName(Number(workspace), name) }
         // Ask which app should open a file.
         function openWith(path: string): void { Shell.openWith(path) }
         // Tray icons, for scripts and testing:

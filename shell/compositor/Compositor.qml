@@ -34,6 +34,8 @@ Singleton {
     function minimize(id) { if (backend) backend.minimize(id) }
     function restore(id) { if (backend) backend.restore(id) }
     function quit() { if (backend) backend.quit() }
+    // ws: an entry of `workspaces`. The view stays where it is.
+    function moveToWorkspace(id, ws) { if (backend && ws) backend.moveToWorkspace(id, ws) }
     // Snap layouts and "fill the screen" (Hyprland; Niri arranges by itself).
     readonly property bool canSnap: !!backend && typeof backend.snap === "function"
     function snap(id, zone) { if (canSnap) backend.snap(id, zone) }

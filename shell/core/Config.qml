@@ -79,6 +79,17 @@ Singleton {
         const rest = screenWallpapers.filter(x => !x.startsWith(name + "="))
         screenWallpapers = path.length > 0 ? rest.concat([name + "=" + path]) : rest
     }
+    // Names for workspaces, one "number=name" entry each.
+    property alias workspaceNames: data.workspaceNames
+    function workspaceName(index) {
+        const e = workspaceNames.find(x => x.startsWith(index + "="))
+        return e ? e.slice(String(index).length + 1) : ""
+    }
+    function setWorkspaceName(index, name) {
+        const rest = workspaceNames.filter(x => !x.startsWith(index + "="))
+        const clean = String(name).trim().slice(0, 24)
+        workspaceNames = clean.length > 0 ? rest.concat([index + "=" + clean]) : rest
+    }
     property alias welcomed: data.welcomed
     // Light during the day (7:00 to 19:00), dark at night.
     property alias autoTheme: data.autoTheme
@@ -205,6 +216,7 @@ Singleton {
             property list<string> displayPlaces: []
             property list<string> pinnedApps: []
             property int workspaceCount: 5
+            property list<string> workspaceNames: []
             property bool windowButtons: true
             property real uiScale: 0.75
             property string terminal: "kitty"

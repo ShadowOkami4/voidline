@@ -48,6 +48,7 @@ QtObject {
         dsp(`hl.dsp.window.move({ window = "${sel(id)}", workspace = "${ws}", follow = false })`)
         focusWindow(id)
     }
+    function moveToWorkspace(id, ws) { dsp(`hl.dsp.window.move({ window = "${sel(id)}", workspace = ${Number(ws.id)}, follow = false })`) }
     function quit() { dsp("hl.dsp.exit()") }
 
     // ---- placing windows -------------------------------------------------------------
