@@ -61,10 +61,16 @@ PanelWindow {
         id: voidlineLayout
         Item {
             Clock {
+                id: voidClock
                 anchors.left: parent.left
                 anchors.leftMargin: 22
                 anchors.verticalCenter: parent.verticalCenter
                 layout: "split"
+            }
+            WindowButtons {
+                anchors.left: voidClock.right
+                anchors.leftMargin: 18
+                anchors.verticalCenter: parent.verticalCenter
             }
             Row {
                 anchors.centerIn: parent
@@ -156,6 +162,7 @@ PanelWindow {
                     selected: Shell.panel === "launcher"
                     onClicked: Shell.toggle("launcher", bar.screen)
                 }
+                WindowButtons { anchors.verticalCenter: parent.verticalCenter }
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     width: Math.min(implicitWidth, 420)

@@ -49,6 +49,43 @@ QtObject {
         focusWindow(id)
     }
     function quit() { dsp("hl.dsp.exit()") }
+
+    // ---- placing windows -------------------------------------------------------------
+    function toggleMaximize(id) { dsp(`hl.dsp.window.fullscreen({ window = "${sel(id)}", mode = "maximized", action = "toggle" })`) }
+    function tile(id) {
+        dsp(`hl.dsp.window.fullscreen({ window = "${sel(id)}", mode = "maximized", action = "unset" })`)
+        dsp(`hl.dsp.window.float({ window = "${sel(id)}", action = "disable" })`)
+    }
+    // zone: { x, y, w, h } as shares of the screen's free area (without bar
+    // and dock). The window floats there, with the usual gaps around it.
+    property var snapJob: null
+    function snap(id, zone) { snapJob = { id: id, zone: zone }; snapArea.running = true }
+    property Process snapArea: Process {
+        command: ["hyprctl", "-j", "monitors"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const job = root.snapJob
+                root.snapJob = null
+                let list = []
+                try { list = JSON.parse(text) } catch (e) { return }
+                const m = list.find(x => x.focused) ?? list[0]
+                if (!job || !m) return
+                const turned = m.transform % 2 === 1
+                const r = m.reserved, gap = Math.max(0, Config.desktop.gaps), z = job.zone
+                const ax = m.x + r[0] + gap, ay = m.y + r[1] + gap
+                const aw = (turned ? m.height : m.width) / m.scale - r[0] - r[2] - 2 * gap
+                const ah = (turned ? m.width : m.height) / m.scale - r[1] - r[3] - 2 * gap
+                // Half a gap on every edge that meets another zone.
+                const x0 = ax + z.x * aw + (z.x > 0.001 ? gap / 2 : 0), x1 = ax + (z.x + z.w) * aw - (z.x + z.w < 0.999 ? gap / 2 : 0)
+                const y0 = ay + z.y * ah + (z.y > 0.001 ? gap / 2 : 0), y1 = ay + (z.y + z.h) * ah - (z.y + z.h < 0.999 ? gap / 2 : 0)
+                const w = `window = "${root.sel(job.id)}"`
+                root.dsp(`hl.dsp.window.fullscreen({ ${w}, mode = "maximized", action = "unset" })`)
+                root.dsp(`hl.dsp.window.float({ ${w}, action = "enable" })`)
+                root.dsp(`hl.dsp.window.resize({ ${w}, x = ${Math.round(x1 - x0)}, y = ${Math.round(y1 - y0)} })`)
+                root.dsp(`hl.dsp.window.move({ ${w}, x = ${Math.round(x0)}, y = ${Math.round(y0)} })`)
+            }
+        }
+    }
     function screenPower(on) { dsp(`hl.dsp.dpms({ action = "${on ? "on" : "off"}" })`) }
 
     property var outputs: []

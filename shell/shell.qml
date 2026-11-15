@@ -102,6 +102,23 @@ ShellRoot {
             return "ok"
         }
         function lock(): void { Shell.lock() }
+        // Put the active window somewhere, for scripts and own shortcuts:
+        //   snap left | right | top-left | top-right | bottom-left | bottom-right | centre | fill | tile
+        function snap(where: string): string {
+            const win = Compositor.focusedWindow
+            if (!win) return "no active window"
+            const zones = {
+                "left": [0, 0, 0.5, 1], "right": [0.5, 0, 0.5, 1],
+                "top-left": [0, 0, 0.5, 0.5], "top-right": [0.5, 0, 0.5, 0.5],
+                "bottom-left": [0, 0.5, 0.5, 0.5], "bottom-right": [0.5, 0.5, 0.5, 0.5],
+                "centre": [0.15, 0.1, 0.7, 0.8]
+            }
+            if (where === "fill") Compositor.toggleMaximize(win.id)
+            else if (where === "tile") Compositor.tile(win.id)
+            else if (zones[where]) { const z = zones[where]; Compositor.snap(win.id, { x: z[0], y: z[1], w: z[2], h: z[3] }) }
+            else return "unknown place"
+            return "ok"
+        }
         // Ask which app should open a file.
         function openWith(path: string): void { Shell.openWith(path) }
         // Tray icons, for scripts and testing:

@@ -30,6 +30,8 @@ Singleton {
     property alias keybinds: data.keybinds
     property alias pinnedApps: data.pinnedApps
     property alias workspaceCount: data.workspaceCount
+    // Close / minimise / fill buttons for the active window, in the bar.
+    property alias windowButtons: data.windowButtons
     // Whole-shell size factor (0.5 - 1.5). Applied at start by start.sh.
     property alias uiScale: data.uiScale
     // Terminal used for apps that need one (launched as: <terminal> -e <command>).
@@ -200,6 +202,7 @@ Singleton {
             property list<string> displayPlaces: []
             property list<string> pinnedApps: []
             property int workspaceCount: 5
+            property bool windowButtons: true
             property real uiScale: 0.75
             property string terminal: "kitty"
 

@@ -34,6 +34,11 @@ Singleton {
     function minimize(id) { if (backend) backend.minimize(id) }
     function restore(id) { if (backend) backend.restore(id) }
     function quit() { if (backend) backend.quit() }
+    // Snap layouts and "fill the screen" (Hyprland; Niri arranges by itself).
+    readonly property bool canSnap: !!backend && typeof backend.snap === "function"
+    function snap(id, zone) { if (canSnap) backend.snap(id, zone) }
+    function tile(id) { if (canSnap) backend.tile(id) }
+    function toggleMaximize(id) { if (canSnap) backend.toggleMaximize(id) }
     // Turns all screens off or on (they also wake on input).
     function screenPower(on) { if (backend) backend.screenPower(on) }
 

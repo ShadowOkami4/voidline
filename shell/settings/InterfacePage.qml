@@ -106,6 +106,14 @@ ColumnLayout {
         visible: Compositor.name === "hyprland"
         title: Lang.t("Bar")
         SegItem {
+            icon: "cancel_presentation"
+            hue: 1
+            lobes: 0
+            title: Lang.t("Window buttons")
+            description: Lang.t("Close, minimise and fill the screen for the active window. Right-click the third for snap layouts (also Super + Z).")
+            Toggle { checked: Config.windowButtons; onToggled: v => Config.windowButtons = v }
+        }
+        SegItem {
             icon: "workspaces"
             hue: 2
             lobes: 4
