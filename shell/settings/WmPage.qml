@@ -268,14 +268,16 @@ ColumnLayout {
                 hue: 4
                 lobes: 4
                 title: Lang.t("Swipe sideways")
-                description: Lang.t("Moves between workspaces; the windows follow your fingers.")
-                Toggle { checked: Config.hyprland.gestureWorkspaces; onToggled: v => Config.hyprland.gestureWorkspaces = v }
+                description: Keybinds.gestureTaken("horizontal") ? Lang.t("Set in your own hyprland.lua, which stays in charge.")
+                    : Lang.t("Moves between workspaces; the windows follow your fingers.")
+                Toggle { enabled: !Keybinds.gestureTaken("horizontal"); opacity: enabled ? 1 : 0.5; checked: Config.hyprland.gestureWorkspaces; onToggled: v => Config.hyprland.gestureWorkspaces = v }
             }
             SegItem {
                 icon: "swipe_up"
                 hue: 5
                 lobes: 8
                 title: Lang.t("Swipe up")
+                description: Keybinds.gestureTaken("up") ? Lang.t("Set in your own hyprland.lua, which stays in charge.") : ""
                 Dropdown {
                     width: 220
                     value: Config.hyprland.gestureUp
@@ -288,6 +290,7 @@ ColumnLayout {
                 hue: 0
                 lobes: 5
                 title: Lang.t("Swipe down")
+                description: Keybinds.gestureTaken("down") ? Lang.t("Set in your own hyprland.lua, which stays in charge.") : ""
                 Dropdown {
                     width: 220
                     value: Config.hyprland.gestureDown

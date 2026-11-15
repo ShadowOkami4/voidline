@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import qs.core
 
@@ -93,14 +94,43 @@ Singleton {
         { value: "fullscreen", label: Lang.t("Full screen"), action: "fullscreen" },
         { value: "close", label: Lang.t("Close window"), action: "close" }
     ]
+    // Gestures the user's own hyprland.lua already defines. Hyprland reports
+    // an error when the same swipe is defined twice, so those are left alone
+    // and Settings says so.
+    FileView {
+        id: ownConfig
+        path: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/hypr/hyprland.lua"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+    }
+    readonly property var ownGestures: {
+        const text = (ownConfig.text() || "").replace(/--[^\n]*/g, "")
+        const found = []
+        const each = /hl\.gesture\s*\(\s*\{([^}]*)\}/g
+        let m
+        while ((m = each.exec(text)) !== null) {
+            const f = m[1].match(/fingers\s*=\s*(\d+)/), d = m[1].match(/direction\s*=\s*"(\w+)"/)
+            if (f && d) found.push({ fingers: Number(f[1]), direction: d[1] })
+        }
+        return found
+    }
+    // dir: "horizontal", "up" or "down", for the finger count in use.
+    function gestureTaken(dir) {
+        const n = Config.hyprland.gestureFingers === 4 ? 4 : 3
+        const same = dir === "horizontal" ? ["horizontal", "left", "right", "swipe"] : [dir, "vertical", "swipe"]
+        return ownGestures.some(g => g.fingers === n && same.includes(g.direction))
+    }
+
     function gestures() {
         const h = Config.hyprland
         const n = h.gestureFingers === 4 ? 4 : 3
         let out = ""
-        if (h.gestureWorkspaces) out += `hl.gesture({ fingers = ${n}, direction = "horizontal", action = "workspace" })\n`
+        if (h.gestureWorkspaces && !gestureTaken("horizontal"))
+            out += `hl.gesture({ fingers = ${n}, direction = "horizontal", action = "workspace" })\n`
         for (const [dir, pick] of [["up", h.gestureUp], ["down", h.gestureDown]]) {
             const a = gestureActions.find(x => x.value === pick)
-            if (!a || a.value === "") continue
+            if (!a || a.value === "" || gestureTaken(dir)) continue
             const what = a.action ? `"${a.action}"` : `function() hl.exec_cmd("qs -c voidline ipc call shell ${a.ipc}") end`
             out += `hl.gesture({ fingers = ${n}, direction = "${dir}", action = ${what} })\n`
         }

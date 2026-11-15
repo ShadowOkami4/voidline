@@ -655,6 +655,7 @@ var words = {
 "Swipe sideways": "Seitlich wischen",
 "Moves between workspaces; the windows follow your fingers.": "Wechselt zwischen Arbeitsflächen; die Fenster folgen deinen Fingern.",
 "Swipe up": "Nach oben wischen",
+"Set in your own hyprland.lua, which stays in charge.": "In deiner eigenen hyprland.lua festgelegt; die bleibt maßgeblich.",
 "Swipe down": "Nach unten wischen",
 "Nothing": "Nichts",
 "Window switcher": "Fensterwechsler",
