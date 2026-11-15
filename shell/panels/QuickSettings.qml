@@ -19,18 +19,10 @@ PanelSurface {
     // "" is the normal view; "wifi" and "bluetooth" are the mini menus.
     property string view: ""
 
-    onOpenChanged: { armed = ""; view = ""; Sys.watching = open; if (open) arrive.restart() }
+    onOpenChanged: { armed = ""; view = ""; Sys.watching = open }
     Behavior on panelHeight { Spring { duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
 
     // ---- motion -----------------------------------------------------------------------
-    // Opening: the sections arrive one after the other, from the top down.
-    property real reveal: 0
-    NumberAnimation { id: arrive; target: root; property: "reveal"; from: 0; to: 1; duration: Math.max(1, 800 * Motion.scale) }
-    // 0..1 for the section at `step` (fractions are fine), eased out.
-    function shown(step) {
-        const t = Math.max(0, Math.min(1, (reveal - step * 0.075) / 0.4))
-        return 1 - Math.pow(1 - t, 3)
-    }
     // Main view <-> mini menu: one slides out to the left, the other in from the right.
     property string lastView: "wifi"
     onViewChanged: if (view !== "") lastView = view

@@ -67,6 +67,10 @@ Singleton {
     property alias screenshotEdit: data.screenshotEdit
     // Town for the weather in the calendar; empty = no weather, nothing is requested.
     property alias weatherPlace: data.weatherPlace
+    // iCal addresses of calendars shown next to your own events.
+    property alias calendars: data.calendars
+    // A notification ten minutes before an event with a time.
+    property alias eventReminders: data.eventReminders
     // Language of the shell: "" follows the system, otherwise "en", "de", ...
     property alias language: data.language
     // A different picture on single screens, one "screen name=path" entry each.
@@ -207,6 +211,8 @@ Singleton {
             property bool tabletMode: false
             property bool screenshotEdit: false
             property string weatherPlace: ""
+            property list<string> calendars: []
+            property bool eventReminders: true
             property string language: ""
             property list<string> screenWallpapers: []
             property bool welcomed: false

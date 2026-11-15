@@ -29,6 +29,16 @@ Item {
         }
     }
 
+    // Opening: sections arrive one after the other. Give each one
+    // `opacity: root.shown(n)` with a rising n (fractions are fine, up to 8).
+    property real reveal: 0
+    NumberAnimation { id: arrive; target: root; property: "reveal"; from: 0; to: 1; duration: Math.max(1, 800 * Motion.scale) }
+    onOpenChanged: if (open) arrive.restart()
+    function shown(step) {
+        const t = Math.max(0, Math.min(1, (reveal - step * 0.075) / 0.4))
+        return 1 - Math.pow(1 - t, 3)
+    }
+
     anchors.fill: parent
     visible: showing
 

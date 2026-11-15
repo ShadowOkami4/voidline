@@ -5,7 +5,8 @@ import qs.core
 import qs.services
 import qs.widgets
 
-// Month calendar, opened by clicking the clock.
+// Month calendar with events, opened by clicking the clock. Click a day to
+// see what is planned and to add something.
 PanelSurface {
     id: root
 
@@ -13,14 +14,52 @@ PanelSurface {
     anchor: Style.calendarAnchor
     panelWidth: 380
     panelHeight: column.implicitHeight + 40
+    Behavior on panelHeight { Spring { duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
     readonly property date today: clock.date
     // First day of the month on show.
     property date month: new Date(today.getFullYear(), today.getMonth(), 1)
-    onOpenChanged: if (open) month = new Date(today.getFullYear(), today.getMonth(), 1)
+    // The day whose events are listed.
+    property date picked: today
+    readonly property string pickedKey: Events.key(picked)
+    readonly property var plans: Events.on(picked)
+    // How often a new event comes back: "" | "weekly" | "monthly" | "yearly"
+    property string repeat: ""
 
-    function shift(by) { month = new Date(month.getFullYear(), month.getMonth() + by, 1) }
+    onOpenChanged: if (open) {
+        month = new Date(today.getFullYear(), today.getMonth(), 1)
+        picked = today
+        repeat = ""
+        what.text = ""
+        when.text = ""
+    }
+
+    // Turning the page: the grid slides out one way and in from the other.
+    property real flip: 0
+    function shift(by) { if (!turn.running) { turn.by = by; turn.start() } }
+    function show(d) {
+        const by = (d.getFullYear() - month.getFullYear()) * 12 + d.getMonth() - month.getMonth()
+        if (by !== 0) { turn.by = by; turn.restart() }
+    }
+    function pick(d) { picked = d; show(d) }
+    SequentialAnimation {
+        id: turn
+        property int by: 0
+        readonly property int way: by > 0 ? 1 : -1
+        NumberAnimation { target: root; property: "flip"; to: -turn.way; duration: Motion.effectsFast; easing.type: Easing.InCubic }
+        ScriptAction { script: { root.month = new Date(root.month.getFullYear(), root.month.getMonth() + turn.by, 1); root.flip = turn.way } }
+        NumberAnimation { target: root; property: "flip"; to: 0; duration: Motion.spatialFast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.spatialFastCurve }
+    }
+
+    function addEvent() {
+        if (what.text.trim().length === 0) return
+        Events.add(pickedKey, when.text, what.text, repeat)
+        what.text = ""
+        when.text = ""
+        repeat = ""
+    }
+
     readonly property int firstDay: Lang.locale.firstDayOfWeek      // 0 = Sunday
     // 42 cells, starting on the first weekday of the locale.
     readonly property var days: {
@@ -29,10 +68,12 @@ PanelSurface {
         for (let i = 0; i < 42; ++i) {
             const d = new Date(month.getFullYear(), month.getMonth(), 1 - lead + i)
             out.push({
+                date: d,
                 day: d.getDate(),
                 inMonth: d.getMonth() === month.getMonth(),
                 today: d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate(),
-                weekend: d.getDay() === 0 || d.getDay() === 6
+                weekend: d.getDay() === 0 || d.getDay() === 6,
+                busy: Events.busy(d)
             })
         }
         return out
@@ -48,6 +89,8 @@ PanelSurface {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 0
+            opacity: root.shown(0)
+            transform: Translate { y: (1 - root.shown(0)) * 18 }
             Label {
                 leftPadding: 6
                 text: Lang.date(root.today, "dddd")
@@ -71,6 +114,8 @@ PanelSurface {
             implicitHeight: 92
             radius: Theme.cornerXL
             color: Theme.secondaryContainer
+            opacity: root.shown(1)
+            transform: Translate { y: (1 - root.shown(1)) * 18 }
 
             Label {
                 visible: !Weather.ready
@@ -113,13 +158,14 @@ PanelSurface {
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: 4
+            opacity: root.shown(2)
             Label {
                 Layout.fillWidth: true
                 leftPadding: 6
                 text: Lang.date(root.month, "MMMM yyyy")
                 font.weight: Font.Bold
             }
-            IconBtn { icon: "today"; size: 36; onClicked: root.month = new Date(root.today.getFullYear(), root.today.getMonth(), 1) }
+            IconBtn { icon: "today"; size: 36; onClicked: root.pick(root.today) }
             IconBtn { icon: "chevron_left"; size: 36; tonal: true; onClicked: root.shift(-1) }
             IconBtn { icon: "chevron_right"; size: 36; tonal: true; onClicked: root.shift(1) }
         }
@@ -129,6 +175,8 @@ PanelSurface {
             Layout.fillWidth: true
             columns: 7
             readonly property real cell: Math.floor(width / 7)
+            opacity: 1 - Math.abs(root.flip)
+            transform: Translate { x: root.flip * 44 }
 
             Repeater {
                 model: 7
@@ -142,6 +190,7 @@ PanelSurface {
                     font.pixelSize: Theme.textLabel
                     font.weight: Font.Bold
                     color: Theme.inkMuted
+                    opacity: root.shown(2.4)
                 }
             }
             Repeater {
@@ -149,24 +198,251 @@ PanelSurface {
                 Item {
                     id: cell
                     required property var modelData
+                    required property int index
+                    readonly property bool picked: Events.key(modelData.date) === root.pickedKey
+                    readonly property real arrived: root.shown(2.8 + Math.floor(index / 7) * 0.45)
                     width: grid.cell
-                    height: 42
+                    height: 44
+                    opacity: arrived
+                    transform: Translate { y: (1 - cell.arrived) * 14 }
                     Rectangle {
                         anchors.centerIn: parent
                         width: 38
                         height: 38
-                        // Today is a rounded square, the M3 "selected" shape.
-                        radius: cell.modelData.today ? Theme.cornerM : 19
-                        color: cell.modelData.today ? Theme.primary : "transparent"
+                        // Today and the chosen day are rounded squares, the M3 "selected" shape.
+                        radius: cell.modelData.today || cell.picked ? Theme.cornerM : 19
+                        color: cell.modelData.today ? Theme.primary
+                            : (cell.picked ? Theme.secondaryContainer : Theme.alpha(Theme.ink, press.pressed ? 0.14 : (press.containsMouse ? 0.08 : 0)))
+                        scale: press.pressed ? 0.88 : 1
+                        Behavior on radius { Spring {} }
+                        Behavior on scale { Spring {} }
+                        Behavior on color { Tint {} }
                     }
                     Label {
                         anchors.centerIn: parent
+                        anchors.verticalCenterOffset: cell.modelData.busy ? -3 : 0
                         text: cell.modelData.day
                         font.weight: cell.modelData.today ? Font.Black : Font.Medium
                         opacity: cell.modelData.inMonth ? 1 : 0.32
-                        color: cell.modelData.today ? Theme.inkOnPrimary : (cell.modelData.weekend ? Theme.tertiary : Theme.ink)
+                        color: cell.modelData.today ? Theme.inkOnPrimary
+                            : (cell.picked ? Theme.inkOnSecondaryContainer : (cell.modelData.weekend ? Theme.tertiary : Theme.ink))
+                    }
+                    // Something is planned on this day.
+                    Rectangle {
+                        visible: cell.modelData.busy
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: 31
+                        width: 5
+                        height: 5
+                        radius: 2.5
+                        opacity: cell.modelData.inMonth ? 1 : 0.4
+                        color: cell.modelData.today ? Theme.inkOnPrimary : Theme.primary
+                    }
+                    MouseArea {
+                        id: press
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.pick(cell.modelData.date)
                     }
                 }
+            }
+        }
+
+        // ---- the chosen day ------------------------------------------------------------
+        Label {
+            Layout.fillWidth: true
+            Layout.topMargin: 2
+            leftPadding: 6
+            text: Lang.date(root.picked, Lang.t("dddd, d MMMM"))
+            font.weight: Font.Bold
+            color: Theme.primary
+            opacity: root.shown(6)
+        }
+
+        ListView {
+            id: planList
+            Layout.fillWidth: true
+            Layout.topMargin: -6
+            implicitHeight: Math.min(contentHeight, 152)
+            visible: count > 0
+            clip: true
+            spacing: 4
+            boundsBehavior: Flickable.StopAtBounds
+            model: root.plans
+            opacity: root.shown(6.4)
+            delegate: Rectangle {
+                id: plan
+                required property var modelData
+                required property int index
+                width: ListView.view.width
+                height: 48
+                radius: Theme.cornerL
+                color: Theme.surfaceContainerHighest
+                // Each one slides in when the day changes.
+                NumberAnimation on opacity { from: 0; to: 1; duration: Motion.effectsSlow }
+                transform: Translate { id: slide; x: 0 }
+                NumberAnimation { target: slide; property: "x"; from: 26 + plan.index * 10; to: 0; running: true; duration: Motion.spatialFast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.spatialFastCurve }
+
+                Rectangle {
+                    id: stripe
+                    x: 12
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 4
+                    height: 26
+                    radius: 2
+                    color: plan.modelData.own ? Theme.primary : Theme.tertiary
+                }
+                Column {
+                    anchors.left: stripe.right
+                    anchors.leftMargin: 10
+                    anchors.right: gone.visible ? gone.left : parent.right
+                    anchors.rightMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    Label {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        text: plan.modelData.title
+                        font.weight: Font.DemiBold
+                    }
+                    Label {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        text: (plan.modelData.time || Lang.t("All day"))
+                            + (plan.modelData.repeat === "daily" ? "  ·  " + Lang.t("Daily") : plan.modelData.repeat === "weekly" ? "  ·  " + Lang.t("Weekly")
+                                : plan.modelData.repeat === "monthly" ? "  ·  " + Lang.t("Monthly") : plan.modelData.repeat === "yearly" ? "  ·  " + Lang.t("Yearly") : "")
+                        font.pixelSize: Theme.textLabelS
+                        color: Theme.inkMuted
+                    }
+                }
+                IconBtn {
+                    id: gone
+                    visible: !!plan.modelData.own
+                    anchors.right: parent.right
+                    anchors.rightMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    icon: "close"
+                    size: 30
+                    onClicked: Events.remove(plan.modelData.id)
+                }
+            }
+        }
+
+        // New event: what, and when you start typing also when and how often.
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: 48
+            radius: what.activeFocus ? Theme.cornerM : height / 2
+            color: Theme.surfaceContainerHighest
+            border.width: what.activeFocus ? 2 : 0
+            border.color: Theme.primary
+            opacity: root.shown(6.8)
+            Behavior on radius { Spring {} }
+
+            MIcon { id: plus; x: 14; anchors.verticalCenter: parent.verticalCenter; icon: "add"; size: 20; color: Theme.inkMuted }
+            TextInput {
+                id: what
+                anchors.left: plus.right
+                anchors.leftMargin: 8
+                anchors.right: parent.right
+                anchors.rightMargin: 16
+                height: parent.height
+                verticalAlignment: TextInput.AlignVCenter
+                maximumLength: 80
+                color: Theme.ink
+                selectionColor: Theme.primaryContainer
+                font.family: Theme.font
+                font.pixelSize: Theme.textBody
+                clip: true
+                Keys.onReturnPressed: root.addEvent()
+                Keys.onEnterPressed: root.addEvent()
+                Keys.onEscapePressed: Shell.close()
+                KeyNavigation.tab: when
+                Label {
+                    visible: what.text.length === 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.plans.length === 0 ? Lang.t("Nothing planned. Add something…") : Lang.t("Add something…")
+                    color: Theme.inkMuted
+                }
+            }
+        }
+
+        RowLayout {
+            id: more
+            readonly property bool wanted: what.text.length > 0 || when.activeFocus
+            Layout.fillWidth: true
+            Layout.topMargin: wanted ? -6 : -14
+            property real tall: wanted ? 42 : 0
+            Layout.preferredHeight: Math.max(0, tall)
+            opacity: wanted ? 1 : 0
+            visible: tall > 1
+            spacing: 6
+            clip: true
+            Behavior on tall { Spring {} }
+            Behavior on opacity { Fade {} }
+
+            Rectangle {
+                Layout.preferredWidth: 104
+                Layout.preferredHeight: 42
+                radius: when.activeFocus ? Theme.cornerM : height / 2
+                color: Theme.surfaceContainerHighest
+                border.width: when.activeFocus ? 2 : (when.text.length > 0 && Events.tidyTime(when.text) === "" ? 2 : 0)
+                border.color: when.text.length > 0 && Events.tidyTime(when.text) === "" ? Theme.error : Theme.primary
+                Behavior on radius { Spring {} }
+                MIcon { id: watch; x: 12; anchors.verticalCenter: parent.verticalCenter; icon: "schedule"; size: 18; color: Theme.inkMuted }
+                TextInput {
+                    id: when
+                    anchors.left: watch.right
+                    anchors.leftMargin: 6
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    height: parent.height
+                    verticalAlignment: TextInput.AlignVCenter
+                    maximumLength: 5
+                    color: Theme.ink
+                    selectionColor: Theme.primaryContainer
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textBody
+                    clip: true
+                    Keys.onReturnPressed: root.addEvent()
+                    Keys.onEnterPressed: root.addEvent()
+                    Keys.onEscapePressed: Shell.close()
+                    KeyNavigation.tab: what
+                    Label {
+                        visible: when.text.length === 0
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: Lang.t("All day")
+                        font.pixelSize: Theme.textLabel
+                        color: Theme.inkMuted
+                    }
+                }
+            }
+            // Click to go through: once, weekly, monthly, yearly.
+            Pressable {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 42
+                color: root.repeat.length > 0 ? Theme.secondaryContainer : Theme.surfaceContainerHighest
+                restRadius: root.repeat.length > 0 ? Theme.cornerM : Theme.cornerFull
+                Behavior on color { Tint {} }
+                onClicked: root.repeat = root.repeat === "" ? "weekly" : (root.repeat === "weekly" ? "monthly" : (root.repeat === "monthly" ? "yearly" : ""))
+                Row {
+                    anchors.centerIn: parent
+                    spacing: 6
+                    MIcon { anchors.verticalCenter: parent.verticalCenter; icon: root.repeat.length > 0 ? "repeat" : "looks_one"; size: 18; color: root.repeat.length > 0 ? Theme.inkOnSecondaryContainer : Theme.inkMuted }
+                    Label {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.repeat === "weekly" ? Lang.t("Weekly") : (root.repeat === "monthly" ? Lang.t("Monthly") : (root.repeat === "yearly" ? Lang.t("Yearly") : Lang.t("Once")))
+                        font.pixelSize: Theme.textLabel
+                        font.weight: Font.DemiBold
+                        color: root.repeat.length > 0 ? Theme.inkOnSecondaryContainer : Theme.ink
+                    }
+                }
+            }
+            IconBtn {
+                icon: "check"
+                size: 42
+                selected: true
+                onClicked: root.addEvent()
             }
         }
     }

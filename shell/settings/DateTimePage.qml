@@ -270,4 +270,65 @@ ColumnLayout {
             }
         }
     }
+
+    SegGroup {
+        title: Lang.t("Calendar")
+        SegItem {
+            icon: "notifications_active"
+            hue: 1
+            lobes: 6
+            title: Lang.t("Remind me of events")
+            description: Lang.t("A notification ten minutes before an event with a time.")
+            Toggle { checked: Config.eventReminders; onToggled: v => Config.eventReminders = v }
+        }
+        Repeater {
+            model: Config.calendars
+            SegItem {
+                id: feed
+                required property string modelData
+                icon: "event_repeat"
+                hue: 2
+                lobes: 7
+                // Only the host is shown: the rest of such an address is a secret key.
+                title: modelData.startsWith("/") ? modelData.replace(/^.*\//, "") : modelData.replace(/^[a-z]+:\/\//, "").replace(/\/.*$/, "")
+                description: Events.loading ? Lang.t("Reading…") : (Events.problem || Lang.t("Shown in the calendar, read again every half hour."))
+                IconBtn { icon: "delete"; size: 40; tonal: true; onClicked: Config.calendars = Config.calendars.filter(c => c !== feed.modelData) }
+            }
+        }
+        SegItem {
+            icon: "add_link"
+            hue: 5
+            lobes: 9
+            title: Lang.t("Add a calendar")
+            description: Lang.t("Paste its iCal address (ends in .ics), from Google, Nextcloud or your school. It is only read, never changed.")
+            Rectangle {
+                width: 260
+                height: 46
+                radius: link.activeFocus ? Theme.cornerM : height / 2
+                color: Theme.surfaceContainerHighest
+                border.width: link.activeFocus ? 2 : 0
+                border.color: Theme.primary
+                Behavior on radius { Spring {} }
+                TextInput {
+                    id: link
+                    anchors.fill: parent
+                    anchors.leftMargin: 18
+                    anchors.rightMargin: 18
+                    verticalAlignment: TextInput.AlignVCenter
+                    color: Theme.ink
+                    selectionColor: Theme.primaryContainer
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textBody
+                    clip: true
+                    function take() {
+                        const t = text.trim()
+                        if (/^(https?:\/\/|webcal:\/\/|\/)\S+$/.test(t) && !Config.calendars.includes(t)) { Config.calendars = Config.calendars.concat([t]); text = "" }
+                    }
+                    Keys.onReturnPressed: take()
+                    Keys.onEnterPressed: take()
+                    Label { visible: link.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: "https://…/basic.ics"; color: Theme.inkMuted }
+                }
+            }
+        }
+    }
 }

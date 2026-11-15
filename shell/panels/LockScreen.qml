@@ -18,6 +18,9 @@ Scope {
     property string note: ""
     property bool wrong: false
     readonly property bool busy: pam.active
+    // The password was right: the screen takes a moment to wave goodbye.
+    property bool leaving: false
+    Timer { id: leave; interval: Math.max(1, 280 * Motion.scale); onTriggered: { Shell.locked = false; root.leaving = false } }
 
     function submit(text) {
         if (busy || text.length === 0) return
@@ -36,7 +39,7 @@ Scope {
         }
         onCompleted: result => {
             root.pending = ""
-            if (result === PamResult.Success) { root.note = ""; Shell.locked = false }
+            if (result === PamResult.Success) { root.note = ""; root.leaving = true; leave.restart() }
             else {
                 root.wrong = true
                 root.note = result === PamResult.MaxTries ? Lang.t("Too many attempts. Wait a moment and try again.") : Lang.t("Wrong password")
@@ -55,15 +58,36 @@ Scope {
 
             SystemClock { id: clock; precision: SystemClock.Minutes }
 
+            // Locking: the picture settles, then clock, lock and password
+            // field arrive one after the other.
+            property real enter: 0
+            NumberAnimation on enter { from: 0; to: 1; duration: Math.max(1, 1100 * Motion.scale) }
+            function at(step) {
+                const t = Math.max(0, Math.min(1, (enter - step * 0.09) / 0.45))
+                return 1 - Math.pow(1 - t, 3)
+            }
+            Connections {
+                target: root
+                function onWrongChanged() { if (root.wrong) shake.restart() }
+            }
+
             Image {
                 anchors.fill: parent
+                opacity: surface.at(0)
+                scale: 1.12 - 0.12 * surface.at(0) + (root.leaving ? 0.06 : 0)
+                Behavior on scale { enabled: root.leaving; Spring { duration: Motion.spatialSlow } }
                 source: Config.wallpaper.length > 0 ? "file://" + Config.wallpaperFor(surface.screen) : ""
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 sourceSize.width: width
                 sourceSize.height: height
             }
-            Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.surface, 0.72) }
+            Rectangle {
+                anchors.fill: parent
+                color: Theme.alpha(Theme.surface, 0.72)
+                opacity: root.leaving ? 0 : surface.at(0)
+                Behavior on opacity { enabled: root.leaving; Fade { duration: Motion.effectsSlow } }
+            }
 
             // Clicking anywhere brings the keyboard back to the password field.
             MouseArea { anchors.fill: parent; onClicked: secret.forceActiveFocus() }
@@ -72,9 +96,16 @@ Scope {
                 anchors.centerIn: parent
                 width: 420
                 spacing: 0
+                opacity: root.leaving ? 0 : 1
+                scale: root.leaving ? 1.1 : 1
+                Behavior on opacity { Fade {} }
+                Behavior on scale { Spring {} }
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
+                    opacity: surface.at(1)
+                    scale: 0.82 + 0.18 * surface.at(1)
+                    transform: Translate { y: (surface.at(1) - 1) * 50 }
                     text: Qt.formatDateTime(clock.date, Config.clock24h ? "HH:mm" : "h:mm")
                     font.pixelSize: 150
                     font.weight: Font.Black
@@ -84,6 +115,8 @@ Scope {
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: -10
+                    opacity: surface.at(2.2)
+                    transform: Translate { y: (surface.at(2.2) - 1) * 24 }
                     text: Lang.date(clock.date, Lang.t("dddd, d MMMM"))
                     font.pixelSize: 22
                     font.weight: Font.DemiBold
@@ -95,6 +128,9 @@ Scope {
                     Layout.topMargin: 56
                     implicitWidth: 76
                     implicitHeight: 76
+                    opacity: surface.at(3.4)
+                    scale: 0.3 + 0.7 * surface.at(3.4)
+                    rotation: (surface.at(3.4) - 1) * 120
                     Blob {
                         anchors.fill: parent
                         lobes: 8
@@ -104,7 +140,7 @@ Scope {
                     }
                     MIcon {
                         anchors.centerIn: parent
-                        icon: root.busy ? "hourglass_top" : "lock"
+                        icon: root.leaving ? "lock_open" : (root.busy ? "hourglass_top" : "lock")
                         filled: true
                         size: 34
                         color: root.wrong ? Theme.inkOnErrorContainer : Theme.inkOnPrimaryContainer
@@ -113,6 +149,7 @@ Scope {
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: 14
+                    opacity: surface.at(4.2)
                     text: Quickshell.env("USER") || ""
                     font.pixelSize: 20
                     font.weight: Font.Bold
@@ -127,6 +164,18 @@ Scope {
                     border.width: 2
                     border.color: root.wrong ? Theme.error : (secret.activeFocus ? Theme.primary : "transparent")
                     Behavior on radius { Spring {} }
+                    Behavior on border.color { Tint {} }
+                    opacity: surface.at(5)
+                    // Rises into place; a wrong password shakes it.
+                    transform: Translate { id: nudge; y: (1 - surface.at(5)) * 36 }
+                    SequentialAnimation {
+                        id: shake
+                        NumberAnimation { target: nudge; property: "x"; to: -14; duration: 50 }
+                        NumberAnimation { target: nudge; property: "x"; to: 12; duration: 70 }
+                        NumberAnimation { target: nudge; property: "x"; to: -8; duration: 70 }
+                        NumberAnimation { target: nudge; property: "x"; to: 5; duration: 60 }
+                        NumberAnimation { target: nudge; property: "x"; to: 0; duration: 60 }
+                    }
 
                     TextInput {
                         id: secret
@@ -173,6 +222,7 @@ Scope {
                     wrapMode: Text.Wrap
                     text: root.note
                     opacity: text.length > 0 ? 1 : 0
+                    Behavior on opacity { Fade {} }
                     font.weight: Font.DemiBold
                     color: root.wrong ? Theme.error : Theme.inkMuted
                 }
@@ -182,7 +232,8 @@ Scope {
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 40
+                anchors.bottomMargin: 40 - (1 - surface.at(6)) * 30
+                opacity: root.leaving ? 0 : surface.at(6)
                 spacing: 18
                 Row {
                     visible: Battery.available

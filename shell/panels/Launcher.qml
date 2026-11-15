@@ -114,6 +114,10 @@ PanelSurface {
                 pressedRadius: Theme.cornerM
                 onClicked: root.launch(modelData)
                 onHoveredChanged: if (hovered) grid.currentIndex = index
+                // The icons pop in row by row when the launcher opens.
+                readonly property real arrived: root.shown(1 + Math.min(6, Math.floor(index / root.columns) * 0.8 + (index % root.columns) * 0.15))
+                opacity: arrived
+                scale: 0.8 + 0.2 * arrived
 
                 Column {
                     anchors.centerIn: parent
