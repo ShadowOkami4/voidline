@@ -138,6 +138,14 @@ ColumnLayout {
             }
         }
         SegItem {
+            icon: "tablet"
+            hue: 3
+            lobes: 0
+            title: Lang.t("Tablet mode")
+            description: Lang.t("Puts a keyboard button into the bar and lets you swipe between workspaces on a touch screen.")
+            Toggle { checked: Config.tabletMode; onToggled: v => Config.tabletMode = v }
+        }
+        SegItem {
             icon: "record_voice_over"
             hue: 2
             lobes: 8

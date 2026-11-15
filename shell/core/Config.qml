@@ -58,6 +58,9 @@ Singleton {
     // On-screen keyboard on show, and the screen reader (Orca) running.
     property alias onScreenKeyboard: data.onScreenKeyboard
     property alias screenReader: data.screenReader
+    // Tablet mode: a keyboard button in the bar and swiping between
+    // workspaces on a touch screen.
+    property alias tabletMode: data.tabletMode
     // Open a screenshot in the editor (swappy) before saving, when installed.
     property alias screenshotEdit: data.screenshotEdit
     // Town for the weather in the calendar; empty = no weather, nothing is requested.
@@ -185,6 +188,7 @@ Singleton {
             property bool highContrast: false
             property bool onScreenKeyboard: false
             property bool screenReader: false
+            property bool tabletMode: false
             property bool screenshotEdit: false
             property string weatherPlace: ""
             property string language: ""
@@ -225,6 +229,12 @@ Singleton {
                 property bool shadows: true
                 property bool dimInactive: false
                 property bool vrr: true
+                // Touchpad gestures: fingers used, and what each swipe does
+                // ("" = nothing; see Keybinds.gestureActions).
+                property int gestureFingers: 3
+                property bool gestureWorkspaces: true
+                property string gestureUp: "switcher"
+                property string gestureDown: "minimize"
             }
             property JsonObject niri: JsonObject {
                 property bool hideTitleBars: true

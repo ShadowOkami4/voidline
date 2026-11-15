@@ -83,6 +83,14 @@ PanelWindow {
                 anchors.rightMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 8
+                IconBtn {
+                    visible: Config.tabletMode
+                    anchors.verticalCenter: parent.verticalCenter
+                    icon: "keyboard"
+                    size: 30
+                    selected: Config.onScreenKeyboard
+                    onClicked: Config.onScreenKeyboard = !Config.onScreenKeyboard
+                }
                 Tray { window: bar; anchors.verticalCenter: parent.verticalCenter }
                 Status { screen: bar.screen; anchors.verticalCenter: parent.verticalCenter }
             }
@@ -112,6 +120,14 @@ PanelWindow {
                 anchors.rightMargin: 14
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 10
+                IconBtn {
+                    visible: Config.tabletMode
+                    anchors.verticalCenter: parent.verticalCenter
+                    icon: "keyboard"
+                    size: 30
+                    selected: Config.onScreenKeyboard
+                    onClicked: Config.onScreenKeyboard = !Config.onScreenKeyboard
+                }
                 Tray { window: bar; anchors.verticalCenter: parent.verticalCenter }
                 Status { screen: bar.screen; contained: false; anchors.verticalCenter: parent.verticalCenter }
                 Clock { layout: "stacked"; anchors.verticalCenter: parent.verticalCenter }
@@ -157,6 +173,14 @@ PanelWindow {
                 anchors.rightMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 8
+                IconBtn {
+                    visible: Config.tabletMode
+                    anchors.verticalCenter: parent.verticalCenter
+                    icon: "keyboard"
+                    size: 30
+                    selected: Config.onScreenKeyboard
+                    onClicked: Config.onScreenKeyboard = !Config.onScreenKeyboard
+                }
                 Tray { window: bar; anchors.verticalCenter: parent.verticalCenter }
                 Status { screen: bar.screen; contained: false; implicitHeight: 26; anchors.verticalCenter: parent.verticalCenter }
                 Clock { layout: "inline"; anchors.verticalCenter: parent.verticalCenter }

@@ -81,8 +81,35 @@ Singleton {
     }
 
     // ---- compositor output -----------------------------------------------------------
-    function hyprland() {
+    // ---- touchpad gestures (Hyprland) -----------------------------------------------
+    // What a swipe up or down can do. `action` is one of Hyprland's own
+    // gesture actions, `ipc` a call into the shell.
+    readonly property var gestureActions: [
+        { value: "", label: Lang.t("Nothing") },
+        { value: "switcher", label: Lang.t("Window switcher"), ipc: "switcher" },
+        { value: "launcher", label: Lang.t("Launcher"), ipc: "toggle launcher" },
+        { value: "quick", label: Lang.t("Quick settings"), ipc: "toggle quick" },
+        { value: "minimize", label: Lang.t("Minimise"), ipc: "minimize" },
+        { value: "fullscreen", label: Lang.t("Full screen"), action: "fullscreen" },
+        { value: "close", label: Lang.t("Close window"), action: "close" }
+    ]
+    function gestures() {
+        const h = Config.hyprland
+        const n = h.gestureFingers === 4 ? 4 : 3
         let out = ""
+        if (h.gestureWorkspaces) out += `hl.gesture({ fingers = ${n}, direction = "horizontal", action = "workspace" })\n`
+        for (const [dir, pick] of [["up", h.gestureUp], ["down", h.gestureDown]]) {
+            const a = gestureActions.find(x => x.value === pick)
+            if (!a || a.value === "") continue
+            const what = a.action ? `"${a.action}"` : `function() hl.exec_cmd("qs -c voidline ipc call shell ${a.ipc}") end`
+            out += `hl.gesture({ fingers = ${n}, direction = "${dir}", action = ${what} })\n`
+        }
+        if (Config.tabletMode) out += "hl.config({ gestures = { workspace_swipe_touch = true } })\n"
+        return out
+    }
+
+    function hyprland() {
+        let out = gestures()
         for (const a of actions) {
             const c = combo(a.id)
             if (c.length === 0) continue

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.core
 import qs.compositor
+import qs.services
 import qs.widgets
 
 // Window-manager settings. The shared part looks the same on every
@@ -244,6 +245,55 @@ ColumnLayout {
                 title: Lang.t("Adaptive sync (VRR)")
                 description: Lang.t("Let the display follow the frame rate on screens that support it.")
                 Toggle { checked: Config.hyprland.vrr; onToggled: v => Config.hyprland.vrr = v }
+            }
+        }
+
+        SegGroup {
+            visible: page.hypr
+            title: Lang.t("Touchpad gestures")
+            SegItem {
+                icon: "swipe"
+                hue: 3
+                lobes: 0
+                title: Lang.t("Fingers")
+                description: Lang.t("How many fingers a swipe needs.")
+                Choice {
+                    value: Config.hyprland.gestureFingers
+                    options: [{ value: 3, label: Lang.t("Three") }, { value: 4, label: Lang.t("Four") }]
+                    onPicked: v => Config.hyprland.gestureFingers = v
+                }
+            }
+            SegItem {
+                icon: "swipe_left"
+                hue: 4
+                lobes: 4
+                title: Lang.t("Swipe sideways")
+                description: Lang.t("Moves between workspaces; the windows follow your fingers.")
+                Toggle { checked: Config.hyprland.gestureWorkspaces; onToggled: v => Config.hyprland.gestureWorkspaces = v }
+            }
+            SegItem {
+                icon: "swipe_up"
+                hue: 5
+                lobes: 8
+                title: Lang.t("Swipe up")
+                Dropdown {
+                    width: 220
+                    value: Config.hyprland.gestureUp
+                    options: Keybinds.gestureActions
+                    onPicked: v => Config.hyprland.gestureUp = v
+                }
+            }
+            SegItem {
+                icon: "swipe_down"
+                hue: 0
+                lobes: 5
+                title: Lang.t("Swipe down")
+                Dropdown {
+                    width: 220
+                    value: Config.hyprland.gestureDown
+                    options: Keybinds.gestureActions
+                    onPicked: v => Config.hyprland.gestureDown = v
+                }
             }
         }
 
