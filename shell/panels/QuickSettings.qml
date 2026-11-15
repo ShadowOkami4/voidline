@@ -1,6 +1,7 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 import qs.core
 import qs.compositor
 import qs.services
@@ -18,7 +19,23 @@ PanelSurface {
     // "" is the normal view; "wifi" and "bluetooth" are the mini menus.
     property string view: ""
 
-    onOpenChanged: { armed = ""; view = ""; Sys.watching = open }
+    onOpenChanged: { armed = ""; view = ""; Sys.watching = open; if (open) arrive.restart() }
+    Behavior on panelHeight { Spring { duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
+
+    // ---- motion -----------------------------------------------------------------------
+    // Opening: the sections arrive one after the other, from the top down.
+    property real reveal: 0
+    NumberAnimation { id: arrive; target: root; property: "reveal"; from: 0; to: 1; duration: Math.max(1, 800 * Motion.scale) }
+    // 0..1 for the section at `step` (fractions are fine), eased out.
+    function shown(step) {
+        const t = Math.max(0, Math.min(1, (reveal - step * 0.075) / 0.4))
+        return 1 - Math.pow(1 - t, 3)
+    }
+    // Main view <-> mini menu: one slides out to the left, the other in from the right.
+    property string lastView: "wifi"
+    onViewChanged: if (view !== "") lastView = view
+    property real page: view === "" ? 0 : 1
+    Behavior on page { NumberAnimation { duration: Motion.effectsSlow; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.effectsSlowCurve } }
     Timer { id: disarm; interval: 3000; onTriggered: root.armed = "" }
 
     // Power actions need a second click within three seconds.
@@ -32,21 +49,23 @@ PanelSurface {
 
     QuickMenu {
         id: menu
-        x: 20
+        x: 20 + (1 - root.page) * 48
         y: 20
         width: parent.width - 40
-        visible: root.view !== ""
-        kind: root.view === "bluetooth" ? "bluetooth" : "wifi"
+        visible: root.page > 0.01
+        opacity: root.page
+        kind: root.lastView === "bluetooth" ? "bluetooth" : "wifi"
         onBack: root.view = ""
     }
 
     ColumnLayout {
         id: column
-        x: 20
+        x: 20 - root.page * 48
         y: 20
         width: parent.width - 40
         spacing: 14
-        visible: root.view === ""
+        visible: root.page < 0.99
+        opacity: 1 - root.page
 
         // Header: title + settings and power
         RowLayout {
@@ -59,12 +78,16 @@ PanelSurface {
                 icon: "settings"
                 size: 44
                 tonal: true
+                opacity: root.shown(0)
+                scale: 0.6 + 0.4 * root.shown(0)
                 onClicked: Shell.openSettings()
             }
             IconBtn {
                 icon: "lock"
                 size: 44
                 tonal: true
+                opacity: root.shown(0.4)
+                scale: 0.6 + 0.4 * root.shown(0.4)
                 onClicked: Shell.lock()
             }
 
@@ -76,7 +99,10 @@ PanelSurface {
                 ]
                 IconBtn {
                     required property var modelData
+                    required property int index
                     readonly property bool hot: root.armed === modelData.id
+                    opacity: root.shown(0.8 + index * 0.4)
+                    scale: 0.6 + 0.4 * root.shown(0.8 + index * 0.4)
                     icon: hot ? "check" : modelData.icon
                     size: 44
                     tonal: true
@@ -95,58 +121,68 @@ PanelSurface {
 
             Tile {
                 Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(1.0)) * 22 }
                 icon: Network.icon
                 title: Network.type === "ethernet" ? "Ethernet" : Lang.t("Wi-Fi")
                 subtitle: Network.label
                 active: Network.connected
                 enabledInput: Network.available
-                opacity: Network.available ? 1 : 0.5
+                opacity: (Network.available ? 1 : 0.5) * root.shown(1)
                 hasMore: Network.available
                 onMore: root.view = "wifi"
                 onClicked: Network.setWifi(!Network.wifiEnabled)
             }
             Tile {
                 Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(1.25)) * 22 }
                 icon: Bt.on ? (Bt.connected.length > 0 ? "bluetooth_connected" : "bluetooth") : "bluetooth_disabled"
                 title: "Bluetooth"
                 subtitle: !Bt.available ? Lang.t("Unavailable") : (Bt.switching ? Lang.t("Switching on…")
                     : (!Bt.on ? Lang.t("Off") : (Bt.connected.length > 0 ? Bt.connected[0].name : Lang.t("On"))))
                 active: Bt.on
                 enabledInput: Bt.available
-                opacity: Bt.available ? 1 : 0.5
+                opacity: (Bt.available ? 1 : 0.5) * root.shown(1.25)
                 hasMore: Bt.available
                 onMore: root.view = "bluetooth"
                 onClicked: Bt.setOn(!Bt.on)
             }
             Tile {
                 Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(1.7)) * 22 }
                 icon: Config.doNotDisturb ? "notifications_off" : "notifications"
                 title: Lang.t("Do not disturb")
+                opacity: root.shown(1.7)
                 subtitle: Config.doNotDisturb ? Lang.t("On") : Lang.t("Off")
                 active: Config.doNotDisturb
                 onClicked: Config.doNotDisturb = !Config.doNotDisturb
             }
             Tile {
                 Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(1.95)) * 22 }
                 icon: Config.dark ? "dark_mode" : "light_mode"
                 title: Lang.t("Dark theme")
+                opacity: root.shown(1.95)
                 subtitle: Config.dark ? Lang.t("On") : Lang.t("Off")
                 active: Config.dark
                 onClicked: Config.dark = !Config.dark
             }
             Tile {
                 Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(2.4)) * 22 }
                 visible: Appearance.nightAvailable
                 icon: "nightlight"
                 title: Lang.t("Night light")
+                opacity: root.shown(2.4)
                 subtitle: Config.nightLight ? Lang.t("On") : Lang.t("Off")
                 active: Config.nightLight
                 onClicked: Config.nightLight = !Config.nightLight
             }
             Tile {
                 Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(2.65)) * 22 }
                 icon: Capture.recording ? "stop_circle" : "screenshot_region"
                 title: Capture.recording ? Lang.t("Stop recording") : Lang.t("Screenshot")
+                opacity: root.shown(2.65)
                 subtitle: Capture.recording ? Lang.t("Recording") : Lang.t("Select an area")
                 active: Capture.recording
                 onClicked: Capture.recording ? Capture.toggleRecording() : Capture.shoot("region")
@@ -156,6 +192,8 @@ PanelSurface {
         ExpSlider {
             Layout.fillWidth: true
             icon: Audio.icon
+            opacity: root.shown(3.4)
+            transform: Translate { y: (1 - root.shown(3.4)) * 22 }
             value: Audio.volume
             onMoved: v => Audio.setVolume(v)
         }
@@ -163,6 +201,8 @@ PanelSurface {
             Layout.fillWidth: true
             visible: Brightness.available
             icon: "brightness_medium"
+            opacity: root.shown(4)
+            transform: Translate { y: (1 - root.shown(4)) * 22 }
             value: Brightness.value
             accent: Theme.tertiary
             onMoved: v => Brightness.set(v)
@@ -174,32 +214,64 @@ PanelSurface {
             spacing: 8
             Repeater {
                 model: [
-                    { icon: "memory", label: "CPU", value: Math.round(Sys.cpu * 100) + "%", level: Sys.cpu },
-                    { icon: "memory_alt", label: Lang.t("Memory"), value: Sys.memoryGb.toFixed(1) + " GB", level: Sys.memory },
-                    { icon: "device_thermostat", label: Lang.t("Heat"), value: Sys.temperature > 0 ? Sys.temperature + "°" : "–", level: Math.max(0, Math.min(1, (Sys.temperature - 30) / 65)) }
+                    { icon: "memory", label: "CPU", value: Math.round(Sys.cpu * 100) + " %", level: Sys.cpu, tone: Theme.primary },
+                    { icon: "memory_alt", label: Lang.t("Memory"), value: Sys.memoryGb.toFixed(1) + " GB", level: Sys.memory, tone: Theme.tertiary },
+                    { icon: "device_thermostat", label: Lang.t("Heat"), value: Sys.temperature > 0 ? Sys.temperature + " °C" : "–", level: Math.max(0, Math.min(1, (Sys.temperature - 30) / 65)), tone: Theme.secondary }
                 ]
                 Rectangle {
                     id: gauge
                     required property var modelData
+                    required property int index
+                    readonly property real step: 4.6 + index * 0.35
+                    readonly property color tone: modelData.level > 0.85 ? Theme.error : modelData.tone
+                    // Follows the reading softly; the ring also sweeps in on opening.
+                    property real level: Math.max(0, Math.min(1, modelData.level))
+                    Behavior on level { NumberAnimation { duration: Motion.spatialSlow; easing.type: Easing.OutCubic } }
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
-                    implicitHeight: 54
+                    implicitHeight: 64
                     radius: Theme.cornerL
                     color: Theme.surfaceContainerHighest
-                    clip: true
-                    Rectangle {
-                        width: parent.width * gauge.modelData.level
-                        height: parent.height
-                        color: Theme.alpha(gauge.modelData.level > 0.85 ? Theme.error : Theme.primary, 0.22)
-                        Behavior on width { Spring { duration: Motion.spatialSlow } }
-                    }
-                    MIcon { id: gIcon; x: 12; anchors.verticalCenter: parent.verticalCenter; icon: gauge.modelData.icon; size: 20; color: Theme.inkMuted }
-                    Column {
-                        anchors.left: gIcon.right
-                        anchors.leftMargin: 8
+                    opacity: root.shown(step)
+                    transform: Translate { y: (1 - root.shown(gauge.step)) * 22 }
+
+                    Item {
+                        id: ring
+                        x: 12
                         anchors.verticalCenter: parent.verticalCenter
-                        Label { text: gauge.modelData.value; font.weight: Font.Black; font.pixelSize: Theme.textBody }
-                        Label { text: gauge.modelData.label; font.pixelSize: Theme.textLabelS; color: Theme.inkMuted }
+                        width: 40
+                        height: 40
+                        Shape {
+                            anchors.fill: parent
+                            preferredRendererType: Shape.CurveRenderer
+                            ShapePath {
+                                fillColor: "transparent"
+                                strokeColor: Theme.alpha(Theme.ink, 0.12)
+                                strokeWidth: 4
+                                PathAngleArc { centerX: 20; centerY: 20; radiusX: 17; radiusY: 17; startAngle: 0; sweepAngle: 360 }
+                            }
+                            ShapePath {
+                                fillColor: "transparent"
+                                strokeColor: gauge.tone
+                                strokeWidth: 4
+                                capStyle: ShapePath.RoundCap
+                                PathAngleArc {
+                                    centerX: 20; centerY: 20; radiusX: 17; radiusY: 17
+                                    startAngle: -90
+                                    sweepAngle: Math.max(1, 360 * gauge.level * root.shown(gauge.step))
+                                }
+                            }
+                        }
+                        MIcon { anchors.centerIn: parent; icon: gauge.modelData.icon; size: 18; color: gauge.tone }
+                    }
+                    Column {
+                        anchors.left: ring.right
+                        anchors.leftMargin: 10
+                        anchors.right: parent.right
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        Label { width: parent.width; elide: Text.ElideRight; text: gauge.modelData.value; font.weight: Font.Black; font.pixelSize: Theme.textBody }
+                        Label { width: parent.width; elide: Text.ElideRight; text: gauge.modelData.label; font.pixelSize: Theme.textLabelS; color: Theme.inkMuted }
                     }
                 }
             }
@@ -207,6 +279,8 @@ PanelSurface {
 
         MediaCard {
             Layout.fillWidth: true
+            opacity: root.shown(5.6)
+            transform: Translate { y: (1 - root.shown(5.6)) * 22 }
             visible: Media.available
         }
 
@@ -214,6 +288,8 @@ PanelSurface {
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: 4
+            opacity: root.shown(6.2)
+            transform: Translate { y: (1 - root.shown(6.2)) * 22 }
             Label {
                 Layout.fillWidth: true
                 text: Lang.t("Notifications")
@@ -235,6 +311,7 @@ PanelSurface {
             visible: Notifs.list.length === 0 && Notifs.earlier.length === 0
             horizontalAlignment: Text.AlignHCenter
             text: Lang.t("All quiet")
+            opacity: root.shown(6.8)
             color: Theme.inkMuted
         }
 
@@ -248,6 +325,9 @@ PanelSurface {
             model: Notifs.list
             delegate: NotificationCard {
                 required property var modelData
+                required property int index
+                opacity: root.shown(6.8 + Math.min(index, 3) * 0.3)
+                transform: Translate { y: (1 - root.shown(6.8 + Math.min(index, 3) * 0.3)) * 22 }
                 width: ListView.view.width
                 notification: modelData
                 onDismissed: modelData.dismiss()
@@ -274,6 +354,7 @@ PanelSurface {
             delegate: Rectangle {
                 id: old
                 required property var modelData
+                opacity: root.shown(7)
                 width: ListView.view.width
                 height: 52
                 radius: Theme.cornerL
