@@ -97,6 +97,11 @@ QtObject {
     }
 
     property Timer refreshLater: Timer { interval: 900; onTriggered: root.refreshOutputs() }
+    // A screen was plugged in or pulled out.
+    property Connections plug: Connections {
+        target: Hyprland
+        function onRawEvent(event) { if (event.name.startsWith("monitoradded") || event.name.startsWith("monitorremoved")) root.refreshLater.restart() }
+    }
     property Process monitors: Process {
         // "all" also lists screens that mirror another one.
         command: ["hyprctl", "-j", "monitors", "all"]
@@ -106,6 +111,8 @@ QtObject {
                     root.outputs = JSON.parse(text).map(m => ({
                         name: m.name,
                         description: (m.make + " " + m.model).trim(),
+                        // Tells two screens apart that use the same socket in turn.
+                        identity: (m.make + " " + m.model + " " + (m.serial || "")).trim(),
                         mode: `${m.width}x${m.height}@${m.refreshRate.toFixed(2)}`,
                         scale: m.scale,
                         modes: m.availableModes.map(s => s.replace("Hz", "")),

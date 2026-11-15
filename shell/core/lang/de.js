@@ -389,7 +389,7 @@ var words = {
 "Keep": "Behalten",
 "Looking for displays…": "Bildschirme werden gesucht…",
 "No supported window manager is running.": "Es läuft kein unterstützter Fenstermanager.",
-"Drag a screen to where it stands on your desk. Click one to change its settings.": "Zieh einen Bildschirm dorthin, wo er auf deinem Tisch steht. Klick einen an, um ihn einzustellen.",
+"Drag a screen to where it stands on your desk. Click one to change its settings. The setup is remembered for this set of screens.": "Zieh einen Bildschirm dorthin, wo er auf deinem Tisch steht. Klick einen an, um ihn einzustellen. Die Anordnung wird für diese Bildschirm-Kombination gemerkt.",
 "Only this screen carries the desktop. The others are listed below.": "Nur dieser Bildschirm zeigt den Schreibtisch. Die anderen stehen unten.",
 "One screen connected.": "Ein Bildschirm angeschlossen.",
 "Resolution": "Auflösung",

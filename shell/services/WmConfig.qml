@@ -145,6 +145,51 @@ Singleton {
         return out + "input {\n" + input + "}\n"
     }
 
+    // ---- one setup per set of screens ----------------------------------------------
+    // Desk with two monitors, laptop alone, projector: each set of screens
+    // keeps its own arrangement, modes and scales. The set is told by what
+    // the screens are (maker, model, serial number), not by the sockets.
+    readonly property string screenSet: Compositor.outputs
+        .map(o => (o.identity && o.identity.length > 0 ? o.identity : (o.description || o.name))).sort().join(" + ")
+    // The set the settings in Config belong to right now.
+    property string profileSet: ""
+    readonly property string profileNow: JSON.stringify({ key: profileSet, places: Config.displayPlaces, displays: Config.displays })
+
+    Timer { interval: 2500; running: true; onTriggered: Compositor.refreshOutputs() }
+    onScreenSetChanged: if (screenSet.length > 0 && Config.loaded) settle.restart()
+    Timer {
+        id: settle
+        interval: 700
+        onTriggered: {
+            const key = root.screenSet
+            if (key.length === 0 || key === root.profileSet) return
+            let found = null
+            for (const e of Config.displayProfiles) {
+                try { const p = JSON.parse(e); if (p.key === key) { found = p; break } } catch (err) {}
+            }
+            root.profileSet = key
+            if (found) {
+                // Back at a known set of screens: bring its setup back.
+                if (JSON.stringify(found.places) !== JSON.stringify(Config.displayPlaces)) Config.displayPlaces = found.places
+                if (JSON.stringify(found.displays) !== JSON.stringify(Config.displays)) Config.displays = found.displays
+            } else {
+                // A new set: start from what is there, minus screens that are gone.
+                const here = Compositor.outputs.map(o => o.name)
+                Config.displayPlaces = Config.displayPlaces.filter(e => here.includes(e.split("=")[0]))
+                root.remember()
+            }
+        }
+    }
+    function remember() {
+        if (profileSet.length === 0 || profileSet !== screenSet) return
+        const rest = Config.displayProfiles.filter(e => { try { return JSON.parse(e).key !== profileSet } catch (err) { return false } })
+        if (rest.length === Config.displayProfiles.length - 1 && Config.displayProfiles.includes(profileNow)) return
+        // The newest twenty are plenty.
+        Config.displayProfiles = rest.slice(-19).concat([profileNow])
+    }
+    onProfileNowChanged: keep.restart()
+    Timer { id: keep; interval: 1200; onTriggered: root.remember() }
+
     // Screen arrangement takes effect at once on Hyprland (Niri reloads the file).
     property bool placesReady: false
     Timer { interval: 3000; running: true; onTriggered: root.placesReady = true }

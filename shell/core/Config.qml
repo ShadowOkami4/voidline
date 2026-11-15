@@ -96,6 +96,9 @@ Singleton {
     property alias niri: data.niri
     // Saved display modes, one "name|mode|scale" entry per output.
     property alias displays: data.displays
+    // The display setup of every set of screens seen so far, one JSON entry
+    // each: { key, places, displays }. Kept up to date by WmConfig.
+    property alias displayProfiles: data.displayProfiles
 
     // "default" is the bundled Orbit wallpaper, "" is none, "live:<id>" a live
     // wallpaper package, anything else an image path.
@@ -207,6 +210,7 @@ Singleton {
             property string terminal: "kitty"
 
             property list<string> displays: []
+            property list<string> displayProfiles: []
             property list<string> liveOptions: []
             property bool livePauseOnBattery: true
             property bool livePauseWhenCovered: true

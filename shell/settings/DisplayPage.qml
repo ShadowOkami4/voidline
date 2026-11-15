@@ -400,7 +400,7 @@ ColumnLayout {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 14
             visible: page.outputs.length > 0
-            text: page.placed.length > 1 ? Lang.t("Drag a screen to where it stands on your desk. Click one to change its settings.")
+            text: page.placed.length > 1 ? Lang.t("Drag a screen to where it stands on your desk. Click one to change its settings. The setup is remembered for this set of screens.")
                 : (page.several ? Lang.t("Only this screen carries the desktop. The others are listed below.") : Lang.t("One screen connected."))
             font.pixelSize: Theme.textLabel
             color: Theme.inkMuted
