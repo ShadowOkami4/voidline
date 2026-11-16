@@ -20,6 +20,11 @@ for p in $(pgrep -x qs) $(pgrep -x quickshell) $(pgrep -x dbus-monitor) $(pgrep 
 done
 sleep 0.2
 
+# Voidline shows the notifications itself. Another notification program that
+# the system started in the meantime (it does so by itself when an app sends
+# a notification and nobody is there to take it) would keep them all.
+for other in dunst mako swaync; do pkill -x "$other" 2>/dev/null; done
+
 export VOIDLINE_UI_SCALE="$scale"
 export QT_SCALE_FACTOR="$scale"
 # Quickshell's allocator (jemalloc) keeps a separate pool per CPU core and holds

@@ -20,7 +20,7 @@ PanelSurface {
     // "" is the normal view; "wifi" and "bluetooth" are the mini menus.
     property string view: ""
 
-    onOpenChanged: { armed = ""; view = ""; Sys.watching = open; Vpn.watching = open }
+    onOpenChanged: { armed = ""; view = ""; unfolded = []; Sys.watching = open; Vpn.watching = open }
     Behavior on panelHeight { Spring { duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
 
     // ---- motion -----------------------------------------------------------------------
@@ -30,6 +30,28 @@ PanelSurface {
     property real page: view === "" ? 0 : 1
     Behavior on page { NumberAnimation { duration: Motion.effectsSlow; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.effectsSlowCurve } }
     Timer { id: disarm; interval: 3000; onTriggered: root.armed = "" }
+
+    // Notifications grouped by app, in the order of each app's newest one.
+    // Three or more of one app fold into the newest plus a "more" line.
+    property var unfolded: []
+    readonly property var noteRows: {
+        const groups = []
+        for (const n of Notifs.list) {
+            const app = n.appName || ""
+            let g = groups.find(x => x.app === app)
+            if (!g) { g = { app: app, items: [] }; groups.push(g) }
+            g.items.push(n)
+        }
+        const rows = []
+        for (const g of groups) {
+            const many = g.items.length >= 3
+            const open = many && unfolded.includes(g.app)
+            if (open) rows.push({ kind: "head", app: g.app, count: g.items.length, n: g.items[0], all: g.items })
+            for (const n of (many && !open ? g.items.slice(0, 1) : g.items)) rows.push({ kind: "card", app: g.app, n: n })
+            if (many && !open) rows.push({ kind: "more", app: g.app, count: g.items.length - 1, n: g.items[0] })
+        }
+        return rows
+    }
 
     // Power actions need a second click within three seconds.
     function power(action) {
@@ -171,7 +193,7 @@ PanelSurface {
                 onClicked: Config.nightLight = !Config.nightLight
             }
             Tile {
-                id: power
+                id: powerTile
                 // Tap to go through: power saver, balanced, performance.
                 readonly property int mode: PowerProfiles.profile
                 readonly property var modes: PowerProfiles.hasPerformanceProfile
@@ -355,15 +377,76 @@ PanelSurface {
             clip: true
             spacing: 6
             boundsBehavior: Flickable.StopAtBounds
-            model: Notifs.list
-            delegate: NotificationCard {
+            model: root.noteRows
+            delegate: Item {
+                id: noteRow
                 required property var modelData
                 required property int index
-                opacity: root.shown(6.8 + Math.min(index, 3) * 0.3)
-                transform: Translate { y: (1 - root.shown(6.8 + Math.min(index, 3) * 0.3)) * 22 }
+                readonly property real arrived: root.shown(6.8 + Math.min(index, 3) * 0.3)
                 width: ListView.view.width
-                notification: modelData
-                onDismissed: modelData.dismiss()
+                height: modelData.kind === "card" ? card.implicitHeight : 34
+                opacity: arrived
+                transform: Translate { y: (1 - noteRow.arrived) * 22 }
+
+                NotificationCard {
+                    id: card
+                    visible: noteRow.modelData.kind === "card"
+                    width: parent.width
+                    notification: noteRow.modelData.n
+                    onDismissed: noteRow.modelData.n.dismiss()
+                }
+                // "4 more from Discord": opens the group.
+                Pressable {
+                    visible: noteRow.modelData.kind === "more"
+                    anchors.fill: parent
+                    color: Theme.surfaceContainer
+                    restRadius: Theme.cornerL
+                    onClicked: root.unfolded = root.unfolded.concat([noteRow.modelData.app])
+                    Label {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 16
+                        anchors.right: chevron.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        elide: Text.ElideRight
+                        text: noteRow.modelData.kind === "more" ? Lang.t("%1 more from %2", noteRow.modelData.count, noteRow.modelData.app || Lang.t("this app")) : ""
+                        font.pixelSize: Theme.textLabel
+                        font.weight: Font.DemiBold
+                        color: Theme.inkMuted
+                    }
+                    MIcon { id: chevron; anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; icon: "expand_more"; size: 20; color: Theme.inkMuted }
+                }
+                // An opened group: its name, fold it again, or clear all of it.
+                Item {
+                    visible: noteRow.modelData.kind === "head"
+                    anchors.fill: parent
+                    Label {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 6
+                        anchors.right: fold.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        elide: Text.ElideRight
+                        text: noteRow.modelData.kind === "head" ? (noteRow.modelData.app || Lang.t("Notifications")) + "  ·  " + noteRow.modelData.count : ""
+                        font.pixelSize: Theme.textLabel
+                        font.weight: Font.Bold
+                        color: Theme.primary
+                    }
+                    IconBtn {
+                        id: fold
+                        anchors.right: sweep.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        icon: "expand_less"
+                        size: 30
+                        onClicked: root.unfolded = root.unfolded.filter(a => a !== noteRow.modelData.app)
+                    }
+                    IconBtn {
+                        id: sweep
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        icon: "clear_all"
+                        size: 30
+                        onClicked: { for (const n of noteRow.modelData.all.slice()) n.dismiss() }
+                    }
+                }
             }
         }
 

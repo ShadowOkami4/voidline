@@ -247,21 +247,44 @@ Scope {
                 spacing: 18
                 Row {
                     visible: Battery.available
+                    anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
                     MIcon { anchors.verticalCenter: parent.verticalCenter; icon: Battery.charging ? "battery_charging_full" : "battery_full"; size: 20; color: Theme.inkMuted }
                     Label { anchors.verticalCenter: parent.verticalCenter; text: Battery.percent + "%"; color: Theme.inkMuted; font.weight: Font.DemiBold }
                 }
+                // How many notifications wait; what they say stays hidden.
                 Row {
-                    visible: Media.playing
+                    visible: Notifs.list.length > 0
+                    anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
-                    MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "music_note"; size: 20; color: Theme.inkMuted }
-                    Label {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: Math.min(implicitWidth, 420)
-                        elide: Text.ElideRight
-                        text: Media.title + (Media.artist ? "  ·  " + Media.artist : "")
-                        color: Theme.inkMuted
-                        font.weight: Font.DemiBold
+                    MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "notifications"; filled: true; size: 20; color: Theme.inkMuted }
+                    Label { anchors.verticalCenter: parent.verticalCenter; text: Notifs.list.length; color: Theme.inkMuted; font.weight: Font.DemiBold }
+                }
+                // What is playing, with the three buttons you want without unlocking.
+                Rectangle {
+                    visible: Media.available
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: tune.implicitWidth + 20
+                    height: 52
+                    radius: height / 2
+                    color: Theme.alpha(Theme.surfaceContainerHigh, 0.9)
+                    Row {
+                        id: tune
+                        anchors.centerIn: parent
+                        spacing: 4
+                        IconBtn { anchors.verticalCenter: parent.verticalCenter; icon: "skip_previous"; size: 38; onClicked: { Media.previous(); secret.forceActiveFocus() } }
+                        IconBtn { anchors.verticalCenter: parent.verticalCenter; icon: Media.playing ? "pause" : "play_arrow"; size: 40; selected: true; onClicked: { Media.toggle(); secret.forceActiveFocus() } }
+                        IconBtn { anchors.verticalCenter: parent.verticalCenter; icon: "skip_next"; size: 38; onClicked: { Media.next(); secret.forceActiveFocus() } }
+                        Label {
+                            anchors.verticalCenter: parent.verticalCenter
+                            leftPadding: 8
+                            rightPadding: 10
+                            width: Math.min(implicitWidth, 380)
+                            elide: Text.ElideRight
+                            text: Media.title + (Media.artist ? "  ·  " + Media.artist : "")
+                            color: Theme.ink
+                            font.weight: Font.DemiBold
+                        }
                     }
                 }
             }

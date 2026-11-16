@@ -178,6 +178,8 @@ var words = {
 "Launcher, minimise, styles": "App-Menü, Minimieren, Stile",
 "Default apps": "Standard-Apps",
 "Install apps": "Apps installieren",
+"%1 more from %2": "%1 weitere von %2",
+"this app": "dieser App",
 "By the clock": "Nach der Uhr",
 "Switches on at %1 and off at %2.": "Geht um %1 an und um %2 aus.",
 "Switch the night light on in the evening by itself.": "Das Nachtlicht abends von selbst einschalten.",
