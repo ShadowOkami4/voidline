@@ -83,6 +83,18 @@ ColumnLayout {
     }
 
     SegGroup {
+        title: Lang.t("When plugged in")
+        SegItem {
+            icon: "usb"
+            hue: 1
+            lobes: 8
+            title: Lang.t("Make drives ready by themselves")
+            description: Lang.t("A USB stick or SD card is ready as soon as you plug it in, and a notification offers to open it.")
+            Toggle { checked: Config.automount; onToggled: v => Config.automount = v }
+        }
+    }
+
+    SegGroup {
         title: Lang.t("This computer")
         Repeater {
             model: page.fixed

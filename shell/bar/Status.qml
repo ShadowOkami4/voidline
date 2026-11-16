@@ -28,6 +28,36 @@ Pressable {
         anchors.centerIn: parent
         spacing: 9
 
+        // Keyboard layout, when there is more than one. Click for the next.
+        Label {
+            visible: KeyLayout.several
+            anchors.verticalCenter: parent.verticalCenter
+            text: KeyLayout.current
+            font.pixelSize: Theme.textLabel
+            font.weight: Font.Bold
+            color: root.ink
+            MouseArea {
+                anchors.fill: parent
+                anchors.margins: -6
+                cursorShape: Qt.PointingHandCursor
+                onClicked: KeyLayout.next()
+            }
+        }
+        // An app is listening to the microphone.
+        MIcon {
+            visible: Audio.micInUse
+            anchors.verticalCenter: parent.verticalCenter
+            icon: "mic"
+            filled: true
+            size: 17
+            color: Theme.error
+            SequentialAnimation on opacity {
+                running: Audio.micInUse
+                loops: Animation.Infinite
+                NumberAnimation { to: 0.45; duration: 900; easing.type: Easing.InOutSine }
+                NumberAnimation { to: 1; duration: 900; easing.type: Easing.InOutSine }
+            }
+        }
         MIcon { icon: Network.icon; size: 17; color: root.ink; anchors.verticalCenter: parent.verticalCenter }
         MIcon { icon: Audio.icon; size: 17; color: root.ink; anchors.verticalCenter: parent.verticalCenter }
         Row {

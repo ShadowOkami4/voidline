@@ -157,6 +157,14 @@ ColumnLayout {
                 Label { id: go; anchors.centerIn: parent; text: Lang.t("Update"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
             }
         }
+        SegItem {
+            icon: "notifications"
+            hue: 4
+            lobes: 5
+            title: Lang.t("Tell me about updates")
+            description: Lang.t("Looks twice a day and notifies you once when updates are waiting.")
+            Toggle { checked: Config.updateNotify; onToggled: v => Config.updateNotify = v }
+        }
     }
 
     Label {

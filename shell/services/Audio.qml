@@ -22,4 +22,8 @@ Singleton {
     function toggleMute() { if (available) sink.audio.muted = !sink.audio.muted }
 
     PwObjectTracker { objects: [root.sink] }
+
+    // Apps that are recording right now (a call, a voice message, a recorder).
+    readonly property var listeners: Pipewire.nodes.values.filter(n => n.isStream && !n.isSink && !!n.audio)
+    readonly property bool micInUse: listeners.length > 0
 }

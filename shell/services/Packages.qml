@@ -198,6 +198,19 @@ true`])
 
     // ---- how many updates wait ---------------------------------------------------------
     property int updates: -1        // -1 = not known
+    // Looks a few minutes after starting and then twice a day; tells you once a day.
+    property string told: ""
+    Timer { interval: 5 * 60 * 1000; running: Config.updateNotify; onTriggered: root.countUpdates() }
+    Timer { interval: 12 * 60 * 60 * 1000; running: Config.updateNotify; repeat: true; onTriggered: root.countUpdates() }
+    onUpdatesChanged: {
+        const today = new Date().toDateString()
+        if (!Config.updateNotify || updates < 1 || told === today || busy.length > 0 || Shell.settingsOpen) return
+        told = today
+        Quickshell.execDetached(["sh", "-c", `
+answer=$(notify-send -a Voidline -i system-software-update --action=open="$3" "$1" "$2")
+[ "$answer" = open ] && qs -c voidline ipc call shell settingsPage install
+true`, "sh", Lang.t("Updates are waiting"), Lang.t("%1 updates for your system.", updates), Lang.t("Show")])
+    }
     function countUpdates() { if (!count.running) count.running = true }
     Process {
         id: count

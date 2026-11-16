@@ -96,6 +96,10 @@ Singleton {
         const clean = String(name).trim().slice(0, 24)
         workspaceNames = clean.length > 0 ? rest.concat([index + "=" + clean]) : rest
     }
+    // Make plugged-in drives ready and offer to open them.
+    property alias automount: data.automount
+    // A notification when updates are waiting.
+    property alias updateNotify: data.updateNotify
     property alias welcomed: data.welcomed
     // Light during the day (7:00 to 19:00), dark at night.
     property alias autoTheme: data.autoTheme
@@ -218,6 +222,8 @@ Singleton {
             property bool eventReminders: true
             property string language: ""
             property list<string> screenWallpapers: []
+            property bool automount: true
+            property bool updateNotify: true
             property bool welcomed: false
             property bool autoTheme: false
             property string font: ""
