@@ -219,7 +219,7 @@ PanelSurface {
                 icon: "desktop_windows"
                 opacity: root.shown(4.3)
                 transform: Translate { y: (1 - root.shown(4.3)) * 22 }
-                value: modelData.value
+                value: Brightness.levelOf(modelData.bus)
                 accent: Theme.tertiary
                 onMoved: v => Brightness.setExternal(modelData.bus, v)
             }

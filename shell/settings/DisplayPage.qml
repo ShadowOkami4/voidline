@@ -135,6 +135,13 @@ ColumnLayout {
         return { x: d ? d.x : o.x, y: d ? d.y : o.y, w: Math.max(1, o.w), h: Math.max(1, o.h) }
     }
     readonly property var placed: outputs.filter(o => !o.mirror && !o.disabled)
+    // The compositor's list is a new one after every look. The picture and
+    // the lists below are built from names, which stay the same, so a look
+    // does not tear down and rebuild what is on screen.
+    readonly property string placedNames: placed.map(o => o.name).join("\n")
+    readonly property string otherNames: outputs.filter(o => o.mirror || o.disabled).map(o => o.name).join("\n")
+    readonly property var nobody: ({ name: "", description: "", mode: "0x0@0", scale: 1, modes: [], x: 0, y: 0, w: 1, h: 1, mirror: false, disabled: false })
+    function byName(name) { return outputs.find(o => o.name === name) ?? nobody }
     readonly property bool mirrorable: Compositor.name === "hyprland" && several
 
     // Finds the nearest spot where screen `name` touches another one without
@@ -322,11 +329,13 @@ ColumnLayout {
         }
 
         Repeater {
-            model: page.placed
+            model: page.placedNames.length > 0 ? page.placedNames.split("\n") : []
 
             Rectangle {
                 id: screen
-                required property var modelData
+                required property int index
+                readonly property string name: page.placedNames.split("\n")[index] ?? ""
+                readonly property var modelData: page.byName(name)
                 readonly property var r: page.rectOf(modelData)
                 readonly property bool current: page.current && page.current.name === modelData.name
                 property real dx: 0
@@ -423,7 +432,10 @@ ColumnLayout {
             rate = Qt.binding(() => page.rateOf(output.mode))
             zoom = Qt.binding(() => output.scale)
         }
-        onOutputChanged: reset()
+        // Only a different screen, or a mode that really changed, resets the
+        // menus. A mere new look at the screens leaves your choice alone.
+        readonly property string shape: output.name + "|" + output.mode + "|" + output.scale
+        onShapeChanged: reset()
 
         readonly property var resolutions: {
             const seen = []
@@ -550,9 +562,10 @@ ColumnLayout {
         visible: page.outputs.some(o => o.mirror || o.disabled)
         title: Lang.t("Other screens")
         Repeater {
-            model: page.outputs.filter(o => o.mirror || o.disabled)
+            model: page.otherNames.length > 0 ? page.otherNames.split("\n") : []
             SegItem {
-                required property var modelData
+                required property int index
+                readonly property var modelData: page.byName(page.otherNames.split("\n")[index] ?? "")
                 icon: modelData.disabled ? "desktop_access_disabled" : "content_copy"
                 hue: 5
                 lobes: 0
@@ -589,7 +602,7 @@ ColumnLayout {
                 title: modelData.name
                 description: modelData.connector
                 from: 0; to: 100; step: 1; suffix: "%"
-                value: Math.round(modelData.value * 100)
+                value: Math.round(Brightness.levelOf(modelData.bus) * 100)
                 onChanged: v => Brightness.setExternal(modelData.bus, v / 100)
             }
         }

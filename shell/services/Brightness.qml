@@ -19,12 +19,28 @@ Singleton {
     readonly property bool available: device.length > 0 && max > 0
     readonly property real value: available ? current / max : 0
 
+    // While a slider is dragged the newest value wins: one brightnessctl
+    // runs at a time, and what the file reports meanwhile is ignored, or the
+    // slider would jump back to values that are already old.
+    property real lastSet: 0
+    property int wanted: -1
     function set(v) {
         if (!available) return
         const clamped = Math.max(0.02, Math.min(1, v))
         current = Math.round(clamped * max)
-        Quickshell.execDetached(["brightnessctl", "-q", "-d", device, "set", Math.round(clamped * 100) + "%"])
+        lastSet = Date.now()
+        wanted = Math.round(clamped * 100)
+        if (!write.running) send()
+        calm.restart()
     }
+    function send() {
+        if (wanted < 0) return
+        write.command = ["brightnessctl", "-q", "-d", device, "set", wanted + "%"]
+        wanted = -1
+        write.running = true
+    }
+    Process { id: write; onExited: root.send() }
+    Timer { id: calm; interval: 700; onTriggered: level.reload() }
 
     Process {
         running: true
@@ -38,19 +54,24 @@ Singleton {
     }
 
     FileView {
+        id: level
         path: root.device ? "/sys/class/backlight/" + root.device + "/actual_brightness" : ""
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
-        onLoaded: root.current = parseInt(text()) || 0
+        onLoaded: if (Date.now() - root.lastSet > 600) root.current = parseInt(text()) || 0
     }
 
     // ---- monitors on a cable -----------------------------------------------------------
     property bool hasDdc: false
     // "" | "missing" (ddcutil not installed) | "blocked" (no access to the monitors)
     property string ddcProblem: ""
-    // [{ bus, name, connector, value (0..1), max }]
+    // [{ bus, name, connector, max }]. Replaced only when monitors come or
+    // go, so sliders built from it are not rebuilt while they are dragged.
     property var externals: []
+    // bus -> 0..1
+    property var levels: ({})
+    function levelOf(bus) { const v = levels[bus]; return v === undefined ? 0 : v }
     property bool looking: false
 
     function rescan() { if (!detect.running) { looking = true; detect.running = true } }
@@ -84,15 +105,19 @@ true`]
                 root.hasDdc = !text.includes("@@missing")
                 root.ddcProblem = text.includes("@@missing") ? "missing" : (text.includes("@@blocked") ? "blocked" : "")
                 const out = []
+                const read = {}
                 for (const line of text.split("\n")) {
                     const p = line.split("|")
                     if (p[0] !== "@@display" || p.length < 6 || !/^\d+$/.test(p[1])) continue
                     const max = Number(p[5]) || 100
                     // "DEL:DELL U2415:serial" -> "DELL U2415"
                     const model = p[3].split(":")[1] || p[3]
-                    out.push({ bus: Number(p[1]), connector: p[2], name: model.trim() || p[2], max: max, value: Math.max(0, Math.min(1, Number(p[4]) / max)) })
+                    out.push({ bus: Number(p[1]), connector: p[2], name: model.trim() || p[2], max: max })
+                    read[Number(p[1])] = Math.max(0, Math.min(1, Number(p[4]) / max))
                 }
-                root.externals = out
+                // Same monitors as before: keep the list, so nothing is rebuilt.
+                if (JSON.stringify(out) !== JSON.stringify(root.externals)) root.externals = out
+                if (Date.now() - root.lastExternal > 2000) root.levels = read
             }
         }
     }
@@ -100,9 +125,13 @@ true`]
     // Monitors answer slowly, so while a slider moves only the newest value
     // is sent, one command at a time.
     property var waiting: ({})
+    property real lastExternal: 0
     function setExternal(bus, v) {
         const clamped = Math.max(0, Math.min(1, v))
-        externals = externals.map(e => e.bus === bus ? Object.assign({}, e, { value: clamped }) : e)
+        const next = Object.assign({}, levels)
+        next[bus] = clamped
+        levels = next
+        lastExternal = Date.now()
         waiting[bus] = clamped
         if (!push.running) pump.restart()
     }
