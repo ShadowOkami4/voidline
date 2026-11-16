@@ -566,9 +566,10 @@ ColumnLayout {
 
     // ---- brightness -----------------------------------------------------------------
     SegGroup {
-        visible: Brightness.available
+        visible: Brightness.available || Brightness.externals.length > 0 || page.cabled
         title: Lang.t("Brightness")
         SliderItem {
+            visible: Brightness.available
             icon: "brightness_medium"
             hue: 3
             lobes: 8
@@ -577,5 +578,48 @@ ColumnLayout {
             value: Math.round(Brightness.value * 100)
             onChanged: v => Brightness.set(v / 100)
         }
+        Repeater {
+            model: Brightness.externals
+            SliderItem {
+                required property var modelData
+                required property int index
+                icon: "desktop_windows"
+                hue: 4 + index
+                lobes: [0, 4, 5][index % 3]
+                title: modelData.name
+                description: modelData.connector
+                from: 0; to: 100; step: 1; suffix: "%"
+                value: Math.round(modelData.value * 100)
+                onChanged: v => Brightness.setExternal(modelData.bus, v / 100)
+            }
+        }
+        // A monitor on a cable, but no way to reach its brightness yet.
+        SegItem {
+            visible: page.cabled && Brightness.externals.length === 0
+            icon: "desktop_windows"
+            hue: 5
+            lobes: 4
+            title: Lang.t("Monitors on a cable")
+            description: Brightness.looking ? Lang.t("Asking the monitors…")
+                : (Brightness.ddcProblem === "missing" ? Lang.t("Install the package ddcutil to change their brightness from here.")
+                    : (Brightness.ddcProblem === "blocked" ? Lang.t("ddcutil is installed, but the monitors cannot be reached yet. Restart the computer once.")
+                        : Lang.t("This monitor does not let its brightness be changed over the cable (DDC/CI). Look for the setting in the monitor's own menu.")))
+            Pressable {
+                width: get.implicitWidth + 36
+                height: 44
+                color: Brightness.ddcProblem === "missing" ? Theme.primary : Theme.surfaceContainerHighest
+                restRadius: Theme.cornerFull
+                onClicked: Brightness.ddcProblem === "missing" ? Shell.findApp("ddcutil") : Brightness.rescan()
+                Label {
+                    id: get
+                    anchors.centerIn: parent
+                    text: Brightness.ddcProblem === "missing" ? Lang.t("Install") : Lang.t("Look again")
+                    font.weight: Font.Bold
+                    color: Brightness.ddcProblem === "missing" ? Theme.inkOnPrimary : Theme.ink
+                }
+            }
+        }
     }
+    // Screens other than the laptop's own panel.
+    readonly property bool cabled: page.outputs.some(o => !/^(eDP|LVDS|DSI)/.test(o.name))
 }

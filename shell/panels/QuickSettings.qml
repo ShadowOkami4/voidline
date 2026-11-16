@@ -210,6 +210,20 @@ PanelSurface {
             accent: Theme.tertiary
             onMoved: v => Brightness.set(v)
         }
+        // Monitors on a cable, one slider each.
+        Repeater {
+            model: Brightness.externals
+            ExpSlider {
+                required property var modelData
+                Layout.fillWidth: true
+                icon: "desktop_windows"
+                opacity: root.shown(4.3)
+                transform: Translate { y: (1 - root.shown(4.3)) * 22 }
+                value: modelData.value
+                accent: Theme.tertiary
+                onMoved: v => Brightness.setExternal(modelData.bus, v)
+            }
+        }
 
         // Processor, memory and temperature, read only while this panel is open.
         RowLayout {
