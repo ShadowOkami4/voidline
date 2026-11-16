@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Pam
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import qs.core
@@ -47,6 +48,15 @@ Scope {
         }
         onError: error => { root.pending = ""; root.wrong = true; root.note = Lang.t("The password check failed (") + PamError.toString(error) + ")." }
     }
+
+    // Caps lock is the classic reason for a "wrong" password.
+    property bool caps: false
+    Process {
+        id: capsLook
+        command: ["sh", "-c", "cat /sys/class/leds/*::capslock/brightness 2>/dev/null | sort -rn | head -n 1"]
+        stdout: StdioCollector { onStreamFinished: root.caps = Number(text.trim()) > 0 }
+    }
+    Timer { interval: 600; running: Shell.locked; repeat: true; triggeredOnStart: true; onTriggered: capsLook.running = true }
 
     WlSessionLock {
         id: lock
@@ -220,7 +230,7 @@ Scope {
                     Layout.topMargin: 12
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
-                    text: root.note
+                    text: root.caps && !root.busy ? Lang.t("Caps lock is on") : root.note
                     opacity: text.length > 0 ? 1 : 0
                     Behavior on opacity { Fade {} }
                     font.weight: Font.DemiBold

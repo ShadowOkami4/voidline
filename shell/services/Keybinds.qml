@@ -28,6 +28,7 @@ Singleton {
           hypr: 'hl.dsp.exec_cmd("hyprctl switchxkblayout all next")', niri: 'switch-layout "next"' },
         { id: "osk", icon: "keyboard", label: Lang.t("Show or hide the on-screen keyboard"), combo: "SUPER+ALT+K", ipc: ["keyboard"] },
         { id: "snap", icon: "view_quilt", label: Lang.t("Arrange the window (snap layouts)"), combo: "SUPER+Z", ipc: ["toggle", "snap"] },
+        { id: "keys", icon: "keyboard_command_key", label: Lang.t("Show all shortcuts"), combo: "SUPER+F1", ipc: ["toggle", "keys"] },
         { id: "lock", icon: "lock", label: Lang.t("Lock the screen"), combo: "SUPER+L", ipc: ["lock"] },
         { id: "minimize", icon: "minimize", label: Lang.t("Minimise the window"), combo: "SUPER+N", ipc: ["minimize"] },
         { id: "restore", icon: "open_in_full", label: Lang.t("Bring back the last minimised window"), combo: "SUPER+SHIFT+N", ipc: ["restore"] },

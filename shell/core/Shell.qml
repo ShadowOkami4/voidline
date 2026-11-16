@@ -7,7 +7,7 @@ import QtQuick
 Singleton {
     id: root
 
-    // "" | "launcher" | "quick" | "calendar" | "clipboard" | "switcher" | "emoji" | "tray" | "snap"
+    // "" | "launcher" | "quick" | "calendar" | "clipboard" | "switcher" | "emoji" | "tray" | "snap" | "keys"
     property string panel: ""
     property var screen: null
     property bool settingsOpen: false

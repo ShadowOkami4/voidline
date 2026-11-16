@@ -18,7 +18,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Normal
     exclusiveZone: 0
     color: "transparent"
-    visible: wanted || launcher.showing || quick.showing || calendar.showing || clipboard.showing || switcher.showing || emoji.showing || tray.showing || snap.showing
+    visible: wanted || launcher.showing || quick.showing || calendar.showing || clipboard.showing || switcher.showing || emoji.showing || tray.showing || snap.showing || keys.showing
     WlrLayershell.namespace: "voidline-panel"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: wanted ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
@@ -41,6 +41,7 @@ PanelWindow {
         Switcher { id: switcher; open: host.mine && Shell.panel === "switcher" }
         TrayMenu { id: tray; open: host.mine && Shell.panel === "tray" && !!Shell.trayItem }
         SnapPanel { id: snap; open: host.mine && Shell.panel === "snap" }
+        KeysPanel { id: keys; open: host.mine && Shell.panel === "keys" }
         EmojiPanel { id: emoji; open: host.mine && Shell.panel === "emoji" }
     }
 }

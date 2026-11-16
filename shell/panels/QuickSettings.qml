@@ -19,7 +19,7 @@ PanelSurface {
     // "" is the normal view; "wifi" and "bluetooth" are the mini menus.
     property string view: ""
 
-    onOpenChanged: { armed = ""; view = ""; Sys.watching = open }
+    onOpenChanged: { armed = ""; view = ""; Sys.watching = open; Vpn.watching = open }
     Behavior on panelHeight { Spring { duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
 
     // ---- motion -----------------------------------------------------------------------
@@ -168,6 +168,17 @@ PanelSurface {
                 subtitle: Config.nightLight ? Lang.t("On") : Lang.t("Off")
                 active: Config.nightLight
                 onClicked: Config.nightLight = !Config.nightLight
+            }
+            Tile {
+                Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(2.65)) * 22 }
+                visible: Vpn.available
+                icon: Vpn.active ? "vpn_lock" : "vpn_key_off"
+                title: "VPN"
+                opacity: (Vpn.busy ? 0.6 : 1) * root.shown(2.65)
+                subtitle: Vpn.busy ? Lang.t("Connecting…") : (Vpn.main ? Vpn.main.name : "")
+                active: !!Vpn.active
+                onClicked: Vpn.toggle()
             }
             Tile {
                 Layout.fillWidth: true

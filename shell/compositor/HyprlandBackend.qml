@@ -97,11 +97,16 @@ QtObject {
         refreshLater.restart()
     }
 
+    property bool sharing: false
     property Timer refreshLater: Timer { interval: 900; onTriggered: root.refreshOutputs() }
     // A screen was plugged in or pulled out.
     property Connections plug: Connections {
         target: Hyprland
-        function onRawEvent(event) { if (event.name.startsWith("monitoradded") || event.name.startsWith("monitorremoved")) root.refreshLater.restart() }
+        function onRawEvent(event) {
+            if (event.name.startsWith("monitoradded") || event.name.startsWith("monitorremoved")) root.refreshLater.restart()
+            // "screencast>>1,0": an app started (1) or stopped (0) capturing.
+            else if (event.name === "screencast") root.sharing = String(event.data).split(",")[0] === "1"
+        }
     }
     property Process monitors: Process {
         // "all" also lists screens that mirror another one.

@@ -22,6 +22,8 @@ Singleton {
     readonly property var backend: loader.item
     readonly property var workspaces: backend ? backend.workspaces : []
     readonly property var windows: backend ? backend.windows : []
+    // An app is capturing the screen (a call, a recorder). Hyprland only.
+    readonly property bool sharing: backend && backend.sharing === true
     readonly property var focusedWindow: windows.find(w => w.focused) ?? null
     readonly property var minimizedWindows: windows.filter(w => w.minimized)
 

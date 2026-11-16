@@ -100,6 +100,8 @@ Singleton {
     property alias automount: data.automount
     // A notification when updates are waiting.
     property alias updateNotify: data.updateNotify
+    // The VPN the quick settings tile switched on last.
+    property alias vpnLast: data.vpnLast
     property alias welcomed: data.welcomed
     // Light during the day (7:00 to 19:00), dark at night.
     property alias autoTheme: data.autoTheme
@@ -224,6 +226,7 @@ Singleton {
             property list<string> screenWallpapers: []
             property bool automount: true
             property bool updateNotify: true
+            property string vpnLast: ""
             property bool welcomed: false
             property bool autoTheme: false
             property string font: ""

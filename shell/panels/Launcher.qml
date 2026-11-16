@@ -104,13 +104,22 @@ PanelSurface {
         const out = []
         if (q.length === 0) return out
         const answer = calc(q)
+        // "timer 10", "25 min", "90s"
+        const timed = q.toLowerCase().match(/^timer\b\s*(.*)$/)
+        const span = timed ? Countdown.parse(timed[1]) : (/[a-z]/i.test(q) ? Countdown.parse(q) : 0)
+        if (Countdown.running && (timed || span > 0))
+            out.push({ kind: "timerStop", icon: "timer_off", title: Lang.t("Stop the timer"), hint: Lang.t("%1 left", Countdown.text), value: 0 })
+        if (span > 0)
+            out.push({ kind: "timer", icon: "timer", title: Lang.t("Start a timer of %1", Countdown.words(span)), hint: Lang.t("The bar counts down, a notification rings."), value: span })
+        else if (timed && !Countdown.running)
+            out.push({ kind: "hint", icon: "timer", title: Lang.t("Timer: add how long"), hint: Lang.t("For example: timer 10, timer 90s, timer 1,5h"), value: 0 })
         if (answer.length > 0) out.push({ kind: "calc", icon: "calculate", title: answer, hint: Lang.t("Enter copies the result"), value: answer })
         for (const p of Pages.find(q).slice(0, 2))
             out.push({ kind: "page", icon: p.icon, title: p.label, hint: Lang.t("Settings") + "  ·  " + p.hint, value: p.id })
         if (filesFor === q)
             for (const f of files)
                 out.push({ kind: "file", icon: "draft", title: f.replace(/^.*\//, ""), hint: f.replace(/\/[^\/]*$/, "").replace(Quickshell.env("HOME"), "~"), value: f })
-        if (q.length > 1 && answer.length === 0) {
+        if (q.length > 1 && answer.length === 0 && !timed && span === 0) {
             if (results.length === 0 && Packages.available)
                 out.push({ kind: "install", icon: "download", title: Lang.t("Look for \"%1\" to install", q), hint: Lang.t("Install apps"), value: q })
             if (Config.webSearch.includes("%s"))
@@ -122,9 +131,11 @@ PanelSurface {
     property int pick: -1
     readonly property int chosen: results.length === 0 ? Math.max(0, pick) : pick
     function act(x) {
-        if (!x) return
+        if (!x || x.kind === "hint") return
         Shell.close()
-        if (x.kind === "calc") Quickshell.execDetached(["wl-copy", "--", x.value])
+        if (x.kind === "timer") Countdown.start(x.value)
+        else if (x.kind === "timerStop") Countdown.stop()
+        else if (x.kind === "calc") Quickshell.execDetached(["wl-copy", "--", x.value])
         else if (x.kind === "page") Shell.openSettings(x.value)
         else if (x.kind === "file") Apps.openUrl(x.value)
         else if (x.kind === "install") Shell.findApp(x.value)
