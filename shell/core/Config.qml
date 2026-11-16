@@ -67,6 +67,8 @@ Singleton {
     property alias screenshotEdit: data.screenshotEdit
     // Town for the weather in the calendar; empty = no weather, nothing is requested.
     property alias weatherPlace: data.weatherPlace
+    // Where the launcher's "search the web" goes; %s stands for the words.
+    property alias webSearch: data.webSearch
     // iCal addresses of calendars shown next to your own events.
     property alias calendars: data.calendars
     // A notification ten minutes before an event with a time.
@@ -211,6 +213,7 @@ Singleton {
             property bool tabletMode: false
             property bool screenshotEdit: false
             property string weatherPlace: ""
+            property string webSearch: "https://duckduckgo.com/?q=%s"
             property list<string> calendars: []
             property bool eventReminders: true
             property string language: ""
