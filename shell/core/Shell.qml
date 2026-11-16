@@ -24,6 +24,9 @@ Singleton {
     function lock() { panel = ""; locked = true }
 
     property string settingsPage: "style"
+    // What the page for installing apps should search for when it opens.
+    property string installQuery: ""
+    function findApp(text) { installQuery = String(text).trim(); openSettings("install") }
     function openSettings(page) {
         if (page !== undefined) settingsPage = page
         panel = ""

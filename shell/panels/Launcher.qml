@@ -26,6 +26,9 @@ PanelSurface {
         Shell.close()
     }
 
+    readonly property bool canInstall: !commandMode && results.length === 0 && search.text.trim().length > 1 && Packages.available
+    function findToInstall() { const q = search.text; Shell.close(); Shell.findApp(q) }
+
     onOpenChanged: {
         if (open) { search.text = ""; grid.currentIndex = 0; search.forceActiveFocus() }
     }
@@ -71,8 +74,8 @@ PanelSurface {
                 clip: true
 
                 Keys.onEscapePressed: Shell.close()
-                Keys.onReturnPressed: root.commandMode ? root.run() : root.launch(root.results[grid.currentIndex])
-                Keys.onEnterPressed: root.commandMode ? root.run() : root.launch(root.results[grid.currentIndex])
+                Keys.onReturnPressed: root.commandMode ? root.run() : (root.canInstall ? root.findToInstall() : root.launch(root.results[grid.currentIndex]))
+                Keys.onEnterPressed: root.commandMode ? root.run() : (root.canInstall ? root.findToInstall() : root.launch(root.results[grid.currentIndex]))
                 Keys.onRightPressed: grid.moveCurrentIndexRight()
                 Keys.onLeftPressed: grid.moveCurrentIndexLeft()
                 Keys.onDownPressed: grid.moveCurrentIndexDown()
@@ -141,12 +144,33 @@ PanelSurface {
                 }
             }
 
-            Label {
+            Column {
                 anchors.centerIn: parent
                 visible: grid.count === 0
-                text: !root.commandMode ? Lang.t("No apps found")
-                    : (root.commandText.length > 0 ? Lang.t("Press Enter to run:  ") + root.commandText : Lang.t("Type a command, then press Enter"))
-                color: Theme.inkMuted
+                spacing: 14
+                Label {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: !root.commandMode ? Lang.t("No apps found")
+                        : (root.commandText.length > 0 ? Lang.t("Press Enter to run:  ") + root.commandText : Lang.t("Type a command, then press Enter"))
+                    color: Theme.inkMuted
+                }
+                // Not installed yet? Enter looks for it.
+                Pressable {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.canInstall
+                    width: offer.implicitWidth + 40
+                    height: 46
+                    color: Theme.primary
+                    restRadius: Theme.cornerFull
+                    onClicked: root.findToInstall()
+                    Row {
+                        id: offer
+                        anchors.centerIn: parent
+                        spacing: 8
+                        MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "download"; size: 20; color: Theme.inkOnPrimary }
+                        Label { anchors.verticalCenter: parent.verticalCenter; text: Lang.t("Look for \"%1\" to install", search.text.trim()); font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                    }
+                }
             }
         }
     }

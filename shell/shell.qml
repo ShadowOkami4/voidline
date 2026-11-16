@@ -130,6 +130,8 @@ ShellRoot {
         }
         // Name workspace n; an empty name removes it.
         function nameWorkspace(workspace: string, name: string): void { Config.setWorkspaceName(Number(workspace), name) }
+        // Open the page for installing apps and search for something.
+        function install(query: string): void { Shell.findApp(query) }
         // Ask which app should open a file.
         function openWith(path: string): void { Shell.openWith(path) }
         // Tray icons, for scripts and testing:
