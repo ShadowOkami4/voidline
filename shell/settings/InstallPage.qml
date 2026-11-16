@@ -184,7 +184,7 @@ ColumnLayout {
                 hue: index % 6
                 lobes: [8, 0, 4, 5][index % 4]
                 title: modelData.name
-                description: (modelData.summary || modelData.id) + "\n" + (modelData.source === "flatpak" ? "Flathub" : modelData.repo) + "  ·  " + modelData.version
+                description: (modelData.summary || modelData.id) + "\n" + (modelData.source === "flatpak" ? "Flathub" : modelData.repo) + (modelData.version ? "  ·  " + modelData.version : "")
                     + (modelData.installed ? "  ·  " + Lang.t("Installed") : "")
                 // Rows arrive one after the other.
                 NumberAnimation on opacity { from: 0; to: 1; duration: Motion.effectsSlow }

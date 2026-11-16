@@ -178,6 +178,7 @@ var words = {
 "Launcher, minimise, styles": "App-Menü, Minimieren, Stile",
 "Default apps": "Standard-Apps",
 "Install apps": "Apps installieren",
+"Valve's game store. Installing switches on the 32-bit package source and updates the system first.": "Der Spiele-Shop von Valve. Beim Installieren wird die 32-Bit-Paketquelle eingeschaltet und das System vorher aktualisiert.",
 "Find, install, update": "Finden, installieren, aktualisieren",
 "install apps software store package pacman flatpak flathub update upgrade remove uninstall download program": "install apps software store package pacman flatpak flathub update upgrade remove uninstall download program installieren programm paket aktualisieren update entfernen deinstallieren herunterladen laden",
 "Installing apps from here needs pacman or Flatpak, and neither was found.": "Zum Installieren von hier aus braucht es pacman oder Flatpak, und keines davon wurde gefunden.",

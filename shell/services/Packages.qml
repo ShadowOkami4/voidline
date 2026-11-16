@@ -14,6 +14,9 @@ Singleton {
 
     property bool hasPacman: false
     property bool hasFlatpak: false
+    // Steam and other 32-bit software live in pacman's "multilib" source,
+    // which is switched off on a fresh Arch.
+    property bool hasMultilib: false
     readonly property bool available: hasPacman || hasFlatpak
 
     // { source: "pacman" | "flatpak", id, name, summary, version, repo, installed }
@@ -35,10 +38,11 @@ Singleton {
     function removable(p) { return p.installed && (p.source === "flatpak" || !vital.test(p.id)) }
 
     Process {
+        id: probe
         running: true
-        command: ["sh", "-c", "command -v pacman >/dev/null && echo pacman; command -v flatpak >/dev/null && echo flatpak; true"]
+        command: ["sh", "-c", "command -v pacman >/dev/null && echo pacman; command -v flatpak >/dev/null && echo flatpak; pacman-conf --repo-list 2>/dev/null | grep -qx multilib && echo multilib; true"]
         stdout: StdioCollector {
-            onStreamFinished: { root.hasPacman = text.includes("pacman"); root.hasFlatpak = text.includes("flatpak") }
+            onStreamFinished: { root.hasPacman = text.includes("pacman"); root.hasFlatpak = text.includes("flatpak"); root.hasMultilib = text.includes("multilib") }
         }
     }
 
@@ -94,6 +98,11 @@ true`, "sh", q]
                     if (p.source === "pacman" && /^(lib|python-|perl-|haskell-|ruby-|lib32-|php-|r-|ttf-|otf-)|-(docs?|debug|headers|i18n-.*|l10n-.*)$/.test(n)) r += 3
                     return r
                 }
+                // Steam is not in the lists while multilib is off; offer it anyway,
+                // installing switches the source on.
+                if (root.hasPacman && !root.hasMultilib && q.length >= 3 && ("steam".startsWith(q) || q.includes("steam") || q === "valve") && !out.some(p => p.id === "steam"))
+                    out.push({ source: "pacman", repo: "multilib", id: "steam", name: "steam", version: "", installed: false, needsMultilib: true,
+                        summary: Lang.t("Valve's game store. Installing switches on the 32-bit package source and updates the system first.") })
                 out.sort((a, b) => rank(a) - rank(b) || a.name.length - b.name.length || a.name.localeCompare(b.name))
                 root.results = out.slice(0, 40)
                 root.searching = false
@@ -113,7 +122,26 @@ true`, "sh", q]
         job.running = true
     }
     function install(p) {
-        if (p.source === "pacman" && /^[a-z0-9@._+-]+$/.test(p.id))
+        // Steam needs the multilib source and the 32-bit graphics driver
+        // that matches the one in use. pacman.conf is backed up first; the
+        // system is updated in the same go, as a new source requires.
+        if (p.source === "pacman" && p.id === "steam")
+            start("install", p.name, ["pkexec", "sh", "-c", `
+set -e
+if ! pacman-conf --repo-list | grep -qx multilib; then
+    cp -p /etc/pacman.conf /etc/pacman.conf.voidline-backup
+    if grep -q '^#\\[multilib\\]' /etc/pacman.conf; then
+        sed -i '/^#\\[multilib\\]/{s/^#//;n;s/^#//}' /etc/pacman.conf
+    else
+        printf '\\n[multilib]\\nInclude = /etc/pacman.d/mirrorlist\\n' >> /etc/pacman.conf
+    fi
+fi
+drivers=""
+for d in vulkan-radeon vulkan-intel nvidia-utils vulkan-nouveau; do
+    pacman -Qq "$d" >/dev/null 2>&1 && drivers="$drivers lib32-$d"
+done
+pacman -Syu --noconfirm --needed steam $drivers`])
+        else if (p.source === "pacman" && /^[a-z0-9@._+-]+$/.test(p.id))
             start("install", p.name, ["pkexec", "pacman", "-S", "--noconfirm", "--needed", "--", p.id])
         else if (p.source === "flatpak" && /^[A-Za-z0-9._-]+$/.test(p.id))
             start("install", p.name, ["sh", "-c", `
@@ -155,6 +183,7 @@ true`])
             root.seen = ""
             if (code === 0 && kind !== "update")
                 Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "system-software-install", root.lastDone, kind === "remove" ? Lang.t("Removed") : Lang.t("Installed. You find it in the launcher.")])
+            probe.running = true
             if (root.query.length > 1) root.search(root.query)
             root.countUpdates()
         }
