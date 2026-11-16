@@ -203,5 +203,12 @@ else
     warn "Rust not installed: skipping voidlinectl (optional; the shell works without it)."
 fi
 
+# A running shell picks up the new files with a restart (it no longer
+# reloads by itself while files are being replaced).
+if [[ -n ${WAYLAND_DISPLAY:-} ]] && pgrep -f "qs -c voidline" >/dev/null 2>&1; then
+    setsid sh "$shell_dir/start.sh" >/dev/null 2>&1 < /dev/null &
+    say "Restarted the running shell"
+fi
+
 say "Done. Log out and back in, or start it now with:  sh $shell_dir/start.sh"
 say "Keys: Super+Space launcher, Super+A quick settings, Super+N minimise, Super+Shift+N restore, Super+Alt+S next style (change them in Settings > Keyboard shortcuts)"

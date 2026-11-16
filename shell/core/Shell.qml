@@ -7,7 +7,7 @@ import QtQuick
 Singleton {
     id: root
 
-    // "" | "launcher" | "quick" | "calendar" | "clipboard" | "switcher" | "emoji" | "tray" | "snap" | "keys"
+    // "" | "launcher" | "quick" | "calendar" | "clipboard" | "switcher" | "emoji" | "tray" | "snap" | "keys" | "workspace"
     property string panel: ""
     property var screen: null
     property bool settingsOpen: false
@@ -51,6 +51,16 @@ Singleton {
         trayItem = item
         screen = onScreen || screen || Quickshell.screens[0]
         panel = "tray"
+    }
+
+    // Workspace whose menu is open (an entry of Compositor.workspaces).
+    property var workspaceTarget: null
+    function openWorkspace(ws, onScreen) {
+        if (!ws) return
+        if (panel === "workspace" && workspaceTarget && workspaceTarget.id === ws.id) { panel = ""; return }
+        workspaceTarget = ws
+        screen = onScreen || screen || Quickshell.screens[0]
+        panel = "workspace"
     }
 
     // Window switcher: the first call opens it, further calls move on.

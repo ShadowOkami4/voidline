@@ -56,16 +56,48 @@ Singleton {
     readonly property string statePath: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/voidline/notifications.json"
     property var liveKeys: ({})
     readonly property var history: store.entries.map(e => { try { return JSON.parse(e) } catch (x) { return null } }).filter(e => !!e)
+    function same(a, b) { return a.app === b.app && a.title === b.title && a.text === b.text }
     readonly property var earlier: {
         const live = list.map(n => liveKeys[n.id]).filter(k => !!k)
-        return history.filter(e => !live.includes(e.key)).reverse()
+        // Entries saved twice by older versions show once.
+        const out = []
+        for (const e of history) {
+            if (live.includes(e.key)) continue
+            const last = out[out.length - 1]
+            if (last && same(last, e) && Math.abs(e.time - last.time) < 5000) continue
+            out.push(e)
+        }
+        return out.reverse()
     }
-    function remember(n) {
+    // Writes the notification into the history, once. The server hands the
+    // same notification over again when the shell reloads, and apps update
+    // one in place (a download's progress); neither is a new entry.
+    function remember(n, again) {
+        const now = { app: n.appName || "", title: n.summary || "", text: (n.body || "").slice(0, 300) }
+        const entries = store.entries.slice()
+        let at = -1
+        const known = liveKeys[n.id]
+        for (let i = entries.length - 1; i >= 0 && at < 0; --i) {
+            let e = null
+            try { e = JSON.parse(entries[i]) } catch (x) { continue }
+            if (known ? e.key === known
+                : (again ? e.key.startsWith(n.id + "-") && same(e, now) : same(e, now) && Date.now() - e.time < 3000)) at = i
+        }
+        if (at >= 0) {
+            const old = JSON.parse(entries[at])
+            liveKeys[n.id] = old.key
+            liveKeysChanged()
+            if (same(old, now)) return
+            entries[at] = JSON.stringify(Object.assign(old, now))
+            store.entries = entries
+            return
+        }
         const key = n.id + "-" + Date.now()
         liveKeys[n.id] = key
         liveKeysChanged()
-        const entry = JSON.stringify({ key: key, app: n.appName || "", title: n.summary || "", text: (n.body || "").slice(0, 300), time: Date.now() })
-        store.entries = store.entries.concat([entry]).slice(-40)
+        now.key = key
+        now.time = Date.now()
+        store.entries = entries.concat([JSON.stringify(now)]).slice(-40)
     }
     function forget(key) { store.entries = store.entries.filter(e => !e.includes('"key":"' + key + '"')) }
 
@@ -90,7 +122,10 @@ Singleton {
         imageSupported: true
         onNotification: n => {
             n.tracked = true
-            root.remember(n)
+            // Carried over from before a reload: already saved, already shown.
+            const again = n.lastGeneration === true
+            root.remember(n, again)
+            if (again) return
             if (Config.doNotDisturb || Config.gameMode) return
             if (Config.notifMuted.includes(n.appName || "")) return
             root.popupIds = root.popupIds.concat([n.id])

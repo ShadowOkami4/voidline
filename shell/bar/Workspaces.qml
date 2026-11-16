@@ -1,3 +1,4 @@
+import Quickshell
 import QtQuick
 import qs.core
 import qs.compositor
@@ -6,7 +7,7 @@ import qs.widgets
 // Workspace dots. The active one is a pill that travels between the dots:
 // its front edge runs ahead and the back edge catches up, so it stretches
 // on the way. Occupied dots are brighter than empty ones. Scroll to move
-// between workspaces; right click for the overview.
+// between workspaces; right click for a workspace's menu.
 Item {
     id: root
 
@@ -44,7 +45,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.RightButton
-        onClicked: Shell.toggle("switcher", null)
+        onClicked: Shell.openWorkspace(root.list[root.current], root.QsWindow.window ? root.QsWindow.window.screen : null)
         onWheel: wheel => {
             const next = root.list[root.current + (wheel.angleDelta.y < 0 ? 1 : -1)]
             if (next) Compositor.focusWorkspace(next)
@@ -86,7 +87,7 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: mouse => {
-                    if (mouse.button === Qt.RightButton) Shell.toggle("switcher", null)
+                    if (mouse.button === Qt.RightButton) Shell.openWorkspace(dot.modelData, root.QsWindow.window ? root.QsWindow.window.screen : null)
                     else Compositor.focusWorkspace(dot.modelData)
                 }
             }

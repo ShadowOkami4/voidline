@@ -13,6 +13,12 @@ import qs.services
 
 // Voidline 0.4 - a Material 3 Expressive desktop shell for Hyprland and Niri.
 ShellRoot {
+    // Quickshell reloads itself when one of its files changes. During an
+    // update many files change at once and the reload in the middle of it
+    // crashed, so the installer restarts the shell instead. Developers who
+    // want it back start the shell with VOIDLINE_HOT_RELOAD=1.
+    Component.onCompleted: if (Quickshell.env("VOIDLINE_HOT_RELOAD") !== "1") Quickshell.watchFiles = false
+
     Variants {
         model: Quickshell.screens
 
@@ -130,6 +136,8 @@ ShellRoot {
         }
         // Name workspace n; an empty name removes it.
         function nameWorkspace(workspace: string, name: string): void { Config.setWorkspaceName(Number(workspace), name) }
+        // Open the menu of workspace n (what a right click on its dot does).
+        function workspaceMenu(workspace: string): void { Shell.openWorkspace(Compositor.workspaces[Number(workspace) - 1], null) }
         // Open the page for installing apps and search for something.
         function install(query: string): void { Shell.findApp(query) }
         // Ask which app should open a file.
