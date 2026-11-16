@@ -162,6 +162,21 @@ ColumnLayout {
                 onPicked: v => Config.nightLightTemp = v
             }
         }
+        SegItem {
+            visible: Appearance.nightAvailable
+            icon: "schedule"
+            hue: 4
+            lobes: 8
+            title: Lang.t("By the clock")
+            description: Config.nightLightAuto ? Lang.t("Switches on at %1 and off at %2.", Config.nightLightFrom, Config.nightLightTo)
+                : Lang.t("Switch the night light on in the evening by itself.")
+            Row {
+                spacing: 8
+                TimeField { visible: Config.nightLightAuto; anchors.verticalCenter: parent.verticalCenter; value: Config.nightLightFrom; onPicked: v => Config.nightLightFrom = v }
+                TimeField { visible: Config.nightLightAuto; anchors.verticalCenter: parent.verticalCenter; value: Config.nightLightTo; onPicked: v => Config.nightLightTo = v }
+                Toggle { anchors.verticalCenter: parent.verticalCenter; checked: Config.nightLightAuto; onToggled: v => Config.nightLightAuto = v }
+            }
+        }
     }
 
     SegGroup {

@@ -205,4 +205,29 @@ ColumnLayout {
             }
         }
     }
+
+    SegGroup {
+        title: Lang.t("Launcher")
+        SegItem {
+            icon: "travel_explore"
+            hue: 2
+            lobes: 8
+            title: Lang.t("Web search")
+            description: Lang.t("Where \"search the web\" in the launcher goes. Nothing is sent until you choose that line.")
+            Dropdown {
+                width: 230
+                value: Config.webSearch
+                options: [
+                    { value: "https://duckduckgo.com/?q=%s", label: "DuckDuckGo" },
+                    { value: "https://www.startpage.com/do/search?q=%s", label: "Startpage" },
+                    { value: "https://search.brave.com/search?q=%s", label: "Brave" },
+                    { value: "https://www.ecosia.org/search?q=%s", label: "Ecosia" },
+                    { value: "https://www.google.com/search?q=%s", label: "Google" },
+                    { value: "https://www.bing.com/search?q=%s", label: "Bing" },
+                    { value: "", label: Lang.t("Off") }
+                ]
+                onPicked: v => Config.webSearch = v
+            }
+        }
+    }
 }

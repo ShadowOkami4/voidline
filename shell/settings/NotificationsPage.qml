@@ -28,6 +28,20 @@ ColumnLayout {
                 onPicked: v => Notifs.quiet(v)
             }
         }
+        SegItem {
+            icon: "bedtime"
+            hue: 3
+            lobes: 5
+            title: Lang.t("Quiet at night")
+            description: Config.dndAuto ? Lang.t("Do not disturb from %1 to %2, every day.", Config.dndFrom, Config.dndTo)
+                : Lang.t("Switch do not disturb on at night by itself.")
+            Row {
+                spacing: 8
+                TimeField { visible: Config.dndAuto; anchors.verticalCenter: parent.verticalCenter; value: Config.dndFrom; onPicked: v => Config.dndFrom = v }
+                TimeField { visible: Config.dndAuto; anchors.verticalCenter: parent.verticalCenter; value: Config.dndTo; onPicked: v => Config.dndTo = v }
+                Toggle { anchors.verticalCenter: parent.verticalCenter; checked: Config.dndAuto; onToggled: v => Config.dndAuto = v }
+            }
+        }
     }
 
     SegGroup {

@@ -166,6 +166,7 @@ PanelSurface {
 
     function launch(entry) {
         if (!entry) return
+        Apps.used(entry)
         Apps.launch(entry)
         Shell.close()
     }
@@ -251,8 +252,20 @@ PanelSurface {
                 height: grid.cellHeight
                 restRadius: Theme.cornerLInc
                 pressedRadius: Theme.cornerM
-                onClicked: root.launch(modelData)
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                // Right click pins an app to the front, or lets it go again.
+                onClicked: mouse => mouse.button === Qt.RightButton ? Apps.togglePin(modelData) : root.launch(modelData)
                 onHoveredChanged: if (hovered) { grid.currentIndex = index; root.pick = -1 }
+                MIcon {
+                    visible: Apps.isPinned(cell.modelData)
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 8
+                    icon: "keep"
+                    filled: true
+                    size: 14
+                    color: Theme.primary
+                }
                 // The icons pop in row by row when the launcher opens.
                 readonly property real arrived: root.shown(1 + Math.min(6, Math.floor(index / root.columns) * 0.8 + (index % root.columns) * 0.15))
                 opacity: arrived

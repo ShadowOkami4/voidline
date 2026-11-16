@@ -51,6 +51,13 @@ Singleton {
     property alias appColors: data.appColors
     // Do not disturb switches itself off at this time (ms since 1970); 0 = stays on.
     property alias dndUntil: data.dndUntil
+    // By the clock: night light in the evening, do not disturb at night.
+    property alias nightLightAuto: data.nightLightAuto
+    property alias nightLightFrom: data.nightLightFrom
+    property alias nightLightTo: data.nightLightTo
+    property alias dndAuto: data.dndAuto
+    property alias dndFrom: data.dndFrom
+    property alias dndTo: data.dndTo
     // Apps whose notifications never pop up (they still land in the list).
     property alias notifMuted: data.notifMuted
     property alias desktopIcons: data.desktopIcons
@@ -210,6 +217,12 @@ Singleton {
             property bool syncAppTheme: true
             property bool appColors: true
             property real dndUntil: 0
+            property bool nightLightAuto: false
+            property string nightLightFrom: "20:00"
+            property string nightLightTo: "07:00"
+            property bool dndAuto: false
+            property string dndFrom: "22:00"
+            property string dndTo: "07:00"
             property list<string> notifMuted: []
             property bool desktopIcons: true
             property bool batteryWarnings: true

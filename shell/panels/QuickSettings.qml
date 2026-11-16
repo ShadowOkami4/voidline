@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Services.UPower
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
@@ -168,6 +169,21 @@ PanelSurface {
                 subtitle: Config.nightLight ? Lang.t("On") : Lang.t("Off")
                 active: Config.nightLight
                 onClicked: Config.nightLight = !Config.nightLight
+            }
+            Tile {
+                id: power
+                // Tap to go through: power saver, balanced, performance.
+                readonly property int mode: PowerProfiles.profile
+                readonly property var modes: PowerProfiles.hasPerformanceProfile
+                    ? [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance] : [PowerProfile.PowerSaver, PowerProfile.Balanced]
+                Layout.fillWidth: true
+                transform: Translate { y: (1 - root.shown(2.65)) * 22 }
+                opacity: root.shown(2.65)
+                icon: mode === PowerProfile.PowerSaver ? "energy_savings_leaf" : (mode === PowerProfile.Performance ? "bolt" : "balance")
+                title: Lang.t("Power mode")
+                subtitle: mode === PowerProfile.PowerSaver ? Lang.t("Power saver") : (mode === PowerProfile.Performance ? Lang.t("Performance") : Lang.t("Balanced"))
+                active: mode !== PowerProfile.Balanced
+                onClicked: PowerProfiles.profile = modes[(modes.indexOf(mode) + 1) % modes.length]
             }
             Tile {
                 Layout.fillWidth: true

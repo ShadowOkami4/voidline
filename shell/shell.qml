@@ -61,7 +61,7 @@ ShellRoot {
     }
 
     // Background services start by being mentioned once.
-    readonly property var services: [Idle.hasSwayidle, Clipboard.available, Appearance.available, Autostart.launched, Capture.canShoot, Access.ready, Events.ready, Drives.ready, Packages.available]
+    readonly property var services: [Idle.hasSwayidle, Clipboard.available, Appearance.available, Autostart.launched, Capture.canShoot, Access.ready, Events.ready, Drives.ready, Packages.available, Schedule.ready]
 
     LazyLoader {
         active: Shell.settingsOpen
