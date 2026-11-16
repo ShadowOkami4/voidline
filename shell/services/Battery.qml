@@ -29,7 +29,7 @@ Singleton {
             if (percent <= level && warned > level) {
                 warned = level
                 Quickshell.execDetached(["notify-send", "-a", "Voidline", "-u", level === 10 ? "critical" : "normal",
-                    "-i", "battery-caution", level === 10 ? Lang.t("Battery very low") : Lang.t("Battery low"),
+                    "-i", "voidline-battery_alert", level === 10 ? Lang.t("Battery very low") : Lang.t("Battery low"),
                     percent + Lang.t("% left. Plug in the charger.")])
                 break
             }

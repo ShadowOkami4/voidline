@@ -62,7 +62,7 @@ if [ -z "$where" ]; then
     where=$(lsblk -no MOUNTPOINT "$dev" | head -n 1)
 fi
 [ -n "$where" ] || exit 0
-answer=$(notify-send -a Voidline -i drive-removable-media --action=open="$open" "$title" "$body")
+answer=$(notify-send -a Voidline -i voidline-usb --action=open="$open" "$title" "$body")
 [ "$answer" = open ] && env -u QT_SCALE_FACTOR -u VOIDLINE_UI_SCALE -u MALLOC_CONF xdg-open "$where"
 true`, "sh", v.dev, v.label.length > 0 ? v.label : Lang.t("Drive plugged in"), gb(v.size) + "  ·  " + Lang.t("Ready to use"), Lang.t("Open##verb")])
     }

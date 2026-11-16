@@ -43,7 +43,7 @@ notify-send -a Voidline -i "$file" "Screenshot saved" "$file"
 
     // mode: "screen" | "region"
     function shoot(mode) {
-        if (!canShoot) { Quickshell.execDetached(["notify-send", "-a", "Voidline", Lang.t("Screenshots need the package grim")]); return }
+        if (!canShoot) { Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "voidline-screenshot_monitor", Lang.t("Screenshots need the package grim")]); return }
         Shell.close()
         later.mode = mode === "region" ? "region" : "screen"
         later.restart()
@@ -64,12 +64,12 @@ p=$(slurp -p 2>/dev/null) || exit 0
 hex=$(grim -g "$p" -t ppm - | tail -c 3 | od -An -tx1 | tr -d ' \\n' | tr a-f A-F)
 [ -n "$hex" ] || exit 1
 command -v wl-copy >/dev/null && printf '#%s' "$hex" | wl-copy
-notify-send -a Voidline "Colour copied" "#$hex"`])
+notify-send -a Voidline -i voidline-colorize "Colour copied" "#$hex"`])
     }
 
     function toggleRecording() {
         if (recorder.running) { recorder.signal(2); return }       // SIGINT lets it finish the file
-        if (!canRecord) { Quickshell.execDetached(["notify-send", "-a", "Voidline", Lang.t("Screen recording needs the package wf-recorder")]); return }
+        if (!canRecord) { Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "voidline-videocam", Lang.t("Screen recording needs the package wf-recorder")]); return }
         Shell.close()
         recorder.running = true
     }
@@ -79,6 +79,6 @@ notify-send -a Voidline "Colour copied" "#$hex"`])
         property string file: ""
         stdout: SplitParser { onRead: line => { if (!recorder.file) recorder.file = line } }
         onStarted: file = ""
-        onExited: Quickshell.execDetached(["notify-send", "-a", "Voidline", Lang.t("Recording saved"), file])
+        onExited: Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "voidline-videocam", Lang.t("Recording saved"), file])
     }
 }

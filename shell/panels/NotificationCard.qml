@@ -30,18 +30,39 @@ Rectangle {
             radius: Theme.cornerM
             color: Theme.primaryContainer
 
+            // Voidline's own notifications name one of the shell's symbols
+            // ("voidline-alarm"), so they never depend on the icon theme.
+            // The icon's name arrives as appIcon or, wrapped, as the image.
+            readonly property string iconName: {
+                const img = String(root.notification.image || "")
+                return root.notification.appIcon || (img.startsWith("image://icon/") ? decodeURIComponent(img.slice(13)) : "")
+            }
+            readonly property string own: iconName.startsWith("voidline-") ? iconName.slice(9) : ""
             IconImage {
                 id: appIcon
                 anchors.centerIn: parent
                 implicitSize: 22
-                visible: source.toString().length > 0
-                source: root.notification.image
-                    || (root.notification.appIcon ? Quickshell.iconPath(root.notification.appIcon, true) : "")
+                // A picture that cannot be loaded makes way for the symbol
+                // instead of showing as a broken square.
+                visible: source.toString().length > 0 && status !== Image.Error && status !== Image.Null
+                // A real picture (a contact's photo, a cover) comes first. An
+                // "image://icon/..." address is only the icon name again, and
+                // shows a chequered square when the theme has no such icon.
+                readonly property string picture: {
+                    const img = String(root.notification.image || "")
+                    return img.length > 0 && !img.startsWith("image://icon/") ? img : ""
+                }
+                readonly property string named: {
+                    const n = parent.iconName
+                    return n.startsWith("/") ? "file://" + n : (n.startsWith("file://") ? n : (n.length > 0 ? Quickshell.iconPath(n, true) : ""))
+                }
+                source: parent.own.length > 0 ? "" : (picture || named)
             }
             MIcon {
                 anchors.centerIn: parent
                 visible: !appIcon.visible
-                icon: "notifications"
+                icon: parent.own.length > 0 ? parent.own : "notifications"
+                filled: true
                 size: 20
                 color: Theme.inkOnPrimaryContainer
             }

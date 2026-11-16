@@ -105,7 +105,7 @@ ColumnLayout {
             title: Lang.t("Send a test notification")
             description: Lang.t("Shows what a popup looks like with these settings.")
             clickable: true
-            onClicked: Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "preferences-system",
+            onClicked: Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "voidline-notifications_active",
                 Lang.t("Test notification"), Lang.t("This is what a notification looks like.")])
         }
     }

@@ -50,7 +50,7 @@ Singleton {
             const was = root.total
             root.stop()
             Quickshell.execDetached(["sh", "-c", `
-notify-send -a Voidline -u critical -i alarm-symbolic "$1" "$2"
+notify-send -a Voidline -u critical -i voidline-alarm "$1" "$2"
 for f in /usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga /usr/share/sounds/freedesktop/stereo/complete.oga; do
     [ -f "$f" ] && { pw-play "$f" 2>/dev/null || paplay "$f" 2>/dev/null; break; }
 done

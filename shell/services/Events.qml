@@ -207,7 +207,7 @@ done`, "sh"].concat(Config.calendars)
                 const mark = today + e.id + e.title
                 if (left < 0 || left > 10 || root.reminded[mark]) continue
                 root.reminded[mark] = true
-                Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "x-office-calendar", e.title,
+                Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "voidline-event", e.title,
                     left === 0 ? Lang.t("Now") : Lang.t("At %1, in %2 minutes", e.time, left)])
             }
         }

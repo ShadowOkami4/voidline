@@ -182,7 +182,7 @@ true`])
             root.busyKind = ""
             root.seen = ""
             if (code === 0 && kind !== "update")
-                Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", "system-software-install", root.lastDone, kind === "remove" ? Lang.t("Removed") : Lang.t("Installed. You find it in the launcher.")])
+                Quickshell.execDetached(["notify-send", "-a", "Voidline", "-i", kind === "remove" ? "voidline-delete" : "voidline-download_done", root.lastDone, kind === "remove" ? Lang.t("Removed") : Lang.t("Installed. You find it in the launcher.")])
             probe.running = true
             if (root.query.length > 1) root.search(root.query)
             root.countUpdates()
@@ -207,7 +207,7 @@ true`])
         if (!Config.updateNotify || updates < 1 || told === today || busy.length > 0 || Shell.settingsOpen) return
         told = today
         Quickshell.execDetached(["sh", "-c", `
-answer=$(notify-send -a Voidline -i system-software-update --action=open="$3" "$1" "$2")
+answer=$(notify-send -a Voidline -i voidline-system_update_alt --action=open="$3" "$1" "$2")
 [ "$answer" = open ] && qs -c voidline ipc call shell settingsPage install
 true`, "sh", Lang.t("Updates are waiting"), Lang.t("%1 updates for your system.", updates), Lang.t("Show")])
     }
