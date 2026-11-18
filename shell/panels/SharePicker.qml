@@ -19,11 +19,40 @@ Scope {
     property bool drawing: false
     onRequestChanged: { again = false; drawing = false }
 
+    // The script waiting for the answer is gone (the portal restarted, the
+    // app gave up): close the dialog instead of leaving it on screen.
+    readonly property string waiter: request ? (String(request.answer).match(/-(\d+)$/) || ["", ""])[1] : ""
+    Timer {
+        interval: 1000
+        running: root.waiter.length > 0 && !alive.running
+        repeat: true
+        onTriggered: alive.running = true
+    }
+    Process {
+        id: alive
+        command: ["test", "-d", "/proc/" + root.waiter]
+        onExited: code => {
+            if (code === 0 || !root.request) return
+            if (area.running) area.signal(15)
+            root.drawing = false
+            Shell.shareRequest = null
+        }
+    }
+
     function choose(what) { Shell.shareAnswer(what.length > 0 ? "[SELECTION]" + (again ? "r" : "") + "/" + what : "") }
 
     Process {
         id: area
-        command: ["slurp", "-f", "%o@%x,%y,%w,%h"]
+        // slurp reads ready-made boxes from its input when that is not a
+        // terminal, and would wait there for ever; give it nothing to read.
+        // slurp gives desktop coordinates; the portal wants them from the
+        // screen's own top-left corner, so its position is taken off.
+        command: ["sh", "-c", `
+r=$(slurp -f '%o %x %y %w %h' < /dev/null) || exit 1
+set -- $r
+at=$(hyprctl monitors | awk -v o="$1" '$1 == "Monitor" { on = ($2 == o) } on && / at -?[0-9]+x-?[0-9]+/ { sub(/.* at /, ""); print; exit }')
+ox=\${at%x*}; oy=\${at#*x}
+echo "$1@$(( $2 - \${ox:-0} )),$(( $3 - \${oy:-0} )),$4,$5"`]
         stdout: StdioCollector { id: drawn }
         onExited: code => {
             root.drawing = false

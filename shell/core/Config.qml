@@ -107,6 +107,8 @@ Singleton {
     property alias automount: data.automount
     // A notification when updates are waiting.
     property alias updateNotify: data.updateNotify
+    // The day the last update notice was shown, so restarts do not repeat it.
+    property alias updateToldOn: data.updateToldOn
     // The VPN the quick settings tile switched on last.
     property alias vpnLast: data.vpnLast
     property alias welcomed: data.welcomed
@@ -239,6 +241,7 @@ Singleton {
             property list<string> screenWallpapers: []
             property bool automount: true
             property bool updateNotify: true
+            property string updateToldOn: ""
             property string vpnLast: ""
             property bool welcomed: false
             property bool autoTheme: false
