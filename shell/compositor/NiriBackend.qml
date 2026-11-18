@@ -67,6 +67,74 @@ Item {
         act(["move-window-to-workspace", "--window-id", String(id), "--focus", "false", Compositor.stash])
     }
 
+    // ---- placing windows -------------------------------------------------------------
+    // Niri lays windows out in scrolling columns; a snapped window floats on
+    // top of them, like on Hyprland.
+    function tile(id) { act(["move-window-to-tiling", "--id", String(id)]) }
+    function toggleMaximize(id) {
+        Quickshell.execDetached(["sh", "-c", `niri msg action move-window-to-tiling --id ${Number(id)}; niri msg action maximize-window-to-edges --id ${Number(id)}`])
+    }
+    // Room the shell itself takes at the screen edges (bar, frame, dock).
+    function reserved() {
+        const f = Style.frameWidth, bar = Style.barHeight, dock = Style.dock ? Style.dockHeight + 6 : 0
+        const bottomBar = Style.barEdge === "bottom"
+        return { left: f, right: f, top: bottomBar ? 0 : bar, bottom: (bottomBar ? bar : f) + dock }
+    }
+    // zone: { x, y, w, h } as shares of the free area of the screen.
+    property var snapJob: null
+    function snap(id, zone) { snapJob = { id: Number(id), zone: zone }; snapArea.running = true }
+    Process {
+        id: snapArea
+        command: ["niri", "msg", "--json", "focused-output"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const job = root.snapJob
+                let o = null
+                try { o = JSON.parse(text) } catch (e) { return }
+                if (!job || !o || !o.logical) return
+                const r = root.reserved(), gap = Math.max(0, Config.desktop.gaps), z = job.zone
+                const aw = o.logical.width - r.left - r.right - 2 * gap
+                const ah = o.logical.height - r.top - r.bottom - 2 * gap
+                const x0 = r.left + gap + z.x * aw + (z.x > 0.001 ? gap / 2 : 0), x1 = r.left + gap + (z.x + z.w) * aw - (z.x + z.w < 0.999 ? gap / 2 : 0)
+                const y0 = r.top + gap + z.y * ah + (z.y > 0.001 ? gap / 2 : 0), y1 = r.top + gap + (z.y + z.h) * ah - (z.y + z.h < 0.999 ? gap / 2 : 0)
+                job.x = Math.round(x0); job.y = Math.round(y0)
+                const id = job.id
+                snapPlace.command = ["sh", "-c", `
+niri msg action move-window-to-floating --id ${id}
+niri msg action set-window-width --id ${id} ${Math.round(x1 - x0)}
+niri msg action set-window-height --id ${id} ${Math.round(y1 - y0)}
+niri msg action move-floating-window --id ${id} -x ${job.x} -y ${job.y}
+sleep 0.2
+niri msg --json windows`]
+                snapPlace.running = true
+            }
+        }
+    }
+    // Niri may count the position from the free area instead of the screen
+    // corner: look where the window ended up and correct by the difference.
+    Process {
+        id: snapPlace
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const job = root.snapJob
+                root.snapJob = null
+                let list = []
+                try { list = JSON.parse(text) } catch (e) { return }
+                const w = list.find(x => x.id === job.id)
+                const at = w && w.layout ? w.layout.tile_pos_in_workspace_view : null
+                if (!at) return
+                const dx = Math.round(job.x - at[0]), dy = Math.round(job.y - at[1])
+                if (Math.abs(dx) > 1 || Math.abs(dy) > 1)
+                    root.act(["move-floating-window", "--id", String(job.id), "-x", (dx >= 0 ? "+" : "") + dx, "-y", (dy >= 0 ? "+" : "") + dy])
+            }
+        }
+    }
+
+    // ---- screen sharing ---------------------------------------------------------------
+    // stream_id -> active
+    property var casts: ({})
+    readonly property bool sharing: Object.keys(casts).some(k => casts[k])
+
     function moveToWorkspace(id, ws) { act(["move-window-to-workspace", "--window-id", String(id), "--focus", "false", String(ws.index)]) }
 
     function restore(id) {
@@ -92,6 +160,19 @@ Item {
         } else if (ev.WindowFocusChanged) {
             const id = ev.WindowFocusChanged.id
             rawWindows = rawWindows.map(w => Object.assign({}, w, { is_focused: w.id === id }))
+        } else if (ev.CastsChanged) {
+            const next = {}
+            for (const c of ev.CastsChanged.casts || []) next[c.stream_id] = !!c.is_active
+            casts = next
+        } else if (ev.CastStartedOrChanged) {
+            const c = ev.CastStartedOrChanged.cast
+            const next = Object.assign({}, casts)
+            next[c.stream_id] = !!c.is_active
+            casts = next
+        } else if (ev.CastStopped) {
+            const next = Object.assign({}, casts)
+            delete next[ev.CastStopped.stream_id]
+            casts = next
         } else if (ev.WorkspaceActivated) {
             const e = ev.WorkspaceActivated
             const target = rawWorkspaces.find(w => w.id === e.id)
