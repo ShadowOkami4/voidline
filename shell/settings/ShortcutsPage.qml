@@ -86,7 +86,7 @@ ColumnLayout {
     SegGroup {
         title: "Voidline"
         Repeater {
-            model: Keybinds.actions
+            model: Keybinds.actions.filter(a => !a.hyprOnly || Compositor.name === "hyprland")
             SegItem {
                 id: row
                 required property var modelData

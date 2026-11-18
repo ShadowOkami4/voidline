@@ -15,13 +15,18 @@ Singleton {
     // are used instead where the compositor does the work itself.
     readonly property var actions: [
         { id: "launcher", icon: "apps", label: Lang.t("Open the launcher"), combo: "SUPER+space", ipc: ["toggle", "launcher"] },
+        // Tapping Super on its own, as on Windows and GNOME. Fires when Super
+        // is let go with nothing pressed in between (Hyprland only).
+        { id: "launcherTap", icon: "apps", label: Lang.t("Open the launcher by tapping Super"), combo: "SUPER+Super_L", ipc: ["toggle", "launcher"], release: true, hyprOnly: true },
         { id: "quick", icon: "tune", label: Lang.t("Open quick settings"), combo: "SUPER+A", ipc: ["toggle", "quick"] },
         { id: "settings", icon: "settings", label: Lang.t("Open Settings"), combo: "SUPER+I", ipc: ["settings"] },
         { id: "switcher", icon: "tab", label: Lang.t("Switch between windows"), combo: "SUPER+Tab", ipc: ["switcher"] },
         { id: "clipboard", icon: "content_paste", label: Lang.t("Open the clipboard history"), combo: "SUPER+SHIFT+V", ipc: ["toggle", "clipboard"] },
         { id: "shot", icon: "screenshot_monitor", label: Lang.t("Take a screenshot"), combo: "Print", ipc: ["screenshot", "screen"] },
         { id: "shotRegion", icon: "screenshot_region", label: Lang.t("Screenshot part of the screen"), combo: "SHIFT+Print", ipc: ["screenshot", "region"] },
-        { id: "record", icon: "radio_button_checked", label: Lang.t("Start or stop a screen recording"), combo: "CTRL+Print", ipc: ["record"] },
+        // The same for keyboards without a Print key.
+        { id: "shotRegionKeys", icon: "screenshot_region", label: Lang.t("Screenshot part of the screen (without Print key)"), combo: "SUPER+SHIFT+A", ipc: ["screenshot", "region"] },
+        { id: "record", icon: "radio_button_checked", label: Lang.t("Start or stop a screen recording"), combo: "SUPER+ALT+R", ipc: ["record"] },
         { id: "emoji", icon: "mood", label: Lang.t("Open the emoji picker"), combo: "SUPER+period", ipc: ["toggle", "emoji"] },
         { id: "colour", icon: "colorize", label: Lang.t("Pick a colour from the screen"), combo: "SUPER+SHIFT+C", ipc: ["colour"] },
         { id: "layout", icon: "language", label: Lang.t("Switch keyboard layout"), combo: "SUPER+ALT+space", ipc: [],
@@ -30,7 +35,7 @@ Singleton {
         { id: "zoomOut", icon: "zoom_out", label: Lang.t("Zoom out"), combo: "SUPER+ALT+minus", ipc: ["zoom", "out"] },
         { id: "osk", icon: "keyboard", label: Lang.t("Show or hide the on-screen keyboard"), combo: "SUPER+ALT+K", ipc: ["keyboard"] },
         { id: "snap", icon: "view_quilt", label: Lang.t("Arrange the window (snap layouts)"), combo: "SUPER+Z", ipc: ["toggle", "snap"] },
-        { id: "keys", icon: "keyboard_command_key", label: Lang.t("Show all shortcuts"), combo: "SUPER+F1", ipc: ["toggle", "keys"] },
+        { id: "keys", icon: "keyboard_command_key", label: Lang.t("Show all shortcuts"), combo: "SUPER+H", ipc: ["toggle", "keys"] },
         { id: "lock", icon: "lock", label: Lang.t("Lock the screen"), combo: "SUPER+L", ipc: ["lock"] },
         { id: "minimize", icon: "minimize", label: Lang.t("Minimise the window"), combo: "SUPER+N", ipc: ["minimize"] },
         { id: "restore", icon: "open_in_full", label: Lang.t("Bring back the last minimised window"), combo: "SUPER+SHIFT+N", ipc: ["restore"] },
@@ -76,7 +81,7 @@ Singleton {
     function resetAll() { Config.keybinds = [] }
 
     // ---- display ---------------------------------------------------------------------
-    readonly property var keyNames: ({ space: Lang.t("Space"), Return: Lang.t("Enter"), Prior: Lang.t("Page Up"), Next: Lang.t("Page Down"), comma: ",", period: ".",
+    readonly property var keyNames: ({ space: Lang.t("Space"), Return: Lang.t("Enter"), Super_L: Lang.t("tap alone"), Prior: Lang.t("Page Up"), Next: Lang.t("Page Down"), comma: ",", period: ".",
         minus: "-", equal: "=", slash: "/", backslash: "\\", semicolon: ";", apostrophe: "'", bracketleft: "[", bracketright: "]", grave: "`" })
     readonly property var modNames: ({ SUPER: "Super", CTRL: Lang.t("Ctrl"), ALT: "Alt", SHIFT: Lang.t("Shift") })
     // ["Super", "Shift", "N"]
@@ -151,7 +156,7 @@ Singleton {
             const c = combo(a.id)
             if (c.length === 0) continue
             const what = a.hypr ?? `hl.dsp.exec_cmd("qs -c voidline ipc call shell ${a.ipc.join(" ")}")`
-            out += `hl.bind("${c.split("+").join(" + ")}", ${what})\n`
+            out += `hl.bind("${c.split("+").join(" + ")}", ${what}${a.release ? ", { release = true }" : ""})\n`
         }
         return out
     }
@@ -159,7 +164,7 @@ Singleton {
         let out = ""
         for (const a of actions) {
             const c = combo(a.id)
-            if (c.length === 0) continue
+            if (c.length === 0 || a.hyprOnly) continue
             const p = c.split("+")
             const key = p.pop()
             const keys = p.map(m => ({ SUPER: "Mod", CTRL: "Ctrl", ALT: "Alt", SHIFT: "Shift" })[m]).concat([key]).join("+")

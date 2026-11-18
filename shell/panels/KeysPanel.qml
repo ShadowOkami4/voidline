@@ -2,10 +2,11 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import qs.core
+import qs.compositor
 import qs.services
 import qs.widgets
 
-// The cheat sheet (Super + F1): every Voidline shortcut at a glance.
+// The cheat sheet (Super + H): every Voidline shortcut at a glance.
 PanelSurface {
     id: root
 
@@ -15,7 +16,7 @@ PanelSurface {
     panelHeight: body.implicitHeight + 48
 
     // Only actions that have a shortcut right now.
-    readonly property var rows: Keybinds.actions.filter(a => Keybinds.combo(a.id).length > 0)
+    readonly property var rows: Keybinds.actions.filter(a => Keybinds.combo(a.id).length > 0 && (!a.hyprOnly || Compositor.name === "hyprland"))
 
     ColumnLayout {
         id: body
