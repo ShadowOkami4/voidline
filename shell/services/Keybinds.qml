@@ -151,8 +151,20 @@ Singleton {
         return out
     }
 
+    // Brightness keys: Voidline also moves monitors on a cable. When your
+    // own hyprland.lua already binds the keys, they keep doing that for the
+    // built-in screen and Voidline only adds the monitors.
+    readonly property bool ownBrightnessKeys: /XF86MonBrightness(Up|Down)/.test((ownConfig.text() || "").replace(/--[^\n]*/g, ""))
+    function brightnessKeys() {
+        const which = ownBrightnessKeys ? "external" : "all"
+        let out = ""
+        for (const [key, dir] of [["XF86MonBrightnessUp", "up"], ["XF86MonBrightnessDown", "down"]])
+            out += `hl.bind("${key}", hl.dsp.exec_cmd("qs -c voidline ipc call shell brightness ${dir} ${which}"), { locked = true, repeating = true })\n`
+        return out
+    }
+
     function hyprland() {
-        let out = gestures()
+        let out = gestures() + brightnessKeys()
         for (const a of actions) {
             const c = combo(a.id)
             if (c.length === 0) continue

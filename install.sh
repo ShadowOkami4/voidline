@@ -97,6 +97,9 @@ if [[ -e $shell_dir ]]; then
 fi
 mkdir -p "$(dirname "$shell_dir")"
 cp -r "$here/shell" "$shell_dir"
+# Settings > About updates Voidline from this folder when it is a git checkout.
+printf '%s\n' "$here" > "$shell_dir/source.txt"
+chmod +x "$shell_dir/update.sh"
 say "Shell installed to $shell_dir"
 
 # --- wallpapers ---------------------------------------------------------------

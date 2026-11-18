@@ -143,6 +143,8 @@ ShellRoot {
         function setupAur(): void { Shell.openSettings("install"); Packages.setupAurHelper() }
         // Open the terminal chosen in Settings (also what Super + T does).
         function terminal(): void { Apps.openTerminal() }
+        // Brightness keys: up | down, then all | external (only monitors on a cable).
+        function brightness(dir: string, which: string): void { Brightness.step(dir === "up", which !== "external") }
         // Open the page for installing apps and search for something.
         function install(query: string): void { Shell.findApp(query) }
         // Screen sharing, called by share-picker.sh for the portal: ask what to

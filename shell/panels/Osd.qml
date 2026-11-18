@@ -11,14 +11,14 @@ import qs.widgets
 Scope {
     id: root
 
-    // "volume" | "brightness" | "mic" | "caps" | "num"
+    // "volume" | "brightness" | "screen" (a monitor on a cable) | "mic" | "caps" | "num"
     property string kind: "volume"
     property bool showing: false
     property bool armed: false      // ignore the values settling at startup
 
     function flash(what) {
         if (!armed || Shell.locked) return
-        if ((what === "volume" || what === "brightness") && Shell.panel === "quick") return
+        if ((what === "volume" || what === "brightness" || what === "screen") && Shell.panel === "quick") return
         kind = what
         showing = true
         hide.restart()
@@ -38,6 +38,7 @@ Scope {
     Connections {
         target: Brightness
         function onCurrentChanged() { root.flash("brightness") }
+        function onExternalStepped() { root.flash("screen") }
     }
     Connections {
         target: LockKeys
@@ -45,12 +46,14 @@ Scope {
         function onNumChanged() { root.flash("num") }
     }
 
-    readonly property bool isLevel: kind === "volume" || kind === "brightness"
-    readonly property real level: kind === "volume" ? (Audio.muted ? 0 : Audio.volume) : Brightness.value
+    readonly property bool isLevel: kind === "volume" || kind === "brightness" || kind === "screen"
+    readonly property real level: kind === "volume" ? (Audio.muted ? 0 : Audio.volume)
+        : kind === "screen" ? Brightness.levelOf(Brightness.stepped) : Brightness.value
     // For the on/off kinds.
     readonly property bool on: kind === "mic" ? !Audio.micMuted : (kind === "caps" ? LockKeys.caps : LockKeys.num)
     readonly property string icon: kind === "volume" ? Audio.icon
         : kind === "brightness" ? "brightness_medium"
+        : kind === "screen" ? "desktop_windows"
         : kind === "mic" ? (on ? "mic" : "mic_off")
         : kind === "caps" ? "keyboard_capslock" : "pin"
     readonly property string words: kind === "mic" ? (on ? Lang.t("Microphone on") : Lang.t("Microphone muted"))

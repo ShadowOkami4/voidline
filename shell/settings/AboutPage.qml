@@ -130,6 +130,85 @@ ColumnLayout {
         }
     }
 
+    // ---- Voidline itself ------------------------------------------------------------
+    // install.sh notes the folder it was run from. When that is a git
+    // checkout, new versions are fetched from there and installed the same way.
+    property string vlState: ""     // "" | checking | nogit | offline | noupstream | ready
+    property int vlBehind: 0
+    property bool vlChanged: false
+    property string vlCommit: ""
+    property var vlNews: []
+    property bool vlUpdating: false
+    function checkVoidline() { if (!vlCheck.running) { vlState = "checking"; vlCheck.running = true } }
+    Component.onCompleted: checkVoidline()
+    Process {
+        id: vlCheck
+        command: ["sh", "-c", `
+src=$(cat "$1/source.txt" 2>/dev/null)
+[ -n "$src" ] && [ -d "$src/.git" ] || { echo "@@nogit"; exit 0; }
+cd "$src" || exit 0
+echo "@@commit $(git log -1 --format=%h 2>/dev/null)"
+git rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1 || { echo "@@noupstream"; exit 0; }
+timeout 20 git fetch --quiet 2>/dev/null || { echo "@@offline"; exit 0; }
+[ -z "$(git status --porcelain --untracked-files=no 2>/dev/null)" ] || echo "@@changed"
+echo "@@behind $(git rev-list --count 'HEAD..@{u}')"
+git log --format='@@news %s' 'HEAD..@{u}' | head -n 6
+true`, "sh", Quickshell.shellDir]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const t = text
+                page.vlCommit = (t.match(/@@commit (\w+)/) || ["", ""])[1]
+                page.vlChanged = t.includes("@@changed")
+                page.vlBehind = parseInt((t.match(/@@behind (\d+)/) || ["", "0"])[1]) || 0
+                page.vlNews = t.split("\n").filter(l => l.startsWith("@@news ")).map(l => l.slice(7))
+                page.vlState = t.includes("@@nogit") ? "nogit" : (t.includes("@@noupstream") ? "noupstream"
+                    : (t.includes("@@offline") ? "offline" : "ready"))
+            }
+        }
+    }
+    function updateVoidline() {
+        vlUpdating = true
+        // Detached: the update restarts the shell, and with it this window.
+        Quickshell.execDetached(["setsid", "sh", Quickshell.shellDir + "/update.sh"])
+    }
+    SegGroup {
+        title: "Voidline"
+        SegItem {
+            icon: page.vlBehind > 0 ? "new_releases" : "verified"
+            hue: 5
+            lobes: 9
+            title: page.vlUpdating ? Lang.t("Updating Voidline…")
+                : page.vlState === "checking" ? Lang.t("Checking…")
+                : page.vlState === "ready" && page.vlBehind > 0 ? Lang.t("A new version of Voidline is ready")
+                : page.vlState === "ready" ? Lang.t("Voidline is up to date")
+                : Lang.t("Voidline updates")
+            description: page.vlUpdating ? Lang.t("Downloading and installing. The shell restarts by itself when it is done.")
+                : page.vlState === "nogit" ? Lang.t("Voidline was installed from a folder without git. Download it again with git clone to get updates here.")
+                : page.vlState === "noupstream" ? Lang.t("The Voidline folder follows no branch on the internet, so there is nothing to compare with.")
+                : page.vlState === "offline" ? Lang.t("Could not reach the internet. Try again later.")
+                : page.vlState === "ready" && page.vlChanged ? Lang.t("Files in the Voidline folder were changed by hand. Update in a terminal with git, so nothing of yours is lost.")
+                : page.vlState === "ready" && page.vlBehind > 0 ? Lang.t("%1 changes:", page.vlBehind) + "\n" + page.vlNews.map(n => "•  " + n).join("\n")
+                : page.vlState === "ready" ? Lang.t("Installed version: %1", Shell.version + (page.vlCommit ? " (" + page.vlCommit + ")" : ""))
+                : ""
+            clickable: page.vlState !== "checking" && !page.vlUpdating
+            onClicked: page.checkVoidline()
+            Row {
+                spacing: 8
+                Pressable {
+                    visible: page.vlState === "ready" && page.vlBehind > 0 && !page.vlChanged && !page.vlUpdating
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 120
+                    height: 42
+                    color: Theme.primary
+                    tint: Theme.inkOnPrimary
+                    onClicked: page.updateVoidline()
+                    Label { anchors.centerIn: parent; text: Lang.t("Update"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                }
+                MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "refresh"; size: 22; color: Theme.inkMuted; visible: !page.vlUpdating }
+            }
+        }
+    }
+
     SegGroup {
         title: "Shell"
         SegItem {

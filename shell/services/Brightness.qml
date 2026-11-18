@@ -2,6 +2,7 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
 import qs.compositor
 
@@ -152,4 +153,26 @@ true`]
         }
     }
     Process { id: push; onExited: if (Object.keys(root.waiting).length > 0) pump.restart() }
+
+    // ---- brightness keys ---------------------------------------------------------------
+    // The keys change the screen you are working on: a monitor on a cable
+    // when the focus is there, otherwise the built-in screen. `builtIn` is
+    // false when your own config already moves the built-in screen.
+    // The monitor last changed with the keys, for the on-screen level.
+    property int stepped: -1
+    signal externalStepped()
+    function step(up, builtIn) {
+        const by = up ? 0.05 : -0.05
+        const name = Compositor.name === "hyprland" && Hyprland.focusedMonitor ? Hyprland.focusedMonitor.name : ""
+        let ext = externals.find(e => e.connector === name)
+        // No built-in screen (a desktop computer): the first monitor will do.
+        if (!ext && !available && externals.length > 0) ext = externals[0]
+        if (ext) {
+            setExternal(ext.bus, Math.round((levelOf(ext.bus) + by) * 20) / 20)
+            stepped = ext.bus
+            externalStepped()
+        } else if (builtIn && available) {
+            set(Math.round((value + by) * 20) / 20)
+        }
+    }
 }
