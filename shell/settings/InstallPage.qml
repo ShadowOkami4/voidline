@@ -188,18 +188,32 @@ ColumnLayout {
                 readonly property string key: modelData.source + ":" + modelData.id
                 readonly property bool working: Packages.busy === modelData.name
                 readonly property bool hot: page.armed === key
-                icon: modelData.installed ? "check_circle" : (modelData.source === "flatpak" ? "deployed_code" : "package_2")
+                icon: modelData.installed ? "check_circle" : (modelData.source === "flatpak" ? "deployed_code" : (modelData.source === "aur" ? "construction" : "package_2"))
                 hue: index % 6
                 lobes: [8, 0, 4, 5][index % 4]
                 title: modelData.name
                 description: (modelData.summary || modelData.id) + "\n" + (modelData.source === "flatpak" ? "Flathub" : modelData.repo) + (modelData.version ? "  ·  " + modelData.version : "")
+                    + (modelData.source === "aur" ? "  ·  " + Lang.t("%1 votes", modelData.votes) + (modelData.outOfDate ? "  ·  " + Lang.t("marked out of date") : "") : "")
                     + (modelData.installed ? "  ·  " + Lang.t("Installed") : "")
                 // Rows arrive one after the other.
                 NumberAnimation on opacity { from: 0; to: 1; duration: Motion.effectsSlow }
                 transform: Translate { id: rise }
                 NumberAnimation { target: rise; property: "y"; from: 14 + Math.min(row.index, 8) * 6; to: 0; running: true; duration: Motion.spatial; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.spatialCurve }
 
+                // AUR: look at the package's page (and its build script) first.
+                IconBtn {
+                    visible: row.modelData.source === "aur"
+                    anchors.right: action.left
+                    anchors.rightMargin: 6
+                    anchors.verticalCenter: action.verticalCenter
+                    icon: "open_in_new"
+                    size: 40
+                    tonal: true
+                    onClicked: Apps.openUrl("https://aur.archlinux.org/packages/" + row.modelData.id)
+                }
                 Pressable {
+                    id: action
+                    x: row.modelData.source === "aur" ? 46 : 0
                     visible: !row.modelData.installed || Packages.removable(row.modelData)
                     width: act.implicitWidth + 36
                     height: 44
@@ -224,6 +238,20 @@ ColumnLayout {
                     }
                 }
             }
+        }
+    }
+
+    SegGroup {
+        visible: Packages.hasPacman
+        title: "AUR"
+        SegItem {
+            icon: "construction"
+            hue: 5
+            lobes: 4
+            title: Lang.t("Also search the AUR")
+            description: Lang.t("Packages that other Arch users made. Nobody checks them, and building one runs its script on your computer, so only install ones you trust. Each has a page to look at first.")
+                + (Packages.aurHelper.length > 0 ? " " + Lang.t("Installed with %1.", Packages.aurHelper) : " " + Lang.t("Voidline builds them itself; updates for them come with an AUR helper such as paru."))
+            Toggle { checked: Config.aurSearch; onToggled: v => { Config.aurSearch = v; if (field.text.trim().length > 1) Packages.search(field.text) } }
         }
     }
 

@@ -17,9 +17,12 @@ Singleton {
     // Steam and other 32-bit software live in pacman's "multilib" source,
     // which is switched off on a fresh Arch.
     property bool hasMultilib: false
+    // An AUR helper, when one is installed: "paru" | "yay" | "".
+    property string aurHelper: ""
     readonly property bool available: hasPacman || hasFlatpak
 
-    // { source: "pacman" | "flatpak", id, name, summary, version, repo, installed }
+    // { source: "pacman" | "flatpak" | "aur", id, name, summary, version, repo, installed }
+    // AUR results also carry votes, outOfDate and base (the package base).
     property var results: []
     property bool searching: false
     property string query: ""
@@ -40,9 +43,9 @@ Singleton {
     Process {
         id: probe
         running: true
-        command: ["sh", "-c", "command -v pacman >/dev/null && echo pacman; command -v flatpak >/dev/null && echo flatpak; pacman-conf --repo-list 2>/dev/null | grep -qx multilib && echo multilib; true"]
+        command: ["sh", "-c", "command -v pacman >/dev/null && echo pacman; command -v flatpak >/dev/null && echo flatpak; pacman-conf --repo-list 2>/dev/null | grep -qx multilib && echo multilib; command -v paru >/dev/null && echo helper=paru || { command -v yay >/dev/null && echo helper=yay; }; true"]
         stdout: StdioCollector {
-            onStreamFinished: { root.hasPacman = text.includes("pacman"); root.hasFlatpak = text.includes("flatpak"); root.hasMultilib = text.includes("multilib") }
+            onStreamFinished: { root.hasPacman = text.includes("pacman"); root.hasFlatpak = text.includes("flatpak"); root.hasMultilib = text.includes("multilib"); root.aurHelper = (text.match(/helper=(\w+)/) || ["", ""])[1] }
         }
     }
 
@@ -62,7 +65,11 @@ if command -v flatpak >/dev/null; then
     echo "@@installed"; flatpak list --app --columns=application 2>/dev/null
     echo "@@flatpak"; flatpak search --columns=application,name,description,version -- "$1" 2>/dev/null | head -n 40
 fi
-true`, "sh", q]
+if [ "$2" = aur ] && command -v pacman >/dev/null; then
+    echo "@@foreign"; pacman -Qmq 2>/dev/null
+    echo "@@aur"; curl -fsS --max-time 10 --get --data-urlencode "arg=$1" --data "v=5&type=search&by=name-desc" https://aur.archlinux.org/rpc/ 2>/dev/null; echo
+fi
+true`, "sh", q, Config.aurSearch ? "aur" : ""]
         find.running = true
     }
     Timer { id: later; interval: 300; onTriggered: root.search(root.query) }
@@ -84,6 +91,19 @@ true`, "sh", q]
                         else if (cur && line.startsWith("    ")) cur.summary = line.trim()
                     } else if (part === "installed") {
                         if (line.trim().length > 0) have[line.trim()] = true
+                    } else if (part === "foreign") {
+                        if (line.trim().length > 0) have["aur:" + line.trim()] = true
+                    } else if (part === "aur") {
+                        if (line.trim().length === 0) continue
+                        let data = null
+                        try { data = JSON.parse(line) } catch (e) { continue }
+                        const known = out.filter(p => p.source === "pacman").map(p => p.id)
+                        // The best known ones first; the AUR answers in no useful order.
+                        const found = (data.results || []).filter(r => /^[a-z0-9@._+-]+$/.test(r.Name) && !known.includes(r.Name))
+                            .sort((a, b) => (b.Popularity || 0) - (a.Popularity || 0)).slice(0, 15)
+                        for (const r of found)
+                            out.push({ source: "aur", repo: "AUR", id: r.Name, base: r.PackageBase || r.Name, name: r.Name, summary: r.Description || "",
+                                version: r.Version || "", votes: r.NumVotes || 0, outOfDate: !!r.OutOfDate, installed: !!have["aur:" + r.Name] })
                     } else if (part === "flatpak") {
                         const p = line.split("\t")
                         if (p.length >= 3 && /^[A-Za-z0-9._-]+$/.test(p[0]) && p[0].includes("."))
@@ -95,7 +115,8 @@ true`, "sh", q]
                 const rank = p => {
                     const n = p.name.toLowerCase()
                     let r = n === q ? 0 : (n.startsWith(q) ? 1 : (n.includes(q) ? 2 : 3))
-                    if (p.source === "pacman" && /^(lib|python-|perl-|haskell-|ruby-|lib32-|php-|r-|ttf-|otf-)|-(docs?|debug|headers|i18n-.*|l10n-.*)$/.test(n)) r += 3
+                    if (p.source === "aur") r += 0.5
+                    if (p.source !== "flatpak" && /^(lib|python-|perl-|haskell-|ruby-|lib32-|php-|r-|ttf-|otf-)|-(docs?|debug|headers|i18n-.*|l10n-.*)$/.test(n)) r += 3
                     return r
                 }
                 // Steam is not in the lists while multilib is off; offer it anyway,
@@ -143,6 +164,47 @@ done
 pacman -Syu --noconfirm --needed steam $drivers`])
         else if (p.source === "pacman" && /^[a-z0-9@._+-]+$/.test(p.id))
             start("install", p.name, ["pkexec", "pacman", "-S", "--noconfirm", "--needed", "--", p.id])
+        // From the AUR: through paru or yay when there is one (they ask for
+        // the password the same way), otherwise built here by Voidline.
+        else if (p.source === "aur" && /^[a-z0-9@._+-]+$/.test(p.id) && /^[a-z0-9@._+-]+$/.test(p.base || p.id)) {
+            if (aurHelper === "paru")
+                start("install", p.name, ["paru", "-S", "--noconfirm", "--skipreview", "--sudo", "pkexec", "--", p.id])
+            else if (aurHelper === "yay")
+                start("install", p.name, ["yay", "-S", "--noconfirm", "--answerdiff", "None", "--answerclean", "None", "--sudo", "pkexec", "--", p.id])
+            else
+                start("install", p.name, ["sh", "-c", `
+# Builds an AUR package on this computer, as you, and installs it.
+set -e
+p="$1"; base="$2"
+cache="\${XDG_CACHE_HOME:-$HOME/.cache}/voidline/aur"
+dir="$cache/$base"
+mkdir -p "$cache"; rm -rf "$dir"
+echo "Downloading $base from the AUR"
+git clone --quiet --depth 1 "https://aur.archlinux.org/$base.git" "$dir"
+cd "$dir"
+[ -f PKGBUILD ] || { echo "@@gone"; exit 3; }
+# Every AUR package carries its .SRCINFO, so nothing of it runs yet.
+[ -f .SRCINFO ] || makepkg --printsrcinfo > .SRCINFO
+deps=$(awk -F' = ' '/^\\t(make|check)?depends(_[a-z0-9_]+)? = / { sub(/[<>=].*/, "", $2); print $2 }' .SRCINFO | sort -u)
+need=""; aur=""
+for d in $(pacman -T $deps 2>/dev/null || true); do
+    d=\${d%%[<>=]*}
+    if pacman -Sp --print-format %n "$d" >/dev/null 2>&1; then need="$need $d"; else aur="$aur $d"; fi
+done
+[ -z "$aur" ] || { echo "@@needsaur$aur"; exit 4; }
+if [ -n "$need" ]; then echo "Installing what it needs:$need"; pkexec pacman -S --needed --noconfirm --asdeps $need; fi
+echo "Building $p"
+makepkg -f --noconfirm
+files=""
+for f in $(makepkg --packagelist); do
+    case "$f" in *-debug-*) continue;; esac
+    [ -f "$f" ] && files="$files $f"
+done
+[ -n "$files" ] || { echo "Nothing was built"; exit 5; }
+echo "Installing $p"
+pkexec pacman -U --noconfirm $files
+`, "sh", p.id, p.base || p.id])
+        }
         else if (p.source === "flatpak" && /^[A-Za-z0-9._-]+$/.test(p.id))
             start("install", p.name, ["sh", "-c", `
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo &&
@@ -150,7 +212,7 @@ flatpak install --user -y --noninteractive flathub "$1"`, "sh", p.id])
     }
     function remove(p) {
         if (!removable(p)) return
-        if (p.source === "pacman" && /^[a-z0-9@._+-]+$/.test(p.id))
+        if ((p.source === "pacman" || p.source === "aur") && /^[a-z0-9@._+-]+$/.test(p.id))
             start("remove", p.name, ["pkexec", "pacman", "-R", "--noconfirm", "--", p.id])
         else if (p.source === "flatpak" && /^[A-Za-z0-9._-]+$/.test(p.id))
             start("remove", p.name, ["flatpak", "uninstall", "-y", "--noninteractive", p.id])
@@ -161,7 +223,11 @@ flatpak install --user -y --noninteractive flathub "$1"`, "sh", p.id])
         start("update", Lang.t("System update"), ["sh", "-c", `
 if command -v pacman >/dev/null; then pkexec pacman -Syu --noconfirm || exit 1; fi
 if command -v flatpak >/dev/null; then flatpak update -y --noninteractive; fi
-true`])
+case "$1" in
+    paru) paru -Sua --noconfirm --skipreview --sudo pkexec;;
+    yay) yay -Sua --noconfirm --answerdiff None --answerclean None --sudo pkexec;;
+esac
+true`, "sh", aurHelper])
     }
 
     Process {
@@ -173,7 +239,10 @@ true`])
             root.lastOk = code === 0
             root.lastDone = root.busy
             const kind = root.busyKind
-            if (code === 126 || code === 127) root.problem = Lang.t("Cancelled: the password was not given.")
+            const needs = (root.seen.match(/@@needsaur ([^@]*)/) || ["", ""])[1].trim()
+            if (code === 4 && needs.length > 0) root.problem = Lang.t("It needs other AUR packages first: %1. Install those, then this one.", needs.split(/\s+/).join(", "))
+            else if (code === 3 && root.seen.includes("@@gone")) root.problem = Lang.t("This package is no longer in the AUR.")
+            else if (code === 126 || code === 127) root.problem = Lang.t("Cancelled: the password was not given.")
             else if (code !== 0) root.problem = /404|failed retrieving|not found in sync db|could not find/i.test(root.progress + root.seen)
                 ? Lang.t("That did not work: the package lists are old. Press \"Update everything\" and try again.")
                 : (root.progress.length > 0 ? Lang.t("That did not work: ") + root.progress : Lang.t("That did not work."))

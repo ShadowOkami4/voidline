@@ -110,6 +110,8 @@ Singleton {
     property alias automount: data.automount
     // A notification when updates are waiting.
     property alias updateNotify: data.updateNotify
+    // Also search the AUR (packages made by other Arch users, not checked).
+    property alias aurSearch: data.aurSearch
     // The day the last update notice was shown, so restarts do not repeat it.
     property alias updateToldOn: data.updateToldOn
     // The VPN the quick settings tile switched on last.
@@ -246,6 +248,7 @@ Singleton {
             property list<string> screenWallpapers: []
             property bool automount: true
             property bool updateNotify: true
+            property bool aurSearch: false
             property string updateToldOn: ""
             property string vpnLast: ""
             property bool welcomed: false
