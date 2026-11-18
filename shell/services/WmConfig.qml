@@ -95,7 +95,8 @@ Singleton {
         return header + monitors + "hl.config({\n"
             + `    general = { ${general.join(", ")} },\n`
             + `    decoration = { rounding = ${clamp(d.rounding, 0, 40)}, inactive_opacity = ${h.dimInactive ? "0.88" : "1.0"}, `
-            + `blur = { enabled = ${h.blur && !Config.gameMode} }, shadow = { enabled = ${h.shadows && !Config.gameMode} } },\n`
+            + `blur = { enabled = ${h.blur && !Config.gameMode} }, shadow = { enabled = ${h.shadows && !Config.gameMode} }, `
+            + `screen_shader = "${Access.filterPath}" },\n`
             + `    animations = { enabled = ${d.animations && !Config.gameMode} },\n`
             + `    input = { ${input.join(", ")} },\n`
             // A screen that was switched off wakes on any key or pointer move.

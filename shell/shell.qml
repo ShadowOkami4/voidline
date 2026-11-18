@@ -174,6 +174,14 @@ ShellRoot {
         function screenshot(mode: string): void { Capture.shoot(mode) }
         function record(): void { Capture.toggleRecording() }
         function colour(): void { Capture.pickColour() }
+        // Magnifier: in | out | off
+        function zoom(how: string): void {
+            if (how === "in") Access.zoomIn()
+            else if (how === "out") Access.zoomOut()
+            else Access.setZoom(1)
+        }
+        // Colour filter: grayscale | invert | protan | deutan | tritan | off
+        function colourFilter(name: string): void { Config.colourFilter = Access.filters.includes(name) ? name : "" }
         // Show or hide the on-screen keyboard.
         function keyboard(): void { Access.toggleKeyboard() }
         // quiet 1 | 3 | -1 (until tomorrow 7:00) | 0 (until switched off)

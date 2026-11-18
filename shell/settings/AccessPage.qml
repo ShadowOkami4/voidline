@@ -82,6 +82,53 @@ ColumnLayout {
     }
 
     SegGroup {
+        visible: Access.canSee
+        title: Lang.t("Magnifier and colours")
+        SegItem {
+            icon: "zoom_in"
+            hue: 4
+            lobes: 8
+            title: Lang.t("Magnifier")
+            description: Config.zoom > 1 ? Lang.t("The screen is magnified %1 times around the pointer. Super + Alt + Minus zooms out.", Number(Config.zoom).toLocaleString(Lang.locale, "f", Config.zoom % 1 === 0 ? 0 : 2))
+                : Lang.t("Magnifies the screen around the pointer. Super + Alt + Plus to zoom in, Super + Alt + Minus to zoom out.")
+            Row {
+                spacing: 6
+                IconBtn { anchors.verticalCenter: parent.verticalCenter; icon: "remove"; size: 40; tonal: true; enabledInput: Config.zoom > 1; opacity: enabledInput ? 1 : 0.4; onClicked: Access.zoomOut() }
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 64
+                    horizontalAlignment: Text.AlignHCenter
+                    text: Config.zoom > 1 ? Number(Config.zoom).toLocaleString(Lang.locale, "f", Config.zoom % 1 === 0 ? 0 : 2) + "×" : Lang.t("Off")
+                    font.pixelSize: Theme.textTitle
+                    font.weight: Font.Black
+                    color: Theme.primary
+                }
+                IconBtn { anchors.verticalCenter: parent.verticalCenter; icon: "add"; size: 40; tonal: true; enabledInput: Config.zoom < 8; opacity: enabledInput ? 1 : 0.4; onClicked: Access.zoomIn() }
+            }
+        }
+        SegItem {
+            icon: "palette"
+            hue: 5
+            lobes: 4
+            title: Lang.t("Colour filter")
+            description: Lang.t("Changes the colours of the whole screen, for colour blindness or less glare. Screenshots keep the real colours.")
+            Dropdown {
+                width: 250
+                value: Config.colourFilter
+                options: [
+                    { value: "", label: Lang.t("None") },
+                    { value: "deutan", label: Lang.t("Red-green (green weak)") },
+                    { value: "protan", label: Lang.t("Red-green (red weak)") },
+                    { value: "tritan", label: Lang.t("Blue-yellow") },
+                    { value: "grayscale", label: Lang.t("Shades of grey") },
+                    { value: "invert", label: Lang.t("Inverted colours") }
+                ]
+                onPicked: v => Config.colourFilter = v
+            }
+        }
+    }
+
+    SegGroup {
         title: Lang.t("Contrast")
         SegItem {
             icon: "contrast"

@@ -67,6 +67,10 @@ Singleton {
     // On-screen keyboard on show, and the screen reader (Orca) running.
     property alias onScreenKeyboard: data.onScreenKeyboard
     property alias screenReader: data.screenReader
+    // Magnifier: how far the screen is zoomed around the pointer (1 = off).
+    property alias zoom: data.zoom
+    // Colour filter for the whole screen: "" | grayscale | invert | protan | deutan | tritan
+    property alias colourFilter: data.colourFilter
     // Tablet mode: a keyboard button in the bar and swiping between
     // workspaces on a touch screen.
     property alias tabletMode: data.tabletMode
@@ -236,6 +240,8 @@ Singleton {
             property bool highContrast: false
             property bool onScreenKeyboard: false
             property bool screenReader: false
+            property real zoom: 1
+            property string colourFilter: ""
             property bool tabletMode: false
             property bool screenshotEdit: false
             property string weatherPlace: ""

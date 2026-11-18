@@ -26,6 +26,8 @@ Singleton {
         { id: "colour", icon: "colorize", label: Lang.t("Pick a colour from the screen"), combo: "SUPER+SHIFT+C", ipc: ["colour"] },
         { id: "layout", icon: "language", label: Lang.t("Switch keyboard layout"), combo: "SUPER+ALT+space", ipc: [],
           hypr: 'hl.dsp.exec_cmd("hyprctl switchxkblayout all next")', niri: 'switch-layout "next"' },
+        { id: "zoomIn", icon: "zoom_in", label: Lang.t("Magnify (zoom in)"), combo: "SUPER+ALT+plus", ipc: ["zoom", "in"] },
+        { id: "zoomOut", icon: "zoom_out", label: Lang.t("Zoom out"), combo: "SUPER+ALT+minus", ipc: ["zoom", "out"] },
         { id: "osk", icon: "keyboard", label: Lang.t("Show or hide the on-screen keyboard"), combo: "SUPER+ALT+K", ipc: ["keyboard"] },
         { id: "snap", icon: "view_quilt", label: Lang.t("Arrange the window (snap layouts)"), combo: "SUPER+Z", ipc: ["toggle", "snap"] },
         { id: "keys", icon: "keyboard_command_key", label: Lang.t("Show all shortcuts"), combo: "SUPER+F1", ipc: ["toggle", "keys"] },

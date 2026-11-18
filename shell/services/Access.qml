@@ -2,8 +2,10 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
 import qs.core
+import qs.compositor
 
 // Accessibility helpers: the on-screen keyboard's typing and the screen reader.
 //  - Typing goes through "wtype", which hands key presses to the compositor.
@@ -29,6 +31,31 @@ Singleton {
             }
         }
     }
+
+    // ---- magnifier and colour filters (Hyprland) ------------------------------------------
+    readonly property bool canSee: Compositor.name === "hyprland"
+    // The filter as a shader file of the shell, or "" for none.
+    readonly property var filters: ["grayscale", "invert", "protan", "deutan", "tritan"]
+    readonly property string filterPath: canSee && filters.includes(Config.colourFilter) ? Quickshell.shellDir + "/shaders/" + Config.colourFilter + ".frag" : ""
+
+    // The zoom changes in steps from the keyboard, so it is handed to
+    // Hyprland directly instead of rewriting and reloading its config.
+    function setZoom(z) {
+        Config.zoom = Math.max(1, Math.min(8, Math.round(z * 4) / 4))
+        applyZoom()
+    }
+    function zoomIn() { setZoom(Config.zoom < 1.5 ? 1.5 : Config.zoom + 0.5) }
+    function zoomOut() { setZoom(Config.zoom <= 1.5 ? 1 : Config.zoom - 0.5) }
+    function applyZoom() {
+        if (canSee) Quickshell.execDetached(["hyprctl", "eval", "hl.config({ cursor = { zoom_factor = " + Number(Config.zoom).toFixed(2) + " } })"])
+    }
+    // A reloaded config would start at no zoom again.
+    Connections {
+        target: root.canSee ? Hyprland : null
+        function onRawEvent(event) { if (event.name === "configreloaded" && Config.zoom > 1) zoomBack.restart() }
+    }
+    Timer { id: zoomBack; interval: 300; onTriggered: root.applyZoom() }
+    Timer { interval: 3000; running: Config.loaded && Config.zoom > 1; onTriggered: root.applyZoom() }
 
     // ---- on-screen keyboard ---------------------------------------------------------
     function toggleKeyboard() { Config.onScreenKeyboard = !Config.onScreenKeyboard }
