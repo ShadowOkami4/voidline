@@ -104,6 +104,16 @@ PanelSurface {
         const out = []
         if (q.length === 0) return out
         const answer = calc(q)
+        // "wecker 7:30", "alarm 6"
+        const wake = q.toLowerCase().match(/^(wecker|alarm)\b\s*(.*)$/)
+        if (wake) {
+            const m = wake[2].trim().match(/^(\d{1,2})(?:[:. ]?(\d{2}))?$/)
+            const ok = m && Number(m[1]) < 24 && Number(m[2] || 0) < 60
+            const at = ok ? (Number(m[1]) < 10 ? "0" : "") + Number(m[1]) + ":" + (m[2] || "00") : ""
+            if (ok) out.push({ kind: "alarm", icon: "alarm_add", title: Lang.t("Set an alarm for %1", at), hint: Lang.t("Rings once. More in Settings > Date & time."), value: at })
+            else out.push({ kind: "hint", icon: "alarm", title: Lang.t("Alarm: add the time"), hint: Lang.t("For example: alarm 7:30"), value: 0 })
+            return out
+        }
         // "timer 10", "25 min", "90s"
         const timed = q.toLowerCase().match(/^timer\b\s*(.*)$/)
         const span = timed ? Countdown.parse(timed[1]) : (/[a-z]/i.test(q) ? Countdown.parse(q) : 0)
@@ -134,6 +144,7 @@ PanelSurface {
         if (!x || x.kind === "hint") return
         Shell.close()
         if (x.kind === "timer") Countdown.start(x.value)
+        else if (x.kind === "alarm") Clocks.addAlarm(x.value, "")
         else if (x.kind === "timerStop") Countdown.stop()
         else if (x.kind === "calc") Quickshell.execDetached(["wl-copy", "--", x.value])
         else if (x.kind === "page") Shell.openSettings(x.value)

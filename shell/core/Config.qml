@@ -78,6 +78,9 @@ Singleton {
     property alias webSearch: data.webSearch
     // iCal addresses of calendars shown next to your own events.
     property alias calendars: data.calendars
+    // Alarms, "HH:MM|repeat|on", and clocks for other places (time zones).
+    property alias alarms: data.alarms
+    property alias worldClocks: data.worldClocks
     // A notification ten minutes before an event with a time.
     property alias eventReminders: data.eventReminders
     // Language of the shell: "" follows the system, otherwise "en", "de", ...
@@ -236,6 +239,8 @@ Singleton {
             property string weatherPlace: ""
             property string webSearch: "https://duckduckgo.com/?q=%s"
             property list<string> calendars: []
+            property list<string> alarms: []
+            property list<string> worldClocks: []
             property bool eventReminders: true
             property string language: ""
             property list<string> screenWallpapers: []

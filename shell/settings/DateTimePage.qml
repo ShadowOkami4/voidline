@@ -272,6 +272,134 @@ ColumnLayout {
     }
 
     SegGroup {
+        title: Lang.t("Alarms")
+        Repeater {
+            model: Clocks.alarms
+            SegItem {
+                id: alarm
+                required property var modelData
+                icon: "alarm"
+                hue: 1
+                lobes: 8
+                title: modelData.time
+                description: (modelData.repeat === "daily" ? Lang.t("Every day") : (modelData.repeat === "weekdays" ? Lang.t("Monday to Friday") : Lang.t("Once")))
+                    + (modelData.on ? "" : "  ·  " + Lang.t("Off"))
+                Row {
+                    spacing: 8
+                    TimeField { anchors.verticalCenter: parent.verticalCenter; value: alarm.modelData.time; onPicked: v => Clocks.setAlarm(alarm.modelData.index, { time: v, on: true }) }
+                    Dropdown {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 170
+                        value: alarm.modelData.repeat
+                        options: [
+                            { value: "", label: Lang.t("Once") },
+                            { value: "daily", label: Lang.t("Every day") },
+                            { value: "weekdays", label: Lang.t("Monday to Friday") }
+                        ]
+                        onPicked: v => Clocks.setAlarm(alarm.modelData.index, { repeat: v })
+                    }
+                    Toggle { anchors.verticalCenter: parent.verticalCenter; checked: alarm.modelData.on; onToggled: v => Clocks.setAlarm(alarm.modelData.index, { on: v }) }
+                    IconBtn { anchors.verticalCenter: parent.verticalCenter; icon: "delete"; size: 40; tonal: true; onClicked: Clocks.removeAlarm(alarm.modelData.index) }
+                }
+            }
+        }
+        SegItem {
+            icon: "alarm_add"
+            hue: 5
+            lobes: 4
+            title: Lang.t("New alarm")
+            description: Lang.t("Rings with a sound and a notification. The computer has to be awake for it.")
+            Row {
+                spacing: 8
+                TimeField { id: newAlarm; anchors.verticalCenter: parent.verticalCenter; value: "07:00"; onPicked: v => value = v }
+                Pressable {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: addAlarmLabel.implicitWidth + 36
+                    height: 42
+                    color: Theme.primary
+                    restRadius: Theme.cornerFull
+                    onClicked: Clocks.addAlarm(newAlarm.value, "daily")
+                    Label { id: addAlarmLabel; anchors.centerIn: parent; text: Lang.t("Add"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
+                }
+            }
+        }
+    }
+
+    SegGroup {
+        title: Lang.t("World clock")
+        Repeater {
+            model: Config.worldClocks
+            SegItem {
+                id: other
+                required property string modelData
+                icon: "public"
+                hue: 2
+                lobes: 5
+                title: Clocks.cityOf(modelData)
+                description: page.pretty(modelData) + "  ·  " + Clocks.difference(modelData, clock.date)
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    readonly property var at: Clocks.timeIn(other.modelData, clock.date)
+                    text: at ? Qt.formatDateTime(at, Config.clock24h ? "HH:mm" : "h:mm AP") : "–"
+                    font.pixelSize: Theme.textTitle + 2
+                    font.weight: Font.Black
+                    color: Theme.primary
+                }
+                IconBtn { icon: "delete"; size: 40; tonal: true; onClicked: Config.worldClocks = Config.worldClocks.filter(z => z !== other.modelData) }
+            }
+        }
+        SegItem {
+            icon: "add_location_alt"
+            hue: 4
+            lobes: 8
+            title: Lang.t("Add a place")
+            description: Lang.t("Shown in the calendar. Type a city, then pick it.")
+            Rectangle {
+                width: 220
+                height: 46
+                radius: city.activeFocus ? Theme.cornerM : height / 2
+                color: Theme.surfaceContainerHighest
+                border.width: city.activeFocus ? 2 : 0
+                border.color: Theme.primary
+                Behavior on radius { Spring {} }
+                TextInput {
+                    id: city
+                    anchors.fill: parent
+                    anchors.leftMargin: 18
+                    anchors.rightMargin: 18
+                    verticalAlignment: TextInput.AlignVCenter
+                    color: Theme.ink
+                    selectionColor: Theme.primaryContainer
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textBody
+                    clip: true
+                    Label { visible: city.text.length === 0; anchors.verticalCenter: parent.verticalCenter; text: Lang.t("City"); color: Theme.inkMuted }
+                }
+            }
+            extra: Flow {
+                Layout.fillWidth: true
+                visible: city.text.trim().length >= 2
+                spacing: 6
+                Repeater {
+                    model: {
+                        const q = city.text.trim().toLowerCase().replace(/ /g, "_")
+                        return q.length < 2 ? [] : page.zones.filter(z => z.toLowerCase().includes(q) && !Config.worldClocks.includes(z)).slice(0, 8)
+                    }
+                    Pressable {
+                        required property string modelData
+                        width: zoneLabel.implicitWidth + 28
+                        height: 36
+                        color: Theme.secondaryContainer
+                        restRadius: Theme.cornerFull
+                        onClicked: { Config.worldClocks = Config.worldClocks.concat([modelData]); city.text = "" }
+                        Label { id: zoneLabel; anchors.centerIn: parent; text: page.pretty(parent.modelData); font.pixelSize: Theme.textLabel; color: Theme.inkOnSecondaryContainer }
+                    }
+                }
+            }
+        }
+    }
+
+    SegGroup {
         title: Lang.t("Calendar")
         SegItem {
             icon: "notifications_active"

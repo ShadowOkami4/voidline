@@ -62,7 +62,7 @@ ShellRoot {
     }
 
     // Background services start by being mentioned once.
-    readonly property var services: [Idle.hasSwayidle, Clipboard.available, Appearance.available, Autostart.launched, Capture.canShoot, Access.ready, Events.ready, Drives.ready, Packages.available, Schedule.ready, LockKeys.ready]
+    readonly property var services: [Idle.hasSwayidle, Clipboard.available, Appearance.available, Autostart.launched, Capture.canShoot, Access.ready, Events.ready, Drives.ready, Packages.available, Schedule.ready, LockKeys.ready, Clocks.ready]
 
     LazyLoader {
         active: Shell.settingsOpen
@@ -146,6 +146,8 @@ ShellRoot {
         function sharePick(answer: string, windows: string): void { Shell.sharePick(answer, windows) }
         // Answer the open question from a script: "screen:eDP-1", "window:<id>", "" = no.
         function shareChoose(what: string): void { Shell.shareAnswer(what.length > 0 ? "[SELECTION]/" + what : "") }
+        // Snooze the alarm that just rang (its notification's button).
+        function snooze(): void { Clocks.snooze() }
         // Ask which app should open a file.
         function openWith(path: string): void { Shell.openWith(path) }
         // Tray icons, for scripts and testing:

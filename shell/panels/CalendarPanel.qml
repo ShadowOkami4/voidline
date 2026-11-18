@@ -28,6 +28,7 @@ PanelSurface {
     property string repeat: ""
 
     onOpenChanged: if (open) {
+        editing = ""
         month = new Date(today.getFullYear(), today.getMonth(), 1)
         picked = today
         repeat = ""
@@ -52,12 +53,24 @@ PanelSurface {
         NumberAnimation { target: root; property: "flip"; to: 0; duration: Motion.spatialFast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.spatialFastCurve }
     }
 
+    // Id of the own event being changed, or "".
+    property string editing: ""
+    function editEvent(e) {
+        editing = e.id
+        what.text = e.title
+        when.text = e.time || ""
+        repeat = e.repeat === "daily" ? "" : (e.repeat || "")
+        what.forceActiveFocus()
+        what.selectAll()
+    }
+    function stopEditing() { editing = ""; what.text = ""; when.text = ""; repeat = "" }
+    onPickedKeyChanged: if (editing.length > 0) stopEditing()
+
     function addEvent() {
         if (what.text.trim().length === 0) return
-        Events.add(pickedKey, when.text, what.text, repeat)
-        what.text = ""
-        when.text = ""
-        repeat = ""
+        if (editing.length > 0) Events.update(editing, when.text, what.text, repeat)
+        else Events.add(pickedKey, when.text, what.text, repeat)
+        stopEditing()
     }
 
     readonly property int firstDay: Lang.locale.firstDayOfWeek      // 0 = Sunday
@@ -104,6 +117,65 @@ PanelSurface {
                 font.pixelSize: 30
                 font.weight: Font.Black
                 font.letterSpacing: -0.5
+            }
+        }
+
+        // Other places, and when the next alarm rings.
+        Flow {
+            Layout.fillWidth: true
+            visible: Config.worldClocks.length > 0 || !!Clocks.next
+            spacing: 6
+            opacity: root.shown(0.6)
+            Repeater {
+                model: Config.worldClocks
+                Rectangle {
+                    id: place
+                    required property string modelData
+                    readonly property var at: Clocks.timeIn(modelData, root.today)
+                    width: placeRow.implicitWidth + 24
+                    height: 40
+                    radius: Theme.cornerL
+                    color: Theme.surfaceContainerHighest
+                    Row {
+                        id: placeRow
+                        anchors.centerIn: parent
+                        spacing: 8
+                        Label {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: place.at ? Qt.formatDateTime(place.at, Config.clock24h ? "HH:mm" : "h:mm AP") : "–"
+                            font.weight: Font.Black
+                        }
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            Label { text: Clocks.cityOf(place.modelData); font.pixelSize: Theme.textLabelS; font.weight: Font.Bold }
+                            Label {
+                                text: Clocks.difference(place.modelData, root.today)
+                                    + (place.at && place.at.getDate() !== root.today.getDate() ? "  ·  " + (place.at > root.today ? Lang.t("tomorrow") : Lang.t("yesterday")) : "")
+                                font.pixelSize: Theme.textLabelS - 1
+                                color: Theme.inkMuted
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                visible: !!Clocks.next
+                width: alarmRow.implicitWidth + 24
+                height: 40
+                radius: Theme.cornerL
+                color: Theme.tertiaryContainer
+                Row {
+                    id: alarmRow
+                    anchors.centerIn: parent
+                    spacing: 6
+                    MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "alarm"; size: 18; filled: true; color: Theme.inkOnTertiaryContainer }
+                    Label {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: Clocks.next ? Lang.date(Clocks.next, Clocks.next.getDate() === root.today.getDate() ? "HH:mm" : "ddd HH:mm") : ""
+                        font.weight: Font.Bold
+                        color: Theme.inkOnTertiaryContainer
+                    }
+                }
             }
         }
 
@@ -277,8 +349,18 @@ PanelSurface {
                 required property int index
                 width: ListView.view.width
                 height: 48
-                radius: Theme.cornerL
-                color: Theme.surfaceContainerHighest
+                radius: root.editing === modelData.id ? Theme.cornerM : Theme.cornerL
+                color: root.editing === modelData.id ? Theme.secondaryContainer : (change.containsMouse && modelData.own ? Theme.alpha(Theme.secondaryContainer, 0.6) : Theme.surfaceContainerHighest)
+                Behavior on color { Tint {} }
+                // Click your own event to change it.
+                MouseArea {
+                    id: change
+                    anchors.fill: parent
+                    enabled: !!plan.modelData.own
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.editing === plan.modelData.id ? root.stopEditing() : root.editEvent(plan.modelData)
+                }
                 // Each one slides in when the day changes.
                 NumberAnimation on opacity { from: 0; to: 1; duration: Motion.effectsSlow }
                 transform: Translate { id: slide; x: 0 }
@@ -323,7 +405,7 @@ PanelSurface {
                     anchors.verticalCenter: parent.verticalCenter
                     icon: "close"
                     size: 30
-                    onClicked: Events.remove(plan.modelData.id)
+                    onClicked: { if (root.editing === plan.modelData.id) root.stopEditing(); Events.remove(plan.modelData.id) }
                 }
             }
         }
@@ -339,7 +421,7 @@ PanelSurface {
             opacity: root.shown(6.8)
             Behavior on radius { Spring {} }
 
-            MIcon { id: plus; x: 14; anchors.verticalCenter: parent.verticalCenter; icon: "add"; size: 20; color: Theme.inkMuted }
+            MIcon { id: plus; x: 14; anchors.verticalCenter: parent.verticalCenter; icon: root.editing.length > 0 ? "edit" : "add"; size: 20; color: root.editing.length > 0 ? Theme.primary : Theme.inkMuted }
             TextInput {
                 id: what
                 anchors.left: plus.right
@@ -356,12 +438,12 @@ PanelSurface {
                 clip: true
                 Keys.onReturnPressed: root.addEvent()
                 Keys.onEnterPressed: root.addEvent()
-                Keys.onEscapePressed: Shell.close()
+                Keys.onEscapePressed: root.editing.length > 0 ? root.stopEditing() : Shell.close()
                 KeyNavigation.tab: when
                 Label {
                     visible: what.text.length === 0
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.plans.length === 0 ? Lang.t("Nothing planned. Add something…") : Lang.t("Add something…")
+                    text: root.editing.length > 0 ? Lang.t("What is it called?") : (root.plans.length === 0 ? Lang.t("Nothing planned. Add something…") : Lang.t("Add something…"))
                     color: Theme.inkMuted
                 }
             }
@@ -369,7 +451,7 @@ PanelSurface {
 
         RowLayout {
             id: more
-            readonly property bool wanted: what.text.length > 0 || when.activeFocus
+            readonly property bool wanted: what.text.length > 0 || when.activeFocus || root.editing.length > 0
             Layout.fillWidth: true
             Layout.topMargin: wanted ? -6 : -14
             property real tall: wanted ? 42 : 0

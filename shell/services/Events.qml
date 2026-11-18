@@ -77,6 +77,20 @@ Singleton {
         const e = { id: Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36), date: dateKey, time: tidyTime(time), title: clean, repeat: repeat || "" }
         store.entries = store.entries.concat([JSON.stringify(e)])
     }
+    // Changes an own event; its first day stays.
+    function update(id, time, title, repeat) {
+        const clean = String(title).trim().slice(0, 80)
+        if (clean.length === 0) return
+        store.entries = store.entries.map(e => {
+            let o = null
+            try { o = JSON.parse(e) } catch (x) { return e }
+            if (o.id !== id) return e
+            o.time = tidyTime(time)
+            o.title = clean
+            o.repeat = repeat || ""
+            return JSON.stringify(o)
+        })
+    }
     function remove(id) { store.entries = store.entries.filter(e => !e.includes('"id":"' + id + '"')) }
 
     Component.onCompleted: Quickshell.execDetached(["mkdir", "-p", statePath.replace(/\/[^\/]*$/, "")])
