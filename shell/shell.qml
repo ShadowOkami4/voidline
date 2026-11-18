@@ -51,6 +51,7 @@ ShellRoot {
     AuthDialog {}
     PairDialog {}
     OpenWithDialog {}
+    SharePicker {}
     Keyboard {}
     LockScreen {}
     Osd {}
@@ -140,6 +141,11 @@ ShellRoot {
         function workspaceMenu(workspace: string): void { Shell.openWorkspace(Compositor.workspaces[Number(workspace) - 1], null) }
         // Open the page for installing apps and search for something.
         function install(query: string): void { Shell.findApp(query) }
+        // Screen sharing, called by share-picker.sh for the portal: ask what to
+        // share and write the choice into the file `answer`.
+        function sharePick(answer: string, windows: string): void { Shell.sharePick(answer, windows) }
+        // Answer the open question from a script: "screen:eDP-1", "window:<id>", "" = no.
+        function shareChoose(what: string): void { Shell.shareAnswer(what.length > 0 ? "[SELECTION]/" + what : "") }
         // Ask which app should open a file.
         function openWith(path: string): void { Shell.openWith(path) }
         // Tray icons, for scripts and testing:

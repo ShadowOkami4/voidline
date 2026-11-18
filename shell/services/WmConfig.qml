@@ -99,7 +99,7 @@ Singleton {
             + `    animations = { enabled = ${d.animations && !Config.gameMode} },\n`
             + `    input = { ${input.join(", ")} },\n`
             // A screen that was switched off wakes on any key or pointer move.
-            + `    misc = { vrr = ${h.vrr ? 1 : 0}, key_press_enables_dpms = true, mouse_move_enables_dpms = true },\n`
+            + `    misc = { vrr = ${h.vrr ? 1 : 0}, key_press_enables_dpms = true, mouse_move_enables_dpms = true, allow_session_lock_restore = true },\n`
             + "})\n"
     }
 
