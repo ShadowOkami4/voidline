@@ -141,6 +141,8 @@ ShellRoot {
         function workspaceMenu(workspace: string): void { Shell.openWorkspace(Compositor.workspaces[Number(workspace) - 1], null) }
         // Install paru so AUR packages go through it.
         function setupAur(): void { Shell.openSettings("install"); Packages.setupAurHelper() }
+        // Open the terminal chosen in Settings (also what Super + T does).
+        function terminal(): void { Apps.openTerminal() }
         // Open the page for installing apps and search for something.
         function install(query: string): void { Shell.findApp(query) }
         // Screen sharing, called by share-picker.sh for the portal: ask what to

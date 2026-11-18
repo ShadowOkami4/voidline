@@ -178,6 +178,7 @@ var words = {
 "Launcher, minimise, styles": "App-Menü, Minimieren, Stile",
 "Default apps": "Standard-Apps",
 "Install apps": "Apps installieren",
+"Open the terminal": "Terminal öffnen",
 "tap alone": "allein antippen",
 "Open the launcher by tapping Super": "Launcher durch kurzes Antippen von Super öffnen",
 "Screenshot part of the screen (without Print key)": "Bildschirmfoto eines Bereichs (ohne Druck-Taste)",

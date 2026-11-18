@@ -87,6 +87,13 @@ Singleton {
         return entry && entry.icon ? entry.icon : (appId || "")
     }
 
+    // The terminal chosen in Settings > Default apps, in the home folder.
+    function openTerminal() {
+        const t = String(Config.terminal || "").trim()
+        if (t.length === 0) return
+        Quickshell.execDetached({ command: ["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", t], workingDirectory: Quickshell.env("HOME") })
+    }
+
     function openUrl(url) {
         Quickshell.execDetached(["env", "-u", "QT_SCALE_FACTOR", "-u", "VOIDLINE_UI_SCALE", "-u", "MALLOC_CONF", "xdg-open", url])
     }

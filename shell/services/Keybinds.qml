@@ -18,6 +18,7 @@ Singleton {
         // Tapping Super on its own, as on Windows and GNOME. Fires when Super
         // is let go with nothing pressed in between (Hyprland only).
         { id: "launcherTap", icon: "apps", label: Lang.t("Open the launcher by tapping Super"), combo: "SUPER+Super_L", ipc: ["toggle", "launcher"], release: true, hyprOnly: true },
+        { id: "terminal", icon: "terminal", label: Lang.t("Open the terminal"), combo: "SUPER+T", ipc: ["terminal"] },
         { id: "quick", icon: "tune", label: Lang.t("Open quick settings"), combo: "SUPER+A", ipc: ["toggle", "quick"] },
         { id: "settings", icon: "settings", label: Lang.t("Open Settings"), combo: "SUPER+I", ipc: ["settings"] },
         { id: "switcher", icon: "tab", label: Lang.t("Switch between windows"), combo: "SUPER+Tab", ipc: ["switcher"] },
