@@ -139,6 +139,8 @@ ShellRoot {
         function nameWorkspace(workspace: string, name: string): void { Config.setWorkspaceName(Number(workspace), name) }
         // Open the menu of workspace n (what a right click on its dot does).
         function workspaceMenu(workspace: string): void { Shell.openWorkspace(Compositor.workspaces[Number(workspace) - 1], null) }
+        // Install paru so AUR packages go through it.
+        function setupAur(): void { Shell.openSettings("install"); Packages.setupAurHelper() }
         // Open the page for installing apps and search for something.
         function install(query: string): void { Shell.findApp(query) }
         // Screen sharing, called by share-picker.sh for the portal: ask what to

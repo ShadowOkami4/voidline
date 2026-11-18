@@ -253,6 +253,24 @@ ColumnLayout {
                 + (Packages.aurHelper.length > 0 ? " " + Lang.t("Installed with %1.", Packages.aurHelper) : " " + Lang.t("Voidline builds them itself; updates for them come with an AUR helper such as paru."))
             Toggle { checked: Config.aurSearch; onToggled: v => { Config.aurSearch = v; if (field.text.trim().length > 1) Packages.search(field.text) } }
         }
+        SegItem {
+            visible: Packages.aurHelper.length === 0
+            icon: "handyman"
+            hue: 2
+            lobes: 8
+            title: Lang.t("Set up an AUR helper")
+            description: Lang.t("Installs paru, the helper most Arch users use. AUR packages then also get updates with \"Update everything\", and ones that need other AUR packages work too.")
+            Pressable {
+                width: setupLabel.implicitWidth + 36
+                height: 44
+                enabledInput: Packages.busy.length === 0
+                opacity: enabledInput ? 1 : 0.5
+                color: Theme.primary
+                restRadius: Theme.cornerFull
+                onClicked: Packages.setupAurHelper()
+                Label { id: setupLabel; anchors.centerIn: parent; text: Lang.t("Set up"); font.weight: Font.Bold; color: Theme.inkOnPrimary }
+            }
+        }
     }
 
     Label {

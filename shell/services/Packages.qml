@@ -210,6 +210,13 @@ pkexec pacman -U --noconfirm $files
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo &&
 flatpak install --user -y --noninteractive flathub "$1"`, "sh", p.id])
     }
+    // paru, the AUR helper most in use (AUR popularity), from its ready-built
+    // package, so nothing has to be compiled. Voidline then installs and
+    // updates AUR packages through it.
+    function setupAurHelper() {
+        if (aurHelper.length > 0) return
+        install({ source: "aur", id: "paru-bin", base: "paru-bin", name: "paru" })
+    }
     function remove(p) {
         if (!removable(p)) return
         if ((p.source === "pacman" || p.source === "aur") && /^[a-z0-9@._+-]+$/.test(p.id))
