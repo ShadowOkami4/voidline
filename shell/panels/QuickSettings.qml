@@ -52,6 +52,17 @@ PanelSurface {
         }
         return rows
     }
+    // Row data by key, for the keyed list below.
+    readonly property var noteByKey: {
+        const out = {}
+        for (const r of noteRows) out[r.kind + ":" + r.n.id] = r
+        return out
+    }
+    readonly property var earlierByKey: {
+        const out = {}
+        for (const e of Notifs.earlier) out[e.key] = e
+        return out
+    }
 
     // Power actions need a second click within three seconds.
     function power(action) {
@@ -377,11 +388,29 @@ PanelSurface {
             clip: true
             spacing: 6
             boundsBehavior: Flickable.StopAtBounds
-            model: root.noteRows
+            model: KeyedModel { keys: root.noteRows.map(r => r.kind + ":" + r.n.id) }
+            add: Transition {
+                ParallelAnimation {
+                    Spring { property: "x"; from: 60; to: 0; duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve }
+                    Fade { property: "opacity"; from: 0; to: 1 }
+                }
+            }
+            remove: Transition {
+                ParallelAnimation {
+                    Spring { property: "x"; to: 140; duration: Motion.spatialFast }
+                    Fade { property: "opacity"; to: 0 }
+                }
+            }
+            displaced: Transition { Spring { properties: "y"; duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
             delegate: Item {
                 id: noteRow
-                required property var modelData
+                required property string key
                 required property int index
+                // Kept while the row slides out after its notification left.
+                property var modelData: ({ kind: "", n: null, app: "", count: 0, all: [] })
+                readonly property var current: root.noteByKey[key] ?? null
+                onCurrentChanged: if (current) modelData = current
+                Component.onCompleted: if (current) modelData = current
                 readonly property real arrived: root.shown(6.8 + Math.min(index, 3) * 0.3)
                 width: ListView.view.width
                 height: modelData.kind === "card" ? card.implicitHeight : 34
@@ -390,10 +419,10 @@ PanelSurface {
 
                 NotificationCard {
                     id: card
-                    visible: noteRow.modelData.kind === "card"
+                    visible: noteRow.modelData.kind === "card" && !!noteRow.modelData.n
                     width: parent.width
                     notification: noteRow.modelData.n
-                    onDismissed: noteRow.modelData.n.dismiss()
+                    onDismissed: if (noteRow.modelData.n) noteRow.modelData.n.dismiss()
                 }
                 // "4 more from Discord": opens the group.
                 Pressable {
@@ -466,18 +495,60 @@ PanelSurface {
             clip: true
             spacing: 4
             boundsBehavior: Flickable.StopAtBounds
-            model: Notifs.earlier
+            model: KeyedModel { keys: Notifs.earlier.map(e => e.key) }
+            add: Transition { Fade { property: "opacity"; from: 0; to: 1 } }
+            remove: Transition {
+                ParallelAnimation {
+                    Spring { property: "x"; to: 140; duration: Motion.spatialFast }
+                    Fade { property: "opacity"; to: 0 }
+                }
+            }
+            displaced: Transition { Spring { properties: "y"; duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
             delegate: Rectangle {
                 id: old
-                required property var modelData
+                required property string key
+                property var modelData: ({ key: "", app: "", title: "", text: "", time: 0, icon: "" })
+                readonly property var current: root.earlierByKey[key] ?? null
+                onCurrentChanged: if (current) modelData = current
+                Component.onCompleted: if (current) modelData = current
+                // The same symbol the card had: Voidline's own, the app's, or its first letter.
+                readonly property string iconName: {
+                    if (modelData.icon) return modelData.icon
+                    const app = Apps.forAppId(modelData.app)
+                    return app && app.icon ? app.icon : ""
+                }
                 opacity: root.shown(7)
                 width: ListView.view.width
                 height: 52
                 radius: Theme.cornerL
                 color: Theme.surfaceContainer
+                Rectangle {
+                    id: badge
+                    x: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 32
+                    height: 32
+                    radius: Theme.cornerM
+                    color: Theme.primaryContainer
+                    MIcon {
+                        anchors.centerIn: parent
+                        visible: old.iconName.startsWith("voidline-") || old.iconName.length === 0
+                        icon: old.iconName.startsWith("voidline-") ? old.iconName.slice(9) : "notifications"
+                        filled: true
+                        size: 18
+                        color: Theme.inkOnPrimaryContainer
+                    }
+                    AppIcon {
+                        anchors.centerIn: parent
+                        visible: !old.iconName.startsWith("voidline-") && old.iconName.length > 0
+                        size: 20
+                        icon: old.iconName
+                        name: old.modelData.app || old.modelData.title
+                    }
+                }
                 Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: 14
+                    anchors.left: badge.right
+                    anchors.leftMargin: 12
                     anchors.right: gone.left
                     anchors.rightMargin: 6
                     anchors.verticalCenter: parent.verticalCenter

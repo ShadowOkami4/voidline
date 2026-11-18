@@ -47,7 +47,22 @@ Singleton {
         Config.notifMuted = muted ? rest.concat([app]) : rest
     }
 
-    function dismissPopup(id) { popupIds = popupIds.filter(i => i !== id) }
+    // Popups being answered do not run out.
+    property var held: []
+    function hold(id, on) {
+        held = on ? held.concat([id]) : held.filter(i => i !== id)
+        if (!on && expiredWhileHeld.includes(id)) { expiredWhileHeld = expiredWhileHeld.filter(i => i !== id); dismissPopup(id) }
+    }
+    property var expiredWhileHeld: []
+    function dismissPopup(id) {
+        if (held.includes(id)) { if (!expiredWhileHeld.includes(id)) expiredWhileHeld = expiredWhileHeld.concat([id]); return }
+        popupIds = popupIds.filter(i => i !== id)
+    }
+    // The icon's name, as the card shows it: given as appIcon or wrapped in the image.
+    function iconOf(n) {
+        const img = String(n.image || "")
+        return n.appIcon || (img.startsWith("image://icon/") ? decodeURIComponent(img.slice(13)) : "")
+    }
     function clear() { for (const n of list) n.dismiss(); store.entries = [] }
 
     // Earlier notifications, kept across restarts (the newest 40), as
@@ -56,7 +71,7 @@ Singleton {
     readonly property string statePath: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/voidline/notifications.json"
     property var liveKeys: ({})
     readonly property var history: store.entries.map(e => { try { return JSON.parse(e) } catch (x) { return null } }).filter(e => !!e)
-    function same(a, b) { return a.app === b.app && a.title === b.title && a.text === b.text }
+    function same(a, b) { return a.app === b.app && a.title === b.title && a.text === b.text && (a.icon || "") === (b.icon || "") }
     readonly property var earlier: {
         const live = list.map(n => liveKeys[n.id]).filter(k => !!k)
         // Entries saved twice by older versions show once.
@@ -73,7 +88,7 @@ Singleton {
     // same notification over again when the shell reloads, and apps update
     // one in place (a download's progress); neither is a new entry.
     function remember(n, again) {
-        const now = { app: n.appName || "", title: n.summary || "", text: (n.body || "").slice(0, 300) }
+        const now = { app: n.appName || "", title: n.summary || "", text: (n.body || "").slice(0, 300), icon: iconOf(n).slice(0, 200) }
         const entries = store.entries.slice()
         let at = -1
         const known = liveKeys[n.id]
@@ -120,6 +135,7 @@ Singleton {
         bodySupported: true
         actionsSupported: true
         imageSupported: true
+        inlineReplySupported: true
         onNotification: n => {
             n.tracked = true
             // Carried over from before a reload: already saved, already shown.

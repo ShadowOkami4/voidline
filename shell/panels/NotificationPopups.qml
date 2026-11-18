@@ -20,6 +20,8 @@ PanelWindow {
     visible: Notifs.popups.length > 0 && Shell.panel !== "quick"
     WlrLayershell.namespace: "voidline-notifications"
     WlrLayershell.layer: WlrLayer.Overlay
+    // Only so a reply can be typed; it takes the keyboard when clicked into.
+    WlrLayershell.keyboardFocus: Notifs.held.length > 0 ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     ListView {
         id: list
@@ -27,7 +29,8 @@ PanelWindow {
         spacing: 8
         interactive: false
         verticalLayoutDirection: popups.atTop ? ListView.TopToBottom : ListView.BottomToTop
-        model: Notifs.popups
+        // Follows the popups one by one, so each slides in and out on its own.
+        model: KeyedModel { keys: Notifs.popups.map(n => n.id) }
 
         add: Transition {
             ParallelAnimation {
@@ -35,16 +38,27 @@ PanelWindow {
                 Fade { property: "opacity"; from: 0; to: 1 }
             }
         }
-        displaced: Transition { Spring { properties: "y" } }
+        remove: Transition {
+            ParallelAnimation {
+                Spring { property: "x"; to: 120; duration: Motion.spatialFast }
+                Fade { property: "opacity"; to: 0 }
+            }
+        }
+        displaced: Transition { Spring { properties: "y"; duration: Motion.spatial; easing.bezierCurve: Motion.spatialCurve } }
 
         delegate: NotificationCard {
-            required property var modelData
+            required property string key
+            // Kept after the notification leaves, while it slides out.
+            property var modelData: Notifs.list.find(n => String(n.id) === key) ?? null
+            onModelDataChanged: if (modelData) kept = modelData
+            property var kept: null
             width: list.width
-            notification: modelData
+            visible: !!kept
+            notification: kept
             base: Theme.surfaceContainer
             border.width: 1
             border.color: Theme.alpha(Theme.outlineVariant, 0.6)
-            onDismissed: Notifs.dismissPopup(modelData.id)
+            onDismissed: if (kept) Notifs.dismissPopup(kept.id)
         }
     }
 }

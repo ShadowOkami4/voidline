@@ -178,6 +178,8 @@ var words = {
 "Launcher, minimise, styles": "App-Menü, Minimieren, Stile",
 "Default apps": "Standard-Apps",
 "Install apps": "Apps installieren",
+"Reply": "Antworten",
+"Your answer": "Deine Antwort",
 "Microphone on": "Mikrofon an",
 "Microphone muted": "Mikrofon stumm",
 "Caps lock on": "Feststelltaste an",

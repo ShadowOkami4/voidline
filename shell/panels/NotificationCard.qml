@@ -3,6 +3,7 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import qs.core
+import qs.services
 import qs.widgets
 
 Rectangle {
@@ -11,6 +12,20 @@ Rectangle {
     required property var notification
     property color base: Theme.surfaceContainerHigh
     signal dismissed()
+
+    // Messengers let you answer right here (Reply on the card).
+    readonly property bool canReply: !!notification && notification.hasInlineReply === true
+    property bool replying: false
+    // While you type, the popup stays.
+    onReplyingChanged: Notifs.hold(notification ? notification.id : -1, replying)
+    Component.onDestruction: if (replying && notification) Notifs.hold(notification.id, false)
+    function send() {
+        const t = answer.text.trim()
+        if (t.length === 0) return
+        notification.sendInlineReply(t)
+        replying = false
+        root.dismissed()
+    }
 
     implicitHeight: layout.implicitHeight + 24
     radius: Theme.cornerLInc
@@ -90,8 +105,29 @@ Rectangle {
             Flow {
                 Layout.fillWidth: true
                 Layout.topMargin: 6
-                visible: root.notification.actions.length > 0
+                visible: (root.notification.actions.length > 0 || root.canReply) && !root.replying
                 spacing: 6
+                Pressable {
+                    visible: root.canReply
+                    width: replyLabel.implicitWidth + 50
+                    height: 34
+                    color: Theme.primary
+                    tint: Theme.inkOnPrimary
+                    onClicked: { root.replying = true; answer.forceActiveFocus() }
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 6
+                        MIcon { anchors.verticalCenter: parent.verticalCenter; icon: "reply"; size: 18; color: Theme.inkOnPrimary }
+                        Label {
+                            id: replyLabel
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: Lang.t("Reply")
+                            font.pixelSize: Theme.textLabel + 1
+                            font.weight: Font.DemiBold
+                            color: Theme.inkOnPrimary
+                        }
+                    }
+                }
                 Repeater {
                     model: root.notification.actions
                     Pressable {
@@ -113,10 +149,49 @@ Rectangle {
                     }
                 }
             }
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 6
+                visible: root.replying
+                spacing: 6
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 40
+                    radius: Theme.cornerM
+                    color: Theme.surfaceContainerHighest
+                    border.width: 2
+                    border.color: Theme.primary
+                    TextInput {
+                        id: answer
+                        anchors.fill: parent
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        verticalAlignment: TextInput.AlignVCenter
+                        color: Theme.ink
+                        selectionColor: Theme.primaryContainer
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textLabel + 1
+                        clip: true
+                        Keys.onReturnPressed: root.send()
+                        Keys.onEnterPressed: root.send()
+                        Keys.onEscapePressed: { text = ""; root.replying = false }
+                        Label {
+                            visible: answer.text.length === 0
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: root.notification && root.notification.inlineReplyPlaceholder ? root.notification.inlineReplyPlaceholder : Lang.t("Your answer")
+                            font.pixelSize: Theme.textLabel + 1
+                            color: Theme.inkMuted
+                        }
+                    }
+                }
+                IconBtn { icon: "close"; size: 36; onClicked: { answer.text = ""; root.replying = false } }
+                IconBtn { icon: "send"; size: 36; selected: true; onClicked: root.send() }
+            }
         }
 
         IconBtn {
             Layout.alignment: Qt.AlignTop
+            visible: !root.replying
             icon: "close"
             size: 28
             onClicked: root.dismissed()
